@@ -9,12 +9,14 @@
     "dev:all": "node scripts/dev-all.mjs",
     "build": "node scripts/build.mjs",
     "build:all": "pnpm -r build",
+    "build:pdf": "node scripts/build-pdf.mjs",
     "create:presentation": "node scripts/create-presentation.mjs",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "test": "echo 'No tests configured yet'"
   },
   "devDependencies": {
+    "playwright-chromium": "^1.49.0",
     "typescript": "^5.3.3"
   },
   "packageManager": "pnpm@9.15.0",
