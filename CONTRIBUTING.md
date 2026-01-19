@@ -77,6 +77,45 @@ Example: `feat: add dark theme to shared themes`
 2. Register it in `packages/shared/themes/index.ts`
 3. Document usage in your PR
 
+## Dependency Management with pnpm Catalog
+
+This project uses pnpm's catalog feature to manage shared dependency versions across all presentations. The catalog is defined in `pnpm-workspace.yaml`:
+
+```yaml
+catalog:
+  '@slidev/cli': ^52.11.3
+  '@slidev/theme-default': latest
+  '@slidev/theme-seriph': latest
+  vue: ^3.5.26
+  '@vue/compiler-sfc': ^3.5.27
+```
+
+### Using Catalog in Presentations
+
+When creating or updating presentations, use `catalog:` as the version specifier for shared dependencies:
+
+```json
+{
+  "dependencies": {
+    "@slidev/cli": "catalog:",
+    "@slidev/theme-default": "catalog:",
+    "vue": "catalog:"
+  }
+}
+```
+
+### Updating Shared Versions
+
+To update a dependency version across all presentations:
+
+1. Edit the version in `pnpm-workspace.yaml` under the `catalog:` section
+2. Run `pnpm install` to apply the changes
+
+### Adding New Shared Dependencies
+
+1. Add the dependency and version to `pnpm-workspace.yaml`
+2. Reference it with `catalog:` in the presentation's `package.json`
+
 ## Code Style
 
 - Use TypeScript for scripts and type definitions

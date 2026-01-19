@@ -8,13 +8,13 @@
     "export": "slidev export"
   },
   "dependencies": {
-    "@slidev/cli": "^52.11.3",
-    "@slidev/theme-default": "latest",
-    "@slidev/theme-seriph": "latest",
+    "@slidev/cli": "catalog:",
+    "@slidev/theme-default": "catalog:",
+    "@slidev/theme-seriph": "catalog:",
     "@supaslidev/shared": "workspace:*",
-    "vue": "^3.5.26"
+    "vue": "catalog:"
   },
   "devDependencies": {
-    "@vue/compiler-sfc": "^3.5.27"
+    "@vue/compiler-sfc": "catalog:"
   }
 }

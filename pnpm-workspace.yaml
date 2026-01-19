@@ -1,3 +1,10 @@
 packages:
   - 'packages/*'
   - 'presentations/*'
+
+catalog:
+  '@slidev/cli': ^52.11.3
+  '@slidev/theme-default': latest
+  '@slidev/theme-seriph': latest
+  vue: ^3.5.26
+  '@vue/compiler-sfc': ^3.5.27

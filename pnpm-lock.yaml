@@ -4,6 +4,24 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@slidev/cli':
+      specifier: ^52.11.3
+      version: 52.11.3
+    '@slidev/theme-default':
+      specifier: latest
+      version: 0.25.0
+    '@slidev/theme-seriph':
+      specifier: latest
+      version: 0.25.0
+    '@vue/compiler-sfc':
+      specifier: ^3.5.27
+      version: 3.5.27
+    vue:
+      specifier: ^3.5.26
+      version: 3.5.27
+
 importers:
 
   .:
@@ -31,89 +49,89 @@ importers:
   presentations/example:
     dependencies:
       '@slidev/cli':
-        specifier: ^52.11.3
+        specifier: 'catalog:'
         version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
       '@slidev/theme-default':
-        specifier: latest
+        specifier: 'catalog:'
         version: 0.25.0
       '@slidev/theme-seriph':
-        specifier: latest
+        specifier: 'catalog:'
         version: 0.25.0
       '@supaslidev/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       vue:
-        specifier: ^3.5.26
+        specifier: 'catalog:'
         version: 3.5.27(typescript@5.9.3)
     devDependencies:
       '@vue/compiler-sfc':
-        specifier: ^3.5.27
+        specifier: 'catalog:'
         version: 3.5.27
 
   presentations/p-1:
     dependencies:
       '@slidev/cli':
-        specifier: ^52.11.3
+        specifier: 'catalog:'
         version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
       '@slidev/theme-default':
-        specifier: latest
+        specifier: 'catalog:'
         version: 0.25.0
       '@slidev/theme-seriph':
-        specifier: latest
+        specifier: 'catalog:'
         version: 0.25.0
       '@supaslidev/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       vue:
-        specifier: ^3.5.26
+        specifier: 'catalog:'
         version: 3.5.27(typescript@5.9.3)
     devDependencies:
       '@vue/compiler-sfc':
-        specifier: ^3.5.27
+        specifier: 'catalog:'
         version: 3.5.27
 
   presentations/p-2:
     dependencies:
       '@slidev/cli':
-        specifier: ^52.11.3
+        specifier: 'catalog:'
         version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
       '@slidev/theme-default':
-        specifier: latest
+        specifier: 'catalog:'
         version: 0.25.0
       '@slidev/theme-seriph':
-        specifier: latest
+        specifier: 'catalog:'
         version: 0.25.0
       '@supaslidev/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       vue:
-        specifier: ^3.5.26
+        specifier: 'catalog:'
         version: 3.5.27(typescript@5.9.3)
     devDependencies:
       '@vue/compiler-sfc':
-        specifier: ^3.5.27
+        specifier: 'catalog:'
         version: 3.5.27
 
   presentations/p-3:
     dependencies:
       '@slidev/cli':
-        specifier: ^52.11.3
+        specifier: 'catalog:'
         version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
       '@slidev/theme-default':
-        specifier: latest
+        specifier: 'catalog:'
         version: 0.25.0
       '@slidev/theme-seriph':
-        specifier: latest
+        specifier: 'catalog:'
         version: 0.25.0
       '@supaslidev/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       vue:
-        specifier: ^3.5.26
+        specifier: 'catalog:'
         version: 3.5.27(typescript@5.9.3)
     devDependencies:
       '@vue/compiler-sfc':
-        specifier: ^3.5.27
+        specifier: 'catalog:'
         version: 3.5.27
 
 packages:
@@ -2955,7 +2973,7 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.28.6
       '@babel/generator': 7.28.6
-      '@babel/parser': 7.27.7
+      '@babel/parser': 7.28.6
       '@babel/template': 7.28.6
       '@babel/types': 7.28.6
       debug: 4.4.3
