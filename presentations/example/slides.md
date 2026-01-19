@@ -38,7 +38,8 @@ supaslidev/
 ├── packages/
 │   └── shared/           # @supaslidev/shared
 │       ├── components/   # Shared Vue components
-│       ├── snippets/     # Shared code snippets
+│       ├── layouts/      # Shared Slidev layouts
+│       ├── snippets/     # Shared code snippets & utilities
 │       ├── styles/       # Shared CSS variables & utilities
 │       └── themes/       # Shared theme presets
 ├── presentations/
@@ -69,17 +70,73 @@ import Counter from '@supaslidev/shared/components/Counter.vue'
 <Counter :count="10" />
 
 ---
+layout: section
+---
 
-# Using Shared Utilities
+# Shared Layouts
+
+Custom layouts from `@supaslidev/shared/layouts`
+
+---
+layout: two-cols-header
+---
+
+::header::
+
+# Two Columns with Header
+
+This layout provides a header area with two columns below.
+
+::left::
+
+**Left Column**
+
+- First item
+- Second item
+- Third item
+
+::right::
+
+**Right Column**
+
+- Feature A
+- Feature B
+- Feature C
+
+---
+layout: quote
+author: "The supaslidev Team"
+role: "Open Source Developers"
+---
+
+Shared layouts make it easy to maintain consistent slide designs across all your presentations.
+
+---
+layout: fact
+---
+
+# 6
+
+Custom layouts available in `@supaslidev/shared/layouts`
+
+---
+
+# Using Shared Snippets
 
 Import utilities from the shared package:
 
 ```ts
-import { emptyArray } from '@supaslidev/shared'
+import { emptyArray, range, chunk } from '@supaslidev/shared'
+import { formatNumber, formatCurrency } from '@supaslidev/shared/snippets'
+import { delay, debounce } from '@supaslidev/shared/snippets/async'
 
 const items = emptyArray<string>(5)
-// Creates: [undefined, undefined, undefined, undefined, undefined]
+const numbers = range(1, 10)
+const chunks = chunk([1, 2, 3, 4, 5, 6], 2)
+const price = formatCurrency(1234.56)
 ```
+
+Available snippets: `arrays`, `formatting`, `async`
 
 ---
 

@@ -1,1 +1,1 @@
-export * from './snippets/utils'
+export * from './snippets'

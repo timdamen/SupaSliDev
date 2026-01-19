@@ -9,6 +9,13 @@
       "import": "./index.ts"
     },
     "./components/*": "./components/*",
+    "./layouts": {
+      "import": "./layouts/index.ts"
+    },
+    "./layouts/*": "./layouts/*",
+    "./snippets": {
+      "import": "./snippets/index.ts"
+    },
     "./snippets/*": "./snippets/*",
     "./styles/*": "./styles/*",
     "./themes": {
@@ -18,6 +25,7 @@
   },
   "files": [
     "components",
+    "layouts",
     "snippets",
     "styles",
     "themes",
