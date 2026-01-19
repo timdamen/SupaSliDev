@@ -56,10 +56,10 @@ pnpm dev:all
 ### Build a Presentation
 
 ```bash
-pnpm build <presentation-name>
+pnpm build @supaslidev/<name> build
 ```
 
-Output is placed in `dist/<presentation-name>/`.
+Output is placed in `presentations/<name>/dist/`.
 
 ### Deploy a Presentation
 
@@ -90,7 +90,7 @@ See [docs/deployment.md](docs/deployment.md) for detailed deployment instruction
 | `pnpm create:presentation <name>` | Create a new presentation |
 | `pnpm dev @supaslidev/<name> dev` | Start dev server for a presentation |
 | `pnpm dev:all` | Start dev servers for all presentations in parallel |
-| `pnpm build <name>` | Build a single presentation |
+| `pnpm build @supaslidev/<name> build` | Build a single presentation |
 | `pnpm build:all` | Build all presentations |
 | `pnpm build:pdf <name>` | Export presentation to PDF |
 | `pnpm prepare:deploy <name>` | Prepare presentation for deployment |
@@ -111,7 +111,6 @@ supaSliDev/
 │       ├── components/      # Presentation-specific components
 │       └── package.json
 ├── scripts/
-│   ├── build.mjs            # Build script
 │   ├── create-presentation.mjs
 │   └── templates/           # Presentation templates
 ├── dist/                    # Built presentations

@@ -123,10 +123,10 @@ netlify deploy --prod
 
 1. Build your presentation:
    ```bash
-   pnpm build my-presentation
+   pnpm build @supaslidev/my-presentation build
    ```
 
-2. Drag the `dist/my-presentation/` folder to [Netlify Drop](https://app.netlify.com/drop)
+2. Drag the `presentations/my-presentation/dist/` folder to [Netlify Drop](https://app.netlify.com/drop)
 
 ### Netlify Configuration
 
@@ -243,6 +243,6 @@ The built presentation is static HTML and works on any static hosting:
 For these platforms, build locally first:
 
 ```bash
-pnpm build my-presentation
-# Output is in dist/my-presentation/
+pnpm build @supaslidev/my-presentation build
+# Output is in presentations/my-presentation/dist/
 ```
