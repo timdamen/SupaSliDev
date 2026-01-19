@@ -8,7 +8,7 @@
     "dev": "node scripts/dev.mjs",
     "dev:all": "node scripts/dev-all.mjs",
     "build": "node scripts/build.mjs",
-    "build:all": "pnpm -r build",
+    "build:all": "node scripts/build-all.mjs",
     "build:pdf": "node scripts/build-pdf.mjs",
     "create:presentation": "node scripts/create-presentation.mjs",
     "lint": "tsc --noEmit",
