@@ -86,6 +86,31 @@ function validateTemplate(template) {
   return template
 }
 
+function createVercelConfig() {
+  return JSON.stringify({
+    buildCommand: 'npm run build',
+    outputDirectory: 'dist',
+    rewrites: [
+      { source: '/(.*)', destination: '/index.html' }
+    ]
+  }, null, 2) + '\n'
+}
+
+function createNetlifyConfig() {
+  return `[build]
+publish = "dist"
+command = "npm run build"
+
+[build.environment]
+NODE_VERSION = "20"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+`
+}
+
 function createPresentation(name, template) {
   const targetDir = join(presentationsDir, name)
   const templateDir = join(templatesDir, template)
@@ -124,11 +149,15 @@ function createPresentation(name, template) {
   const slides = slidesTemplate.replace(/\{\{name\}\}/g, name)
   writeFileSync(join(targetDir, 'slides.md'), slides)
 
+  writeFileSync(join(targetDir, 'vercel.json'), createVercelConfig())
+  writeFileSync(join(targetDir, 'netlify.toml'), createNetlifyConfig())
+
   console.log(`\nPresentation created at: presentations/${name}/`)
   console.log('\nNext steps:')
   console.log('  1. Run: pnpm install')
   console.log(`  2. Run: pnpm --filter @supaslidev/${name} dev`)
   console.log('\nOr run all presentations with: pnpm dev')
+  console.log('\nTo deploy: pnpm prepare:deploy ' + name)
 }
 
 async function main() {

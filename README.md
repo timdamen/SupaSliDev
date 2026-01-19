@@ -57,6 +57,27 @@ pnpm build <presentation-name>
 
 Output is placed in `dist/<presentation-name>/`.
 
+### Deploy a Presentation
+
+```bash
+pnpm prepare:deploy <presentation-name>
+```
+
+This creates a standalone deployment package in `deploy/<presentation-name>/` with:
+- Built static files
+- `vercel.json` for Vercel
+- `netlify.toml` for Netlify
+
+Then deploy with your preferred platform:
+
+```bash
+cd deploy/<presentation-name>
+vercel              # Deploy to Vercel
+netlify deploy      # Deploy to Netlify
+```
+
+See [docs/deployment.md](docs/deployment.md) for detailed deployment instructions.
+
 ## Commands Reference
 
 | Command | Description |
@@ -67,6 +88,8 @@ Output is placed in `dist/<presentation-name>/`.
 | `pnpm dev:all` | Start dev servers for all presentations |
 | `pnpm build <name>` | Build a single presentation |
 | `pnpm build:all` | Build all presentations |
+| `pnpm build:pdf <name>` | Export presentation to PDF |
+| `pnpm prepare:deploy <name>` | Prepare presentation for deployment |
 
 ## Project Structure
 
