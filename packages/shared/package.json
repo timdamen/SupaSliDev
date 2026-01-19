@@ -10,12 +10,17 @@
     },
     "./components/*": "./components/*",
     "./snippets/*": "./snippets/*",
-    "./styles/*": "./styles/*"
+    "./styles/*": "./styles/*",
+    "./themes": {
+      "import": "./themes/index.ts"
+    },
+    "./themes/*": "./themes/*"
   },
   "files": [
     "components",
     "snippets",
     "styles",
+    "themes",
     "index.ts"
   ],
   "peerDependencies": {

@@ -11,7 +11,13 @@ drawings:
   persist: false
 transition: slide-left
 mdc: true
+css: unocss
 ---
+
+<style>
+@import '@supaslidev/shared/themes/default.css';
+@import '@supaslidev/shared/styles/index.css';
+</style>
 
 # Welcome to supaslidev
 
@@ -33,7 +39,8 @@ supaslidev/
 │   └── shared/           # @supaslidev/shared
 │       ├── components/   # Shared Vue components
 │       ├── snippets/     # Shared code snippets
-│       └── styles/       # Shared CSS
+│       ├── styles/       # Shared CSS variables & utilities
+│       └── themes/       # Shared theme presets
 ├── presentations/
 │   ├── example/          # This presentation
 │   ├── p-1/
@@ -73,6 +80,29 @@ import { emptyArray } from '@supaslidev/shared'
 const items = emptyArray<string>(5)
 // Creates: [undefined, undefined, undefined, undefined, undefined]
 ```
+
+---
+
+# Using Shared Themes & Styles
+
+Import themes and styles in your presentation:
+
+```html
+<style>
+@import '@supaslidev/shared/themes/default.css';
+@import '@supaslidev/shared/styles/index.css';
+</style>
+```
+
+Available themes: `default`, `corporate`, `vibrant`
+
+<div class="flex gap-4 mt-8">
+  <span class="supaslidev-badge">Primary</span>
+  <span class="supaslidev-badge supaslidev-badge--secondary">Secondary</span>
+  <span class="supaslidev-badge supaslidev-badge--accent">Accent</span>
+</div>
+
+<p class="supaslidev-gradient-text text-2xl mt-4 font-bold">Gradient Text Effect</p>
 
 ---
 layout: center
