@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "jsx": "preserve",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "lib": ["ESNext", "DOM"],
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": {
+      "@supaslidev/shared": ["./packages/shared/index.ts"],
+      "@supaslidev/shared/*": ["./packages/shared/*"]
+    }
+  },
+  "include": [
+    "packages/**/*.ts",
+    "packages/**/*.vue",
+    "presentations/**/*.ts",
+    "presentations/**/*.vue"
+  ],
+  "exclude": ["node_modules", "**/dist"]
+}
