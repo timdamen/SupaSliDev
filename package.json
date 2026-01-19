@@ -6,7 +6,7 @@
   "description": "A monorepo for managing multiple Slidev presentations with shared resources",
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "dev:all": "pnpm -r --parallel dev",
+    "dev:all": "node scripts/dev-all.mjs",
     "build": "node scripts/build.mjs",
     "build:all": "pnpm -r build",
     "create:presentation": "node scripts/create-presentation.mjs",
