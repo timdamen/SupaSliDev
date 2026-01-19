@@ -5,8 +5,8 @@
   "type": "module",
   "description": "A monorepo for managing multiple Slidev presentations with shared resources",
   "scripts": {
-    "dev": "node scripts/dev.mjs",
-    "dev:all": "node scripts/dev-all.mjs",
+    "dev": "pnpm --filter",
+    "dev:all": "pnpm -r --parallel dev",
     "build": "node scripts/build.mjs",
     "build:all": "node scripts/build-all.mjs",
     "build:pdf": "node scripts/build-pdf.mjs",

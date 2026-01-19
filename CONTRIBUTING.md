@@ -30,7 +30,7 @@ Thank you for your interest in contributing to supaSliDev! This document provide
 
 2. Test your changes by running a presentation:
    ```bash
-   pnpm dev example
+   pnpm dev @supaslidev/example dev
    ```
 
 3. Run quality checks before committing:

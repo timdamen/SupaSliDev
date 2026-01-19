@@ -44,10 +44,14 @@ pnpm create:presentation my-presentation --template=default
 ### Run a Presentation
 
 ```bash
-pnpm dev <presentation-name>
+pnpm dev @supaslidev/<name> dev
 ```
 
-Each presentation runs on its own port (starting from 3030).
+Or run all presentations simultaneously:
+
+```bash
+pnpm dev:all
+```
 
 ### Build a Presentation
 
@@ -84,8 +88,8 @@ See [docs/deployment.md](docs/deployment.md) for detailed deployment instruction
 |---------|-------------|
 | `pnpm install` | Install all dependencies |
 | `pnpm create:presentation <name>` | Create a new presentation |
-| `pnpm dev <name>` | Start dev server for a presentation |
-| `pnpm dev:all` | Start dev servers for all presentations |
+| `pnpm dev @supaslidev/<name> dev` | Start dev server for a presentation |
+| `pnpm dev:all` | Start dev servers for all presentations in parallel |
 | `pnpm build <name>` | Build a single presentation |
 | `pnpm build:all` | Build all presentations |
 | `pnpm build:pdf <name>` | Export presentation to PDF |
@@ -107,7 +111,6 @@ supaSliDev/
 │       ├── components/      # Presentation-specific components
 │       └── package.json
 ├── scripts/
-│   ├── dev.mjs              # Development server script
 │   ├── build.mjs            # Build script
 │   ├── create-presentation.mjs
 │   └── templates/           # Presentation templates
