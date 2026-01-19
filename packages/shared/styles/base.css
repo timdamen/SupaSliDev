@@ -1,0 +1,7 @@
+/* Base styles for supaslidev presentations */
+
+:root {
+  --supaslidev-primary: #3b82f6;
+  --supaslidev-secondary: #10b981;
+  --supaslidev-accent: #8b5cf6;
+}

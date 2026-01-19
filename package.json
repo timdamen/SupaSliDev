@@ -1,0 +1,21 @@
+{
+  "name": "supaslidev",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A monorepo for managing multiple Slidev presentations with shared resources",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "lint": "echo 'No linter configured yet'",
+    "test": "echo 'No tests configured yet'"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}
