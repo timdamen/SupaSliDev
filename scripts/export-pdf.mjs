@@ -24,7 +24,7 @@ function getPresentations() {
 }
 
 function printUsage(presentations) {
-  console.error('Usage: pnpm build:pdf <presentation-name>')
+  console.error('Usage: pnpm export:pdf <presentation-name>')
   console.error('\nAvailable presentations:')
 
   if (presentations.length === 0) {

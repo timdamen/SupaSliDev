@@ -9,7 +9,7 @@
     "dev:all": "pnpm -r --parallel dev",
     "build": "pnpm --filter",
     "build:all": "pnpm -r build",
-    "build:pdf": "node scripts/build-pdf.mjs",
+    "export:pdf": "node scripts/export-pdf.mjs",
     "prepare:deploy": "node scripts/prepare-deploy.mjs",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
