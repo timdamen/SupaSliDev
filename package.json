@@ -10,7 +10,8 @@
     "build": "node scripts/build.mjs",
     "build:all": "pnpm -r build",
     "create:presentation": "node scripts/create-presentation.mjs",
-    "lint": "echo 'No linter configured yet'",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "test": "echo 'No tests configured yet'"
   },
   "devDependencies": {
