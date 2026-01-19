@@ -6,7 +6,7 @@ A monorepo for managing multiple [Slidev](https://sli.dev) presentations with sh
 
 - **Monorepo Structure**: Manage multiple presentations in a single repository using pnpm workspaces
 - **Shared Resources**: Reusable components, styles, and themes across all presentations
-- **Easy Presentation Creation**: CLI command to scaffold new presentations from templates
+- **Native Slidev CLI**: Use the official Slidev wizard with automatic version management via pnpm catalog
 - **Independent Development**: Run and build presentations individually
 - **Consistent Tooling**: Shared TypeScript configuration and development scripts
 
@@ -30,16 +30,14 @@ pnpm install
 
 ### Create a New Presentation
 
-```bash
-pnpm create:presentation my-presentation
-```
-
-You can specify a template:
+Use the native Slidev CLI wizard to create presentations:
 
 ```bash
-pnpm create:presentation my-presentation --template=blank
-pnpm create:presentation my-presentation --template=default
+cd presentations
+pnpm create slidev my-presentation
 ```
+
+The wizard guides you through setup and new presentations automatically inherit version management from the workspace catalog.
 
 ### Run a Presentation
 
@@ -87,7 +85,7 @@ See [docs/deployment.md](docs/deployment.md) for detailed deployment instruction
 | Command | Description |
 |---------|-------------|
 | `pnpm install` | Install all dependencies |
-| `pnpm create:presentation <name>` | Create a new presentation |
+| `cd presentations && pnpm create slidev <name>` | Create a new presentation |
 | `pnpm dev @supaslidev/<name> dev` | Start dev server for a presentation |
 | `pnpm dev:all` | Start dev servers for all presentations in parallel |
 | `pnpm build @supaslidev/<name> build` | Build a single presentation |
@@ -110,9 +108,7 @@ supaSliDev/
 │       ├── slides.md        # Presentation content
 │       ├── components/      # Presentation-specific components
 │       └── package.json
-├── scripts/
-│   ├── create-presentation.mjs
-│   └── templates/           # Presentation templates
+├── scripts/                 # Build and deployment scripts
 ├── dist/                    # Built presentations
 ├── package.json
 ├── pnpm-workspace.yaml
@@ -132,11 +128,6 @@ import Counter from '@supaslidev/shared/components/Counter.vue'
 ```css
 @import '@supaslidev/shared/styles/index.css';
 ```
-
-## Available Templates
-
-- **blank**: Minimal presentation with a single slide
-- **default**: Sample presentation demonstrating Slidev features
 
 ## License
 
