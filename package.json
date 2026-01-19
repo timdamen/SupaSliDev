@@ -5,10 +5,11 @@
   "type": "module",
   "description": "A monorepo for managing multiple Slidev presentations with shared resources",
   "scripts": {
-    "dev": "pnpm --filter",
+    "dev": "node scripts/dev-presentation.mjs",
     "dev:all": "pnpm -r --parallel dev",
     "build": "pnpm --filter",
     "build:all": "pnpm -r build",
+    "create:presentation": "node scripts/create-presentation.mjs",
     "export:pdf": "node scripts/export-pdf.mjs",
     "prepare:deploy": "node scripts/prepare-deploy.mjs",
     "lint": "tsc --noEmit",

@@ -134,6 +134,36 @@ importers:
         specifier: 'catalog:'
         version: 3.5.27
 
+  presentations/test:
+    dependencies:
+      '@slidev/cli':
+        specifier: ^52.11.3
+        version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
+      '@slidev/theme-default':
+        specifier: latest
+        version: 0.25.0
+      '@slidev/theme-seriph':
+        specifier: latest
+        version: 0.25.0
+      vue:
+        specifier: ^3.5.26
+        version: 3.5.27(typescript@5.9.3)
+
+  presentations/test-auto:
+    dependencies:
+      '@slidev/cli':
+        specifier: ^52.11.3
+        version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
+      '@slidev/theme-default':
+        specifier: latest
+        version: 0.25.0
+      '@slidev/theme-seriph':
+        specifier: latest
+        version: 0.25.0
+      vue:
+        specifier: ^3.5.26
+        version: 3.5.27(typescript@5.9.3)
+
 packages:
 
   '@antfu/install-pkg@1.1.0':

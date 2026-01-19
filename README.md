@@ -33,8 +33,7 @@ pnpm install
 Use the native Slidev CLI wizard to create presentations:
 
 ```bash
-cd presentations
-pnpm create slidev my-presentation
+pnpm create:presentation my-presentation
 ```
 
 The wizard guides you through setup and new presentations automatically inherit version management from the workspace catalog.
@@ -42,7 +41,7 @@ The wizard guides you through setup and new presentations automatically inherit 
 ### Run a Presentation
 
 ```bash
-pnpm dev @supaslidev/<name> dev
+pnpm dev <name>
 ```
 
 Or run all presentations simultaneously:
@@ -85,8 +84,8 @@ See [docs/deployment.md](docs/deployment.md) for detailed deployment instruction
 | Command | Description |
 |---------|-------------|
 | `pnpm install` | Install all dependencies |
-| `cd presentations && pnpm create slidev <name>` | Create a new presentation |
-| `pnpm dev @supaslidev/<name> dev` | Start dev server for a presentation |
+| `pnpm create:presentation <name>` | Create a new presentation |
+| `pnpm dev <name>` | Start dev server for a presentation |
 | `pnpm dev:all` | Start dev servers for all presentations in parallel |
 | `pnpm build @supaslidev/<name> build` | Build a single presentation |
 | `pnpm build:all` | Build all presentations |
