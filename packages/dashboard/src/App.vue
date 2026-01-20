@@ -5,14 +5,21 @@ import type { Presentation } from './types'
 import presentationsData from './data/presentations.json'
 import { useServers } from './composables/useServers'
 
-const { startPolling, stopPolling } = useServers()
+const { startPolling, stopPolling, stopAllServers } = useServers()
+
+function handleBeforeUnload() {
+  navigator.sendBeacon('/api/servers/stop-all')
+}
 
 onMounted(() => {
   startPolling()
+  window.addEventListener('beforeunload', handleBeforeUnload)
 })
 
 onUnmounted(() => {
   stopPolling()
+  stopAllServers()
+  window.removeEventListener('beforeunload', handleBeforeUnload)
 })
 
 const presentations = ref<Presentation[]>(presentationsData)

@@ -47,6 +47,20 @@ async function stopServer(presentationId: string): Promise<boolean> {
   }
 }
 
+async function stopAllServers(): Promise<boolean> {
+  try {
+    const response = await fetch('/api/servers', { method: 'DELETE' })
+    const result = await response.json()
+    if (result.success) {
+      servers.value = {}
+      return true
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
 function isRunning(presentationId: string): boolean {
   return presentationId in servers.value
 }
@@ -76,6 +90,7 @@ export function useServers() {
     fetchStatus,
     startServer,
     stopServer,
+    stopAllServers,
     isRunning,
     getPort,
     startPolling,

@@ -56,6 +56,17 @@ function stopServer(presentationId) {
   return { success: true }
 }
 
+function stopAllServers() {
+  const stopped = []
+  for (const [id] of runningServers) {
+    const result = stopServer(id)
+    if (result.success) {
+      stopped.push(id)
+    }
+  }
+  return { success: true, stopped }
+}
+
 function getStatus() {
   const servers = {}
   for (const [id, server] of runningServers) {
@@ -82,6 +93,20 @@ const server = createServer((req, res) => {
   if (path === '/api/servers' && req.method === 'GET') {
     res.writeHead(200)
     res.end(JSON.stringify(getStatus()))
+    return
+  }
+
+  if (path === '/api/servers' && req.method === 'DELETE') {
+    const result = stopAllServers()
+    res.writeHead(200)
+    res.end(JSON.stringify(result))
+    return
+  }
+
+  if (path === '/api/servers/stop-all' && req.method === 'POST') {
+    const result = stopAllServers()
+    res.writeHead(200)
+    res.end(JSON.stringify(result))
     return
   }
 
