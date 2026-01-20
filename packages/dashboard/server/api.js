@@ -2,9 +2,11 @@ import { createServer } from 'http'
 import { spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const projectRoot = join(__dirname, '..', '..', '..')
+const presentationsDir = join(projectRoot, 'presentations')
 
 const runningServers = new Map()
 
@@ -75,6 +77,102 @@ function getStatus() {
   return servers
 }
 
+function createPresentation({ name, title, description, theme }) {
+  const presentationPath = join(presentationsDir, name)
+
+  if (existsSync(presentationPath)) {
+    return { success: false, field: 'name', message: 'A presentation with this name already exists' }
+  }
+
+  const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+  if (!slugRegex.test(name)) {
+    return { success: false, field: 'name', message: 'Name must be a valid slug (lowercase letters, numbers, hyphens only)' }
+  }
+
+  mkdirSync(presentationPath, { recursive: true })
+
+  const displayTitle = title || name
+  const slidesContent = `---
+theme: ${theme}
+background: https://cover.sli.dev
+title: ${displayTitle}
+${description ? `info: |\n  ${description.split('\n').join('\n  ')}` : ''}
+class: text-center
+drawings:
+  persist: false
+transition: slide-left
+mdc: true
+css: unocss
+---
+
+<style>
+@import '@supaslidev/shared/themes/default.css';
+@import '@supaslidev/shared/styles/index.css';
+</style>
+
+# ${displayTitle}
+
+${description || 'Welcome to your new presentation'}
+
+<div class="pt-12">
+  <span @click="$slidev.nav.next" class="px-2 py-1 rounded cursor-pointer" hover="bg-white bg-opacity-10">
+    Press Space to continue <carbon:arrow-right class="inline"/>
+  </span>
+</div>
+
+---
+
+# Slide 2
+
+Start building your presentation!
+
+---
+layout: center
+class: text-center
+---
+
+# Thank You
+
+[Documentation](https://sli.dev)
+`
+
+  const packageJson = {
+    name: `@supaslidev/${name}`,
+    type: 'module',
+    private: true,
+    scripts: {
+      build: 'slidev build',
+      dev: 'slidev --open',
+      export: 'slidev export'
+    },
+    dependencies: {
+      '@slidev/cli': 'catalog:',
+      '@slidev/theme-default': 'catalog:',
+      '@slidev/theme-seriph': 'catalog:',
+      '@supaslidev/shared': 'workspace:*',
+      vue: 'catalog:'
+    },
+    devDependencies: {
+      '@vue/compiler-sfc': 'catalog:'
+    }
+  }
+
+  writeFileSync(join(presentationPath, 'slides.md'), slidesContent)
+  writeFileSync(join(presentationPath, 'package.json'), JSON.stringify(packageJson, null, 2) + '\n')
+
+  return {
+    success: true,
+    presentation: {
+      id: name,
+      title: displayTitle,
+      description: description || '',
+      theme,
+      background: 'https://cover.sli.dev',
+      duration: ''
+    }
+  }
+}
+
 const server = createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
@@ -123,6 +221,28 @@ const server = createServer((req, res) => {
     const result = stopServer(presentationId)
     res.writeHead(result.success ? 200 : 404)
     res.end(JSON.stringify(result))
+    return
+  }
+
+  if (path === '/api/presentations' && req.method === 'POST') {
+    let body = ''
+    req.on('data', chunk => { body += chunk })
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body)
+        const result = createPresentation(data)
+        if (result.success) {
+          res.writeHead(201)
+          res.end(JSON.stringify(result.presentation))
+        } else {
+          res.writeHead(400)
+          res.end(JSON.stringify({ field: result.field, message: result.message }))
+        }
+      } catch {
+        res.writeHead(400)
+        res.end(JSON.stringify({ message: 'Invalid JSON' }))
+      }
+    })
     return
   }
 
