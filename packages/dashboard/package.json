@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node scripts/generate-presentations.mjs && vite",
+    "dev": "node scripts/generate-presentations.mjs && node server/api.js & vite",
+    "dev:api": "node server/api.js",
     "build": "node scripts/generate-presentations.mjs && vite build",
     "preview": "vite preview",
     "generate": "node scripts/generate-presentations.mjs"

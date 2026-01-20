@@ -1,8 +1,19 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import PresentationCard from './components/PresentationCard.vue'
 import type { Presentation } from './types'
 import presentationsData from './data/presentations.json'
+import { useServers } from './composables/useServers'
+
+const { startPolling, stopPolling } = useServers()
+
+onMounted(() => {
+  startPolling()
+})
+
+onUnmounted(() => {
+  stopPolling()
+})
 
 const presentations = ref<Presentation[]>(presentationsData)
 const searchQuery = ref('')
