@@ -1,0 +1,19 @@
+{
+  "name": "@supaslidev/dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/generate-presentations.mjs && vite",
+    "build": "node scripts/generate-presentations.mjs && vite build",
+    "preview": "vite preview",
+    "generate": "node scripts/generate-presentations.mjs"
+  },
+  "dependencies": {
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.7"
+  }
+}

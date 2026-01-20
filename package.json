@@ -5,6 +5,7 @@
   "type": "module",
   "description": "A monorepo for managing multiple Slidev presentations with shared resources",
   "scripts": {
+    "dashboard": "pnpm --filter @supaslidev/dashboard dev",
     "dev": "node scripts/dev-presentation.mjs",
     "dev:all": "pnpm -r --parallel dev",
     "build": "pnpm --filter",
