@@ -1,0 +1,24 @@
+{
+  "name": "<%= projectName %>",
+  "version": "0.1.0",
+  "private": true,
+  "description": "<%= description %>",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev-presentation.mjs",
+    "dev:all": "turbo run dev",
+    "build": "pnpm --filter",
+    "build:all": "turbo run build",
+    "lint": "turbo run lint --continue",
+    "typecheck": "turbo run typecheck --continue"
+  },
+  "devDependencies": {
+    "turbo": "^2.7.5",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
