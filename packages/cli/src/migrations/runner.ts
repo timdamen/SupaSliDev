@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import type { Migration, MigrationContext, MigrationResult } from './types.ts';
 import type { MigrationManifestEntry } from './manifest.ts';
 import { getMigrationOrder, readManifest, validateManifest } from './manifest.ts';
@@ -178,7 +179,7 @@ export async function run(options: RunnerOptions): Promise<RunResult> {
   const context: MigrationContext = {
     workspaceDir,
     state,
-    backupPath: backupId,
+    backupPath: backupId ? join(workspaceDir, '.supaslidev', 'backups', backupId) : null,
   };
 
   const applied: MigrationResult[] = [];

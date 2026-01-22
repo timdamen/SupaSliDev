@@ -32,6 +32,10 @@ export function transformJson<T = unknown>(
 }
 
 export function getJsonValue<T = unknown>(data: unknown, path: string): T | undefined {
+  if (path === '') {
+    return data as T;
+  }
+
   const keys = path.split('.');
   let current: unknown = data;
 

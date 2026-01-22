@@ -14,11 +14,15 @@ export function startBackgroundUpdateCheck(): void {
     return;
   }
 
-  fetchLatestVersion().then((latestVersion) => {
-    if (latestVersion && compareVersions(CLI_VERSION, latestVersion)) {
-      scheduleNotification(latestVersion);
-    }
-  });
+  fetchLatestVersion()
+    .then((latestVersion) => {
+      if (latestVersion && compareVersions(CLI_VERSION, latestVersion)) {
+        scheduleNotification(latestVersion);
+      }
+    })
+    .catch(() => {
+      // Silently ignore update check failures
+    });
 }
 
 function scheduleNotification(latestVersion: string): void {

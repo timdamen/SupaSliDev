@@ -92,7 +92,7 @@ export function formatStatus(status: StatusResult): string {
 
   if (status.updateAvailable && status.latestVersion) {
     lines.push(pc.yellow(`Update available: ${status.cliVersion} → ${status.latestVersion}`));
-    lines.push(pc.dim('  Run `npm install -g @supaslidev/cli` to update'));
+    lines.push(pc.dim('  Run `pnpm add -g @supaslidev/cli` to update'));
   } else if (status.latestVersion) {
     lines.push(pc.green('✓ CLI is up to date'));
   } else {

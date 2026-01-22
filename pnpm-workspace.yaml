@@ -1,6 +1,7 @@
 packages:
   - 'packages/*'
   - 'playground'
+  - 'playground/presentations/*'
 
 catalog:
   '@slidev/cli': ^52.11.3

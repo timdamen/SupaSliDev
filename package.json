@@ -5,7 +5,7 @@
   "description": "A monorepo for managing multiple Slidev presentations with shared resources",
   "type": "module",
   "scripts": {
-    "dashboard": "supaslidev-dashboard",
+    "dashboard": "supaslidev",
     "dev:all": "turbo run dev",
     "build": "pnpm --filter",
     "build:all": "turbo run build",
@@ -13,7 +13,9 @@
     "typecheck": "turbo run typecheck --continue",
     "format": "oxfmt --write",
     "format:check": "oxfmt --check",
-    "test": "turbo run test --continue",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ci": "turbo run test --continue",
     "prepare": "husky",
     "coderabbit:auth": "coderabbit auth login",
     "coderabbit:review": "coderabbit --prompt-only --type uncommitted",
@@ -35,18 +37,20 @@
     "playwright-chromium": "^1.49.0",
     "semantic-release": "^25.0.2",
     "turbo": "^2.7.5",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^4.0.0"
   },
   "lint-staged": {
     "*.{ts,js,mjs,vue}": [
       "oxlint --fix",
-      "oxfmt --write"
+      "oxfmt --write",
+      "vitest related --run"
     ],
     "*.{json,md}": "oxfmt --write"
   },
   "engines": {
     "node": ">=18.0.0",
-    "pnpm": ">=9.0.0"
+    "pnpm": ">=10.0.0"
   },
-  "packageManager": "pnpm@9.15.0"
+  "packageManager": "pnpm@10.28.1"
 }

@@ -1,3 +1,5 @@
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import { dev } from './commands/dev.js';
 import { create } from './commands/create.js';
@@ -48,6 +50,18 @@ export async function run(): Promise<void> {
   await program.parseAsync();
 }
 
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('/cli.js')) {
+function isMainModule(): boolean {
+  if (!process.argv[1]) return false;
+
+  try {
+    const scriptPath = realpathSync(process.argv[1]);
+    const modulePath = realpathSync(fileURLToPath(import.meta.url));
+    return scriptPath === modulePath;
+  } catch {
+    return false;
+  }
+}
+
+if (isMainModule()) {
   run();
 }

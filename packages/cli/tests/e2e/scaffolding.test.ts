@@ -13,13 +13,17 @@ function cleanTestDir(): void {
 }
 
 describe('Scaffolding E2E', () => {
+  let originalCwd: string;
+
   beforeEach(() => {
+    originalCwd = process.cwd();
     cleanTestDir();
     mkdirSync(TEST_DIR, { recursive: true });
     process.chdir(TEST_DIR);
   });
 
   afterEach(() => {
+    process.chdir(originalCwd);
     cleanTestDir();
   });
 
@@ -162,5 +166,33 @@ describe('Scaffolding E2E', () => {
 
     expect(existsSync(projectDir)).toBe(true);
     expect(existsSync(presentationDir)).toBe(true);
+  });
+
+  it('includes @supaslidev/dashboard in devDependencies', async () => {
+    await create({
+      name: 'test-project',
+      presentation: 'test-deck',
+      git: false,
+      install: false,
+    });
+
+    const packageJsonPath = join(TEST_DIR, 'test-project', 'package.json');
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+
+    expect(packageJson.devDependencies['@supaslidev/dashboard']).toBe('^0.1.0');
+  });
+
+  it('includes dashboard script in package.json', async () => {
+    await create({
+      name: 'test-project',
+      presentation: 'test-deck',
+      git: false,
+      install: false,
+    });
+
+    const packageJsonPath = join(TEST_DIR, 'test-project', 'package.json');
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+
+    expect(packageJson.scripts.dashboard).toBe('supaslidev');
   });
 });

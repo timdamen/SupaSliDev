@@ -1,54 +1,10 @@
 import { spawn } from 'node:child_process';
 import { dirname, join } from 'node:path';
-import { existsSync, readdirSync, statSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
+import { findProjectRoot, getPresentations, printAvailablePresentations } from '../utils.js';
 
 export interface ExportOptions {
   output?: string;
-}
-
-function findProjectRoot(): string | null {
-  let dir = process.cwd();
-
-  while (dir !== dirname(dir)) {
-    if (existsSync(join(dir, 'presentations')) && existsSync(join(dir, 'package.json'))) {
-      return dir;
-    }
-    if (existsSync(join(dir, 'pnpm-workspace.yaml'))) {
-      return dir;
-    }
-    dir = dirname(dir);
-  }
-
-  if (existsSync(join(process.cwd(), 'presentations'))) {
-    return process.cwd();
-  }
-
-  return null;
-}
-
-function getPresentations(presentationsDir: string): string[] {
-  if (!existsSync(presentationsDir)) {
-    return [];
-  }
-
-  return readdirSync(presentationsDir)
-    .filter((name) => {
-      const fullPath = join(presentationsDir, name);
-      return statSync(fullPath).isDirectory() && existsSync(join(fullPath, 'slides.md'));
-    })
-    .sort();
-}
-
-function printAvailablePresentations(presentations: string[]): void {
-  console.error('\nAvailable presentations:');
-
-  if (presentations.length === 0) {
-    console.error('  No presentations found');
-  } else {
-    for (const name of presentations) {
-      console.error(`  ${name}`);
-    }
-  }
 }
 
 export async function exportPdf(name: string, options: ExportOptions): Promise<void> {

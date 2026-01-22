@@ -56,13 +56,13 @@ pnpm build @supaslidev/<name> build
 ### Deploy a Presentation
 
 ```bash
-pnpm dashboard deploy <presentation-name>
+pnpm dashboard deploy <name>
 ```
 
 ### Export to PDF
 
 ```bash
-pnpm dashboard export <presentation-name>
+pnpm dashboard export <name>
 ```
 
 See [docs/deployment.md](docs/deployment.md) for detailed deployment instructions.

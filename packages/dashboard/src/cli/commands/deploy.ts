@@ -1,109 +1,17 @@
 import { spawn } from 'node:child_process';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
+import { existsSync, mkdirSync, cpSync, rmSync, writeFileSync } from 'node:fs';
 import {
-  existsSync,
-  readdirSync,
-  statSync,
-  mkdirSync,
-  cpSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+  findProjectRoot,
+  getPresentations,
+  printAvailablePresentations,
+  createVercelConfig,
+  createNetlifyConfig,
+  createDeployPackageJson,
+} from '../utils.js';
 
 export interface DeployOptions {
   output?: string;
-}
-
-function findProjectRoot(): string | null {
-  let dir = process.cwd();
-
-  while (dir !== dirname(dir)) {
-    if (existsSync(join(dir, 'presentations')) && existsSync(join(dir, 'package.json'))) {
-      return dir;
-    }
-    if (existsSync(join(dir, 'pnpm-workspace.yaml'))) {
-      return dir;
-    }
-    dir = dirname(dir);
-  }
-
-  if (existsSync(join(process.cwd(), 'presentations'))) {
-    return process.cwd();
-  }
-
-  return null;
-}
-
-function getPresentations(presentationsDir: string): string[] {
-  if (!existsSync(presentationsDir)) {
-    return [];
-  }
-
-  return readdirSync(presentationsDir)
-    .filter((name) => {
-      const fullPath = join(presentationsDir, name);
-      return statSync(fullPath).isDirectory() && existsSync(join(fullPath, 'slides.md'));
-    })
-    .sort();
-}
-
-function printAvailablePresentations(presentations: string[]): void {
-  console.error('\nAvailable presentations:');
-
-  if (presentations.length === 0) {
-    console.error('  No presentations found');
-  } else {
-    for (const name of presentations) {
-      console.error(`  ${name}`);
-    }
-  }
-}
-
-function createVercelConfig(): string {
-  return (
-    JSON.stringify(
-      {
-        buildCommand: 'npm run build',
-        outputDirectory: 'dist',
-        rewrites: [{ source: '/(.*)', destination: '/index.html' }],
-      },
-      null,
-      2,
-    ) + '\n'
-  );
-}
-
-function createNetlifyConfig(): string {
-  return `[build]
-publish = "dist"
-command = "npm run build"
-
-[build.environment]
-NODE_VERSION = "20"
-
-[[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
-`;
-}
-
-function createPackageJson(name: string): string {
-  return (
-    JSON.stringify(
-      {
-        name: `${name}-deploy`,
-        version: '1.0.0',
-        private: true,
-        scripts: {
-          build: 'echo "Already built - static files ready in dist/"',
-          start: 'npx serve dist',
-        },
-      },
-      null,
-      2,
-    ) + '\n'
-  );
 }
 
 export async function deploy(name: string, options: DeployOptions): Promise<void> {
@@ -166,7 +74,7 @@ export async function deploy(name: string, options: DeployOptions): Promise<void
 
     writeFileSync(join(outputDir, 'vercel.json'), createVercelConfig());
     writeFileSync(join(outputDir, 'netlify.toml'), createNetlifyConfig());
-    writeFileSync(join(outputDir, 'package.json'), createPackageJson(name));
+    writeFileSync(join(outputDir, 'package.json'), createDeployPackageJson(name));
 
     console.log('\n' + '='.repeat(50));
     console.log('  Deployment package ready!');

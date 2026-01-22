@@ -53,6 +53,12 @@ export async function run(): Promise<void> {
   await program.parseAsync();
 }
 
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('/cli.js')) {
-  run();
+import { basename } from 'node:path';
+
+const scriptName = process.argv[1] ? basename(process.argv[1]) : '';
+if (import.meta.url === `file://${process.argv[1]}` || scriptName === 'cli.js') {
+  run().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
 }

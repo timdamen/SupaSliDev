@@ -1,10 +1,10 @@
 [
   {
-    "id": "apollo-migration",
-    "title": "Apollo Client 4 Migration",
-    "description": "Migration guide for upgrading from Apollo Client 3 to Apollo Client 4 with apollo-link-rest support.",
-    "theme": "apple-basic",
-    "background": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1920",
-    "duration": "10min"
+    "id": "my-first-deck",
+    "title": "my-first-deck",
+    "description": "A new Slidev presentation",
+    "theme": "default",
+    "background": "",
+    "duration": ""
   }
 ]

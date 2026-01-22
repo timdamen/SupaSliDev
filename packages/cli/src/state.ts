@@ -42,8 +42,12 @@ export function readState(workspaceDir: string): StateSchema | null {
     return null;
   }
 
-  const content = readFileSync(statePath, 'utf-8');
-  return JSON.parse(content) as StateSchema;
+  try {
+    const content = readFileSync(statePath, 'utf-8');
+    return JSON.parse(content) as StateSchema;
+  } catch {
+    return null;
+  }
 }
 
 export function writeState(workspaceDir: string, state: StateSchema): void {

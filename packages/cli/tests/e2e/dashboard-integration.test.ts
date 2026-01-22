@@ -44,16 +44,23 @@ describe('Dashboard Integration E2E (Playground)', () => {
   });
 
   describe('Presentation Structure', () => {
-    function getPresentations(): string[] {
+    function getAllPresentationDirs(): string[] {
       const presentationsDir = join(PLAYGROUND_DIR, 'presentations');
       return readdirSync(presentationsDir).filter((name) => {
         const fullPath = join(presentationsDir, name);
-        return statSync(fullPath).isDirectory() && existsSync(join(fullPath, 'slides.md'));
+        return statSync(fullPath).isDirectory();
+      });
+    }
+
+    function getPresentationsWithSlides(): string[] {
+      return getAllPresentationDirs().filter((name) => {
+        const fullPath = join(PLAYGROUND_DIR, 'presentations', name);
+        return existsSync(join(fullPath, 'slides.md'));
       });
     }
 
     it('each presentation has slides.md', () => {
-      const presentations = getPresentations();
+      const presentations = getAllPresentationDirs();
 
       for (const name of presentations) {
         const slidesPath = join(PLAYGROUND_DIR, 'presentations', name, 'slides.md');
@@ -62,7 +69,7 @@ describe('Dashboard Integration E2E (Playground)', () => {
     });
 
     it('each presentation has package.json', () => {
-      const presentations = getPresentations();
+      const presentations = getPresentationsWithSlides();
 
       for (const name of presentations) {
         const packagePath = join(PLAYGROUND_DIR, 'presentations', name, 'package.json');
@@ -71,7 +78,7 @@ describe('Dashboard Integration E2E (Playground)', () => {
     });
 
     it('presentation package.json has correct structure', () => {
-      const presentations = getPresentations();
+      const presentations = getPresentationsWithSlides();
 
       for (const name of presentations) {
         const packagePath = join(PLAYGROUND_DIR, 'presentations', name, 'package.json');
@@ -85,7 +92,7 @@ describe('Dashboard Integration E2E (Playground)', () => {
     });
 
     it('slides.md has valid frontmatter', () => {
-      const presentations = getPresentations();
+      const presentations = getPresentationsWithSlides();
 
       for (const name of presentations) {
         const slidesPath = join(PLAYGROUND_DIR, 'presentations', name, 'slides.md');

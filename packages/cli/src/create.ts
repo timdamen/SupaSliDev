@@ -288,6 +288,23 @@ export async function create(options: CreateOptions = {}): Promise<void> {
       presentationName = options.presentation ?? 'my-first-deck';
       initGit = options.git ?? true;
       runInstall = options.install ?? true;
+
+      if (!/^[a-z0-9-]+$/.test(projectName)) {
+        p.log.error('Project name must be lowercase alphanumeric with hyphens only');
+        process.exit(1);
+      }
+      if (projectName.startsWith('-') || projectName.endsWith('-')) {
+        p.log.error('Project name cannot start or end with a hyphen');
+        process.exit(1);
+      }
+      if (!/^[a-z0-9-]+$/.test(presentationName)) {
+        p.log.error('Presentation name must be lowercase alphanumeric with hyphens only');
+        process.exit(1);
+      }
+      if (presentationName.startsWith('-') || presentationName.endsWith('-')) {
+        p.log.error('Presentation name cannot start or end with a hyphen');
+        process.exit(1);
+      }
     } else {
       p.intro(pc.cyan('Create a new supaSliDev workspace'));
 

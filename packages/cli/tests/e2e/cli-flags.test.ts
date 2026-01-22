@@ -20,13 +20,17 @@ function createProgram() {
 }
 
 describe('CLI Flag Parsing E2E', () => {
+  let originalCwd: string;
+
   beforeEach(() => {
+    originalCwd = process.cwd();
     cleanTestDir();
     mkdirSync(TEST_DIR, { recursive: true });
     process.chdir(TEST_DIR);
   });
 
   afterEach(() => {
+    process.chdir(originalCwd);
     cleanTestDir();
   });
 

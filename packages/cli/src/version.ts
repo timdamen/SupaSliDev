@@ -71,7 +71,15 @@ function writeCache(latestVersion: string): void {
 
 export async function fetchLatestVersion(): Promise<string | null> {
   try {
-    const response = await fetch(`https://registry.npmjs.org/${PACKAGE_NAME}`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const response = await fetch(`https://registry.npmjs.org/${PACKAGE_NAME}`, {
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
       return null;
     }

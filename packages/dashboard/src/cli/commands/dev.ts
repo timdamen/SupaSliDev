@@ -1,30 +1,31 @@
 import { spawn, ChildProcess } from 'node:child_process';
 import { dirname, join } from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { findProjectRoot } from '../utils.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const packageRoot = join(__dirname, '..', '..', '..');
-
-function findProjectRoot(): string | null {
-  let dir = process.cwd();
+export function findDashboardPackageRoot(): string {
+  let dir = dirname(fileURLToPath(import.meta.url));
 
   while (dir !== dirname(dir)) {
-    if (existsSync(join(dir, 'presentations')) && existsSync(join(dir, 'package.json'))) {
-      return dir;
-    }
-    if (existsSync(join(dir, 'pnpm-workspace.yaml'))) {
-      return dir;
+    const packageJsonPath = join(dir, 'package.json');
+    if (existsSync(packageJsonPath)) {
+      try {
+        const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+        if (pkg.name === '@supaslidev/dashboard') {
+          return dir;
+        }
+      } catch {
+        // Continue searching
+      }
     }
     dir = dirname(dir);
   }
 
-  if (existsSync(join(process.cwd(), 'presentations'))) {
-    return process.cwd();
-  }
-
-  return null;
+  throw new Error('Could not find @supaslidev/dashboard package root');
 }
+
+const packageRoot = findDashboardPackageRoot();
 
 export async function dev(): Promise<void> {
   const projectRoot = findProjectRoot();

@@ -5,14 +5,16 @@
   "description": "<%= description %>",
   "type": "module",
   "scripts": {
+    "dashboard": "supaslidev",
     "dev": "node scripts/dev-presentation.mjs",
     "dev:all": "turbo run dev",
-    "build": "pnpm --filter",
+    "build": "pnpm --filter @supaslidev/* run build",
     "build:all": "turbo run build",
     "lint": "turbo run lint --continue",
     "typecheck": "turbo run typecheck --continue"
   },
   "devDependencies": {
+    "@supaslidev/dashboard": "^0.1.0",
     "turbo": "^2.7.5",
     "typescript": "^5.3.3"
   },
