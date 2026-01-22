@@ -22,7 +22,7 @@ export async function getUpdateResult(): Promise<UpdateResult> {
 export function formatUpdateResult(result: UpdateResult): string {
   const lines: string[] = [];
 
-  lines.push(pc.bold('supaSliDev Update Check'));
+  lines.push(pc.bold('Supaslidev Update Check'));
   lines.push('─'.repeat(40));
   lines.push('');
 

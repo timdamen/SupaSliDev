@@ -87,25 +87,25 @@ describe('CLI Project Detection', () => {
   it('fails dev command when no project is found', () => {
     const { stderr, exitCode } = runCLI('dev', TEST_DIR);
     expect(exitCode).not.toBe(0);
-    expect(stderr).toContain('Could not find a supaSliDev project');
+    expect(stderr).toContain('Could not find a Supaslidev project');
   });
 
   it('fails create command when no project is found', () => {
     const { stderr, exitCode } = runCLI('create test-deck', TEST_DIR);
     expect(exitCode).not.toBe(0);
-    expect(stderr).toContain('Could not find a supaSliDev project');
+    expect(stderr).toContain('Could not find a Supaslidev project');
   });
 
   it('fails export command when no project is found', () => {
     const { stderr, exitCode } = runCLI('export test-deck', TEST_DIR);
     expect(exitCode).not.toBe(0);
-    expect(stderr).toContain('Could not find a supaSliDev project');
+    expect(stderr).toContain('Could not find a Supaslidev project');
   });
 
   it('fails deploy command when no project is found', () => {
     const { stderr, exitCode } = runCLI('deploy test-deck', TEST_DIR);
     expect(exitCode).not.toBe(0);
-    expect(stderr).toContain('Could not find a supaSliDev project');
+    expect(stderr).toContain('Could not find a Supaslidev project');
   });
 });
 

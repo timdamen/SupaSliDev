@@ -9,3 +9,4 @@ tasks
 .turbo
 coverage
 .vitest
+.tmp

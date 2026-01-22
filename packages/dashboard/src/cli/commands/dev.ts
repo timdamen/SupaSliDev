@@ -31,7 +31,7 @@ export async function dev(): Promise<void> {
   const projectRoot = findProjectRoot();
 
   if (!projectRoot) {
-    console.error('Error: Could not find a supaSliDev project.');
+    console.error('Error: Could not find a Supaslidev project.');
     console.error('Make sure you are in a directory with a "presentations" folder.');
     process.exit(1);
   }

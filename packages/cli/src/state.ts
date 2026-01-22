@@ -80,7 +80,7 @@ export function addMigration(workspaceDir: string, migrationId: string): void {
   const state = readState(workspaceDir);
 
   if (!state) {
-    throw new Error('State file not found. Is this a supaSliDev workspace?');
+    throw new Error('State file not found. Is this a Supaslidev workspace?');
   }
 
   const alreadyApplied = state.appliedMigrations.some((m) => m.id === migrationId);
@@ -110,7 +110,7 @@ export function updateCliVersion(workspaceDir: string): void {
   const state = readState(workspaceDir);
 
   if (!state) {
-    throw new Error('State file not found. Is this a supaSliDev workspace?');
+    throw new Error('State file not found. Is this a Supaslidev workspace?');
   }
 
   state.cliVersion = CLI_VERSION;

@@ -58,7 +58,7 @@ function formatDate(isoDate: string): string {
 export function formatStatus(status: StatusResult): string {
   const lines: string[] = [];
 
-  lines.push(pc.bold('supaSliDev Status'));
+  lines.push(pc.bold('Supaslidev Status'));
   lines.push('─'.repeat(40));
   lines.push('');
 

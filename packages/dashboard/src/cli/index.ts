@@ -10,7 +10,7 @@ const program = new Command();
 
 program
   .name('supaslidev')
-  .description('supaSliDev dashboard and presentation management CLI')
+  .description('Supaslidev dashboard and presentation management CLI')
   .version('0.1.0');
 
 program

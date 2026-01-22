@@ -1,4 +1,4 @@
-# supaSliDev
+# Supaslidev
 
 A monorepo for managing multiple [Slidev](https://sli.dev) presentations with shared resources, components, and themes.
 
@@ -20,8 +20,8 @@ A monorepo for managing multiple [Slidev](https://sli.dev) presentations with sh
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/supaSliDev.git
-cd supaSliDev
+git clone https://github.com/your-username/Supaslidev.git
+cd Supaslidev
 
 # Install dependencies
 pnpm install
@@ -83,7 +83,7 @@ See [docs/deployment.md](docs/deployment.md) for detailed deployment instruction
 ## Project Structure
 
 ```
-supaSliDev/
+Supaslidev/
 ├── packages/
 │   ├── cli/                 # create-supaslidev CLI tool
 │   └── dashboard/           # Dashboard and CLI for managing presentations

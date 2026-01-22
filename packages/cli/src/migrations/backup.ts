@@ -70,7 +70,7 @@ export function createBackup(workspaceDir: string): string {
   const state = readState(workspaceDir);
 
   if (!state) {
-    throw new Error('State file not found. Is this a supaSliDev workspace?');
+    throw new Error('State file not found. Is this a Supaslidev workspace?');
   }
 
   const backupId = generateBackupId();

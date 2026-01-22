@@ -1,8 +1,6 @@
 {
-  "name": "supaslidev",
   "version": "0.1.0",
   "private": true,
-  "description": "A monorepo for managing multiple Slidev presentations with shared resources",
   "type": "module",
   "scripts": {
     "dashboard": "supaslidev",
@@ -50,8 +48,7 @@
     "*.{json,md}": "oxfmt --write"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=10.0.0"
+    "node": ">=18.0.0"
   },
   "packageManager": "pnpm@10.28.1"
 }

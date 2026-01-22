@@ -48,7 +48,7 @@ const filteredPresentations = computed(() => {
     <header class="header">
       <div class="header-content">
         <div class="header-text">
-          <h1>supaSliDev</h1>
+          <h1>Supaslidev</h1>
           <p>Your presentations dashboard</p>
         </div>
         <button class="btn-new" @click="isDialogOpen = true">

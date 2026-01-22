@@ -24,7 +24,7 @@ export async function getMigrateResult(options: MigrateOptions = {}): Promise<Mi
       dryRun: !options.apply,
       migrationsToApply: 0,
       migrationsApplied: 0,
-      output: 'Not a supaSliDev workspace. No .supaslidev/state.json found.',
+      output: 'Not a Supaslidev workspace. No .supaslidev/state.json found.',
     };
   }
 
@@ -88,7 +88,7 @@ export async function getMigrateResult(options: MigrateOptions = {}): Promise<Mi
 export function formatMigrateOutput(result: MigrateResult): string {
   const lines: string[] = [];
 
-  lines.push(pc.bold('supaSliDev Migrate'));
+  lines.push(pc.bold('Supaslidev Migrate'));
   lines.push('─'.repeat(40));
   lines.push('');
 

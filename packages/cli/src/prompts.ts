@@ -34,7 +34,7 @@ function validatePresentationName(value: string): string | undefined {
 }
 
 export async function promptForScaffoldOptions(): Promise<ScaffoldOptions | null> {
-  p.intro(pc.cyan('Create a new supaSliDev workspace'));
+  p.intro(pc.cyan('Create a new Supaslidev workspace'));
 
   const projectName = await p.text({
     message: 'What is your project name?',

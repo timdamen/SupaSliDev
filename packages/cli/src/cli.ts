@@ -9,12 +9,12 @@ const program = new Command();
 
 program
   .name('create-supaslidev')
-  .description('CLI tool for scaffolding supaSliDev presentations')
+  .description('CLI tool for scaffolding Supaslidev presentations')
   .version('0.1.0');
 
 program
   .command('create', { isDefault: true })
-  .description('Create a new supaSliDev workspace')
+  .description('Create a new Supaslidev workspace')
   .option('-n, --name <name>', 'Name of the workspace')
   .option('-p, --presentation <name>', 'Name of the first presentation')
   .option('-t, --template <template>', 'Template to use', 'default')

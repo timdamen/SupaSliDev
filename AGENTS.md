@@ -1,6 +1,6 @@
 # Project Overview
 
-supaSliDev is a monorepo for managing multiple [Slidev](https://sli.dev/) presentations with shared resources, components, and themes using pnpm workspaces.
+Supaslidev is a monorepo for managing multiple [Slidev](https://sli.dev/) presentations with shared resources, components, and themes using pnpm workspaces.
 
 ## Official Documentation
 

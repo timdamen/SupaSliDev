@@ -306,7 +306,7 @@ export async function create(options: CreateOptions = {}): Promise<void> {
         process.exit(1);
       }
     } else {
-      p.intro(pc.cyan('Create a new supaSliDev workspace'));
+      p.intro(pc.cyan('Create a new Supaslidev workspace'));
 
       const projectNameResult = await p.text({
         message: 'What is your project name?',

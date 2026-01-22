@@ -1,7 +1,7 @@
 {
   "name": "@supaslidev/dashboard",
   "version": "0.1.0",
-  "description": "Dashboard for managing supaSliDev presentations",
+  "description": "Dashboard for managing Supaslidev presentations",
   "bin": {
     "supaslidev": "./dist/cli/index.js"
   },

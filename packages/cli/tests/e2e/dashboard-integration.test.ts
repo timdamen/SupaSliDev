@@ -15,7 +15,7 @@ describe('Dashboard Integration E2E (Playground)', () => {
   });
 
   describe('Playground Structure', () => {
-    it('has valid supaSliDev workspace structure', () => {
+    it('has valid Supaslidev workspace structure', () => {
       expect(existsSync(join(PLAYGROUND_DIR, 'package.json'))).toBe(true);
       expect(existsSync(join(PLAYGROUND_DIR, 'pnpm-workspace.yaml'))).toBe(true);
       expect(existsSync(join(PLAYGROUND_DIR, '.supaslidev', 'state.json'))).toBe(true);
