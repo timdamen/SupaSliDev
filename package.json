@@ -2,8 +2,8 @@
   "name": "supaslidev",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "description": "A monorepo for managing multiple Slidev presentations with shared resources",
+  "type": "module",
   "scripts": {
     "dashboard": "supaslidev-dashboard",
     "dev": "node scripts/dev-presentation.mjs",
@@ -15,19 +15,27 @@
     "prepare:deploy": "node scripts/prepare-deploy.mjs",
     "lint": "turbo run lint --continue",
     "typecheck": "turbo run typecheck --continue",
-    "format": "turbo run format",
-    "test": "echo 'No tests configured yet'"
+    "format": "oxfmt --write",
+    "format:check": "oxfmt --check",
+    "test": "echo 'No tests configured yet'",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@supaslidev/dashboard": "workspace:*",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "oxfmt": "^0.26.0",
     "oxlint": "^1.41.0",
     "playwright-chromium": "^1.49.0",
     "turbo": "^2.7.5",
     "typescript": "^5.3.3"
   },
-  "packageManager": "pnpm@9.15.0",
+  "lint-staged": {
+    "*.{js,mjs,ts,tsx,vue,json,md}": "oxfmt --write"
+  },
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=9.0.0"
-  }
+  },
+  "packageManager": "pnpm@9.15.0"
 }

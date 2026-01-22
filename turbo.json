@@ -11,10 +11,6 @@
       "inputs": ["**/*.ts", "**/*.tsx", "**/*.vue", "**/*.js", "**/*.mjs"],
       "outputs": []
     },
-    "format": {
-      "inputs": ["**/*.ts", "**/*.tsx", "**/*.vue", "**/*.js", "**/*.mjs", "**/*.json", "**/*.md"],
-      "outputs": []
-    },
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["src/**", "**/*.ts", "**/*.vue", "package.json"],
