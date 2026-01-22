@@ -2,6 +2,8 @@ import { Command } from 'commander';
 import { create, type CreateOptions } from './create.js';
 import { status } from './commands/status.js';
 import { migrate, type MigrateOptions } from './commands/migrate.js';
+import { update } from './commands/update.js';
+import { startBackgroundUpdateCheck } from './background-update.js';
 
 const program = new Command();
 
@@ -39,6 +41,14 @@ program
     await migrate(options);
   });
 
+program
+  .command('update')
+  .description('Check for CLI updates')
+  .action(async () => {
+    await update();
+  });
+
 export async function run(): Promise<void> {
+  startBackgroundUpdateCheck();
   await program.parseAsync();
 }

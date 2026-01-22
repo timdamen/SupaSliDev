@@ -3,15 +3,7 @@ import { readState, findWorkspaceRoot } from '../state.js';
 import { readManifest } from '../migrations/manifest.js';
 import { hasMigration } from '../state.js';
 import { join } from 'node:path';
-
-const CLI_VERSION = '0.1.0';
-const PACKAGE_NAME = '@supaslidev/cli';
-
-interface NpmVersionResponse {
-  'dist-tags': {
-    latest: string;
-  };
-}
+import { CLI_VERSION, fetchLatestVersion, compareVersions } from '../version.js';
 
 export interface StatusResult {
   cliVersion: string;
@@ -21,38 +13,6 @@ export interface StatusResult {
   pendingMigrations: number;
   latestVersion: string | null;
   updateAvailable: boolean;
-}
-
-async function fetchLatestVersion(): Promise<string | null> {
-  try {
-    const response = await fetch(`https://registry.npmjs.org/${PACKAGE_NAME}`);
-    if (!response.ok) {
-      return null;
-    }
-    const data = (await response.json()) as NpmVersionResponse;
-    return data['dist-tags'].latest;
-  } catch {
-    return null;
-  }
-}
-
-function compareVersions(current: string, latest: string): boolean {
-  const parseVersion = (v: string): number[] =>
-    v
-      .replace(/^v/, '')
-      .split('.')
-      .map((n) => parseInt(n, 10) || 0);
-
-  const currentParts = parseVersion(current);
-  const latestParts = parseVersion(latest);
-
-  for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
-    const curr = currentParts[i] ?? 0;
-    const lat = latestParts[i] ?? 0;
-    if (lat > curr) return true;
-    if (lat < curr) return false;
-  }
-  return false;
 }
 
 function getPendingMigrationsCount(workspaceDir: string): number {
