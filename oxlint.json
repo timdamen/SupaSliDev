@@ -6,7 +6,8 @@
     "dist",
     "**/dist",
     ".turbo",
-    "**/.turbo"
+    "**/.turbo",
+    "presentations"
   ],
   "plugins": ["import"],
   "rules": {

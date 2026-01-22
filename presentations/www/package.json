@@ -1,13 +1,11 @@
 {
   "name": "@supaslidev/www",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "slidev build",
     "dev": "slidev --open",
-    "export": "slidev export",
-    "typecheck": "vue-tsc --noEmit",
-    "lint": "oxlint --config ../../oxlint.json ."
+    "export": "slidev export"
   },
   "dependencies": {
     "@slidev/cli": "^52.11.3",
@@ -15,8 +13,5 @@
     "@slidev/theme-seriph": "latest",
     "vue": "^3.5.26"
   },
-  "devDependencies": {
-    "typescript": "catalog:",
-    "vue-tsc": "catalog:"
-  }
+  "devDependencies": {}
 }

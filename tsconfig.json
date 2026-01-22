@@ -16,11 +16,6 @@
       "@supaslidev/shared/*": ["./packages/shared/*"]
     }
   },
-  "include": [
-    "packages/**/*.ts",
-    "packages/**/*.vue",
-    "presentations/**/*.ts",
-    "presentations/**/*.vue"
-  ],
+  "include": ["packages/**/*.ts", "packages/**/*.vue"],
   "exclude": ["node_modules", "**/dist"]
 }
