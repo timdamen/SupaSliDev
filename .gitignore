@@ -7,3 +7,5 @@ deploy
 *.ralph-tui
 tasks
 .turbo
+coverage
+.vitest
