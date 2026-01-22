@@ -8,3 +8,4 @@ export * from './migrations/runner.ts';
 export * from './transformers/json.ts';
 export * from './transformers/yaml.ts';
 export * from './transformers/typescript.ts';
+export * from './commands/status.ts';

@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { create, type CreateOptions } from './create.js';
+import { status } from './commands/status.js';
 
 const program = new Command();
 
@@ -20,6 +21,13 @@ program
   .option('--no-install', 'Skip pnpm install')
   .action(async (options: CreateOptions) => {
     await create(options);
+  });
+
+program
+  .command('status')
+  .description('Show project status and check for updates')
+  .action(async () => {
+    await status();
   });
 
 export async function run(): Promise<void> {
