@@ -29,18 +29,16 @@ pnpm install
 
 ### Create a New Presentation
 
-Use the native Slidev CLI wizard to create presentations:
+Use the dashboard CLI to create presentations:
 
 ```bash
-pnpm create:presentation my-presentation
+pnpm dashboard create my-presentation
 ```
-
-The wizard guides you through setup and new presentations automatically inherit version management from the workspace catalog.
 
 ### Run a Presentation
 
 ```bash
-pnpm dev <name>
+pnpm dashboard dev <name>
 ```
 
 Or run all presentations simultaneously:
@@ -55,26 +53,16 @@ pnpm dev:all
 pnpm build @supaslidev/<name> build
 ```
 
-Output is placed in `presentations/<name>/dist/`.
-
 ### Deploy a Presentation
 
 ```bash
-pnpm prepare:deploy <presentation-name>
+pnpm dashboard deploy <presentation-name>
 ```
 
-This creates a standalone deployment package in `deploy/<presentation-name>/` with:
-
-- Built static files
-- `vercel.json` for Vercel
-- `netlify.toml` for Netlify
-
-Then deploy with your preferred platform:
+### Export to PDF
 
 ```bash
-cd deploy/<presentation-name>
-vercel              # Deploy to Vercel
-netlify deploy      # Deploy to Netlify
+pnpm dashboard export <presentation-name>
 ```
 
 See [docs/deployment.md](docs/deployment.md) for detailed deployment instructions.
@@ -84,24 +72,22 @@ See [docs/deployment.md](docs/deployment.md) for detailed deployment instruction
 | Command                               | Description                                         |
 | ------------------------------------- | --------------------------------------------------- |
 | `pnpm install`                        | Install all dependencies                            |
-| `pnpm create:presentation <name>`     | Create a new presentation                           |
-| `pnpm dev <name>`                     | Start dev server for a presentation                 |
+| `pnpm dashboard create <name>`        | Create a new presentation                           |
+| `pnpm dashboard dev <name>`           | Start dev server for a presentation                 |
 | `pnpm dev:all`                        | Start dev servers for all presentations in parallel |
 | `pnpm build @supaslidev/<name> build` | Build a single presentation                         |
 | `pnpm build:all`                      | Build all presentations                             |
-| `pnpm export:pdf <name>`              | Export presentation to PDF                          |
-| `pnpm prepare:deploy <name>`          | Prepare presentation for deployment                 |
+| `pnpm dashboard export <name>`        | Export presentation to PDF                          |
+| `pnpm dashboard deploy <name>`        | Deploy presentation                                 |
 
 ## Project Structure
 
 ```
 supaSliDev/
-├── presentations/           # Individual presentations
-│   └── <name>/
-│       ├── slides.md        # Presentation content
-│       ├── components/      # Presentation-specific components
-│       └── package.json
-├── scripts/                 # Build and deployment scripts
+├── packages/
+│   ├── cli/                 # create-supaslidev CLI tool
+│   └── dashboard/           # Dashboard and CLI for managing presentations
+├── playground/              # Local development playground
 ├── dist/                    # Built presentations
 ├── package.json
 ├── pnpm-workspace.yaml
