@@ -13,5 +13,6 @@ export default defineConfig({
     globalSetup: './setup/global-setup.ts',
     globalTeardown: './setup/global-teardown.ts',
     include: ['**/*.e2e.test.ts'],
+    fileParallelism: false,
   },
 });

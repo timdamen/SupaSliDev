@@ -1,5 +1,5 @@
 import { spawn, ChildProcess, execSync } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -134,4 +134,16 @@ export function cleanupProject(name: string): void {
   if (existsSync(projectPath)) {
     rmSync(projectPath, { recursive: true, force: true });
   }
+}
+
+export function installDependencies(projectPath: string): void {
+  const packageJsonPath = join(projectPath, 'package.json');
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+  delete packageJson.devDependencies['@supaslidev/dashboard'];
+  writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
+
+  execSync('pnpm install', {
+    cwd: projectPath,
+    stdio: 'inherit',
+  });
 }
