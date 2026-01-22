@@ -2,6 +2,7 @@ import { spawn, ChildProcess, execSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { chromium, firefox, webkit, Browser, BrowserType } from 'playwright';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '../../..');
@@ -146,4 +147,25 @@ export function installDependencies(projectPath: string): void {
     cwd: projectPath,
     stdio: 'inherit',
   });
+}
+
+export type BrowserName = 'chromium' | 'firefox' | 'webkit';
+
+export function getBrowserType(): BrowserType {
+  const browserName = (process.env.BROWSER || 'chromium').toLowerCase() as BrowserName;
+
+  switch (browserName) {
+    case 'firefox':
+      return firefox;
+    case 'webkit':
+      return webkit;
+    case 'chromium':
+    default:
+      return chromium;
+  }
+}
+
+export async function launchBrowser(): Promise<Browser> {
+  const browserType = getBrowserType();
+  return browserType.launch();
 }

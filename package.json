@@ -16,6 +16,7 @@
     "test:browser": "vitest run --config test/vitest.config.ts",
     "test:browser:watch": "vitest --config test/vitest.config.ts",
     "test:ci": "turbo run test --continue",
+    "test:e2e": "vitest run --config test/e2e/vitest.config.ts",
     "prepare": "husky",
     "coderabbit:auth": "coderabbit auth login",
     "coderabbit:review": "coderabbit --prompt-only --type uncommitted",
@@ -39,6 +40,7 @@
     "playwright": "^1.49.0",
     "playwright-chromium": "^1.49.0",
     "semantic-release": "^25.0.2",
+    "tsx": "^4.19.0",
     "turbo": "^2.7.5",
     "typescript": "^5.3.3",
     "vitest": "^4.0.0"
