@@ -1,8 +1,10 @@
 import { createServer } from 'http';
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { existsSync } from 'fs';
+
+const IS_WINDOWS = process.platform === 'win32';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -46,7 +48,8 @@ function startServer(presentationId) {
   const child = spawn(slidevBin, ['--port', String(port), '--open', 'false'], {
     cwd: presentationPath,
     stdio: ['pipe', 'pipe', 'pipe'],
-    detached: true,
+    detached: !IS_WINDOWS,
+    shell: IS_WINDOWS,
   });
 
   child.unref();
@@ -76,7 +79,15 @@ function stopServer(presentationId) {
     return { success: false, error: 'Server not running' };
   }
 
-  server.process.kill('SIGTERM');
+  if (IS_WINDOWS) {
+    try {
+      execSync(`taskkill /pid ${server.process.pid} /T /F`, { stdio: 'ignore' });
+    } catch {
+      // Process may have already exited
+    }
+  } else {
+    server.process.kill('SIGTERM');
+  }
   runningServers.delete(presentationId);
   return { success: true };
 }
