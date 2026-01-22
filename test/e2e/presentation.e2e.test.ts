@@ -181,6 +181,10 @@ describe('Presentation Viewing E2E', () => {
     });
 
     it('first slide shows presentation title', async () => {
+      await presentationPage.waitForFunction(
+        () => document.body.textContent?.includes('test-deck'),
+        { timeout: 15000 },
+      );
       const bodyText = await presentationPage.locator('body').textContent();
       expect(bodyText).toContain('test-deck');
     });
