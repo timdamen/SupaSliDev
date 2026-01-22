@@ -13,18 +13,32 @@ Fetch the llms.txt file for up-to-date Slidev syntax, features, and best practic
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm install` | Install all dependencies |
-| `pnpm create:presentation <name>` | Create a new presentation using Slidev wizard |
-| `pnpm dev <name>` | Start dev server for a presentation |
-| `pnpm dev:all` | Start dev servers for all presentations in parallel |
-| `pnpm build @supaslidev/<name> build` | Build a single presentation |
-| `pnpm build:all` | Build all presentations |
-| `pnpm export:pdf <name>` | Export presentation to PDF |
-| `pnpm prepare:deploy <name>` | Prepare presentation for deployment |
-| `pnpm lint` | Run TypeScript type checking |
-| `pnpm typecheck` | Run TypeScript type checking |
+| Command                               | Description                                         |
+| ------------------------------------- | --------------------------------------------------- |
+| `pnpm install`                        | Install all dependencies                            |
+| `pnpm create:presentation <name>`     | Create a new presentation using Slidev wizard       |
+| `pnpm dev <name>`                     | Start dev server for a presentation                 |
+| `pnpm dev:all`                        | Start dev servers for all presentations in parallel |
+| `pnpm build @supaslidev/<name> build` | Build a single presentation                         |
+| `pnpm build:all`                      | Build all presentations                             |
+| `pnpm export:pdf <name>`              | Export presentation to PDF                          |
+| `pnpm prepare:deploy <name>`          | Prepare presentation for deployment                 |
+| `pnpm lint`                           | Run TypeScript type checking                        |
+| `pnpm typecheck`                      | Run TypeScript type checking                        |
+| `pnpm coderabbit:auth`                | Authenticate with CodeRabbit CLI                    |
+| `pnpm coderabbit:review`              | AI code review for uncommitted changes              |
+| `pnpm coderabbit:review:committed`    | AI code review for committed changes                |
+| `pnpm coderabbit:review:full`         | Full AI code review                                 |
+
+## CodeRabbit Setup
+
+CodeRabbit provides AI-powered code reviews. Install the CLI globally:
+
+```bash
+npm i -g coderabbit
+```
+
+Then authenticate with `pnpm coderabbit:auth` before using the review commands.
 
 ## Workflow Guidelines
 

@@ -18,7 +18,11 @@
     "format": "oxfmt --write",
     "format:check": "oxfmt --check",
     "test": "echo 'No tests configured yet'",
-    "prepare": "husky"
+    "prepare": "husky",
+    "coderabbit:auth": "coderabbit auth login",
+    "coderabbit:review": "coderabbit --prompt-only --type uncommitted",
+    "coderabbit:review:committed": "coderabbit --prompt-only --type committed",
+    "coderabbit:review:full": "coderabbit --prompt-only"
   },
   "devDependencies": {
     "@supaslidev/dashboard": "workspace:*",
