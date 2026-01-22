@@ -52,3 +52,7 @@ export async function run(): Promise<void> {
   startBackgroundUpdateCheck();
   await program.parseAsync();
 }
+
+if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('/cli.js')) {
+  run();
+}

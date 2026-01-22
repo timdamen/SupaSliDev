@@ -3,11 +3,23 @@
   "version": "0.1.0",
   "description": "CLI tool for scaffolding supaSliDev presentations",
   "bin": {
-    "create-supaslidev": "./bin/create-supaslidev.mjs"
+    "create-supaslidev": "./dist/cli.js"
   },
+  "files": [
+    "dist",
+    "templates"
+  ],
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
+    "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --config ../../oxlint.json ."
   },
@@ -22,6 +34,7 @@
   "devDependencies": {
     "@types/ejs": "^3.1.5",
     "@types/node": "^22.10.0",
+    "tsdown": "^0.12.5",
     "tsx": "^4.19.0",
     "typescript": "^5.3.3"
   }
