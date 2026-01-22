@@ -2,23 +2,39 @@
   "name": "@supaslidev/dashboard",
   "version": "0.1.0",
   "bin": {
-    "supaslidev-dashboard": "./bin/cli.mjs"
+    "supaslidev": "./dist/cli/index.js"
   },
+  "files": [
+    "dist",
+    "scripts",
+    "server"
+  ],
   "type": "module",
+  "main": "./dist/cli/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/cli/index.js"
+    }
+  },
   "scripts": {
-    "dev": "node bin/cli.mjs",
+    "dev": "tsx src/cli/index.ts",
     "dev:api": "node server/api.js",
     "build": "node scripts/generate-presentations.mjs && vite build",
+    "build:cli": "tsdown",
     "preview": "vite preview",
     "generate": "node scripts/generate-presentations.mjs",
-    "typecheck": "vue-tsc --noEmit",
+    "typecheck": "vue-tsc --noEmit && tsc --noEmit -p tsconfig.cli.json",
     "lint": "oxlint --config ../../oxlint.json ."
   },
   "dependencies": {
+    "commander": "^13.1.0",
     "vue": "^3.5.0"
   },
   "devDependencies": {
+    "@types/node": "^22.10.0",
     "@vitejs/plugin-vue": "^5.2.1",
+    "tsdown": "^0.12.5",
+    "tsx": "^4.19.0",
     "typescript": "^5.3.3",
     "vite": "^6.0.7",
     "vue-tsc": "^2.0.0"
