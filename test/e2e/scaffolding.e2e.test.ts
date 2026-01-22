@@ -9,14 +9,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '../..');
 const CLI_PATH = join(ROOT_DIR, 'packages/cli/src/cli.ts');
 
-function getTsxPath(): string {
-  return join(ROOT_DIR, 'node_modules/.bin/tsx');
-}
-
 function runCliCreate(args: string, cwd: string): { output: string; exitCode: number } {
-  const tsxPath = getTsxPath();
   try {
-    const output = execSync(`"${tsxPath}" "${CLI_PATH}" create ${args} 2>&1`, {
+    const output = execSync(`npx tsx "${CLI_PATH}" create ${args} 2>&1`, {
       cwd,
       encoding: 'utf-8',
     });
@@ -236,7 +231,7 @@ describe('CLI Scaffolding E2E', () => {
       cleanupProject(INSTALL_TEST_PROJECT);
     });
 
-    it('pnpm install runs without error when --install flag is used', () => {
+    it('pnpm install succeeds when run manually after scaffolding with --no-install', () => {
       cleanupProject(INSTALL_TEST_PROJECT);
 
       const projectPath = join(getTmpDir(), INSTALL_TEST_PROJECT);
@@ -251,6 +246,7 @@ describe('CLI Scaffolding E2E', () => {
 
       const packageJsonPath = join(projectPath, 'package.json');
       const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+      // Remove unpublished local package to allow pnpm install to succeed in test environment
       delete packageJson.devDependencies['@supaslidev/dashboard'];
       writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
 

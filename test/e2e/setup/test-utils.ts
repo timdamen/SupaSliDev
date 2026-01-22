@@ -28,16 +28,27 @@ export function scaffoldProject(name: string): string {
 
   mkdirSync(TMP_DIR, { recursive: true });
 
-  const tsxPath = join(ROOT_DIR, 'node_modules/.bin/tsx');
+  try {
+    execSync(
+      `npx tsx ${CLI_PATH} create --name ${name} --presentation test-deck --no-git --no-install`,
+      {
+        cwd: TMP_DIR,
+        stdio: 'pipe',
+        shell: '/bin/sh',
+      },
+    );
+  } catch (error) {
+    const execError = error as { stdout?: string; stderr?: string; message?: string };
+    throw new Error(
+      `Failed to scaffold project: ${execError.message}\nstdout: ${execError.stdout}\nstderr: ${execError.stderr}`,
+    );
+  }
 
-  execSync(
-    `"${tsxPath}" "${CLI_PATH}" create --name "${name}" --presentation "test-deck" --no-git --no-install`,
-    {
-      cwd: TMP_DIR,
-      stdio: 'pipe',
-      encoding: 'utf-8',
-    },
-  );
+  if (!existsSync(join(projectPath, 'package.json'))) {
+    throw new Error(
+      `Scaffolding did not create expected files at ${projectPath}. Directory exists: ${existsSync(projectPath)}`,
+    );
+  }
 
   return projectPath;
 }
@@ -49,47 +60,57 @@ export interface DashboardInfo {
 
 export async function startDashboard(projectPath: string): Promise<DashboardInfo> {
   const dashboardCliPath = join(ROOT_DIR, 'packages/dashboard/src/cli/index.ts');
-  const tsxPath = join(ROOT_DIR, 'node_modules/.bin/tsx');
 
   return new Promise((resolve, reject) => {
-    const proc = spawn(tsxPath, [dashboardCliPath, 'dev'], {
+    const proc = spawn('npx', ['tsx', dashboardCliPath, 'dev'], {
       cwd: projectPath,
       stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env },
+      shell: true,
     });
 
     dashboardProcess = proc;
 
     let output = '';
-    const urlPattern = /Local:\s+(https?:\/\/[^\s]+)/;
+    let resolved = false;
+    const stripAnsi = (str: string) => str.replace(/\x1b\[[0-9;]*m/g, '');
+    const urlPattern = /Local:\s+(https?:\/\/localhost:\d+\/?)/;
 
     const timeout = setTimeout(() => {
-      proc.kill('SIGTERM');
-      reject(new Error(`Dashboard startup timed out. Output: ${output}`));
+      if (!resolved) {
+        proc.kill('SIGTERM');
+        reject(new Error(`Dashboard startup timed out. Output: ${stripAnsi(output)}`));
+      }
     }, 60000);
 
-    proc.stdout?.on('data', (data: Buffer) => {
+    const handleOutput = (data: Buffer) => {
+      if (resolved) return;
       output += data.toString();
-      const match = output.match(urlPattern);
+      const cleanOutput = stripAnsi(output);
+      const match = cleanOutput.match(urlPattern);
       if (match) {
+        resolved = true;
         clearTimeout(timeout);
-        resolve({ url: match[1], process: proc });
+        resolve({ url: match[1].replace(/\/$/, ''), process: proc });
+      }
+    };
+
+    proc.stdout?.on('data', handleOutput);
+    proc.stderr?.on('data', handleOutput);
+
+    proc.on('error', (err) => {
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timeout);
+        reject(err);
       }
     });
 
-    proc.stderr?.on('data', (data: Buffer) => {
-      output += data.toString();
-    });
-
-    proc.on('error', (err) => {
-      clearTimeout(timeout);
-      reject(err);
-    });
-
     proc.on('close', (code) => {
-      clearTimeout(timeout);
-      if (code !== 0) {
-        reject(new Error(`Dashboard exited with code ${code}. Output: ${output}`));
+      if (!resolved && code !== 0) {
+        resolved = true;
+        clearTimeout(timeout);
+        reject(new Error(`Dashboard exited with code ${code}. Output: ${stripAnsi(output)}`));
       }
     });
   });
@@ -140,7 +161,9 @@ export function cleanupProject(name: string): void {
 export function installDependencies(projectPath: string): void {
   const packageJsonPath = join(projectPath, 'package.json');
   const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-  delete packageJson.devDependencies['@supaslidev/dashboard'];
+  if (packageJson.devDependencies?.['@supaslidev/dashboard']) {
+    delete packageJson.devDependencies['@supaslidev/dashboard'];
+  }
   writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
 
   execSync('pnpm install', {
@@ -151,18 +174,23 @@ export function installDependencies(projectPath: string): void {
 
 export type BrowserName = 'chromium' | 'firefox' | 'webkit';
 
-export function getBrowserType(): BrowserType {
-  const browserName = (process.env.BROWSER || 'chromium').toLowerCase() as BrowserName;
+const browsers: Record<BrowserName, BrowserType> = { chromium, firefox, webkit };
 
-  switch (browserName) {
-    case 'firefox':
-      return firefox;
-    case 'webkit':
-      return webkit;
-    case 'chromium':
-    default:
-      return chromium;
+export function getBrowserType(): BrowserType {
+  const browserName = (
+    process.env.PLAYWRIGHT_BROWSER ||
+    process.env.BROWSER ||
+    'chromium'
+  ).toLowerCase();
+  const browserType = browsers[browserName as BrowserName];
+
+  if (!browserType) {
+    throw new Error(
+      `Unknown browser: "${browserName}". Allowed values: ${Object.keys(browsers).join(', ')}`,
+    );
   }
+
+  return browserType;
 }
 
 export async function launchBrowser(): Promise<Browser> {

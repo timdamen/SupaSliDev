@@ -112,7 +112,7 @@ describe('Dashboard Display E2E', () => {
       expect(response?.ok()).toBe(true);
 
       const pageTitle = await page.locator('h1').textContent();
-      expect(pageTitle).toBe('supaSliDev');
+      expect(pageTitle).toBe('Supaslidev');
 
       const subtitle = await page.locator('.header-text p').textContent();
       expect(subtitle).toBe('Your presentations dashboard');

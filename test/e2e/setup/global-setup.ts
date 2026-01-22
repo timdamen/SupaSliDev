@@ -5,9 +5,10 @@ import {
   getBaseProjectPath,
   cleanupTmpDir,
   installDependencies,
+  stopDashboard,
 } from './test-utils.js';
 
-export default async function globalSetup(): Promise<void> {
+export default async function globalSetup(): Promise<() => Promise<void>> {
   cleanupTmpDir();
 
   const baseProjectPath = getBaseProjectPath();
@@ -24,4 +25,15 @@ export default async function globalSetup(): Promise<void> {
       console.log('Dependencies installed.');
     }
   }
+
+  return async () => {
+    stopDashboard();
+    const testsFailed = process.env.VITEST_TESTS_FAILED === 'true';
+    if (!testsFailed) {
+      console.log('All tests passed. Cleaning up .tmp directory...');
+      cleanupTmpDir();
+    } else {
+      console.log('Tests failed. Preserving .tmp directory for debugging.');
+    }
+  };
 }

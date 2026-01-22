@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "id": "second-deck",
+    "title": "second-deck",
+    "description": "",
+    "theme": "default",
+    "background": "",
+    "duration": ""
+  },
+  {
+    "id": "test-deck",
+    "title": "test-deck",
+    "description": "A new Slidev presentation",
+    "theme": "default",
+    "background": "",
+    "duration": ""
+  }
+]

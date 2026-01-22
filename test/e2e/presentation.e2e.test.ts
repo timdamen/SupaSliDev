@@ -31,22 +31,7 @@ async function takeScreenshot(page: Page, name: string): Promise<Buffer> {
 }
 
 async function waitForPresentationServer(port: number, timeout = 30000): Promise<void> {
-  const url = `http://localhost:${port}`;
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < timeout) {
-    try {
-      const response = await fetch(url);
-      if (response.ok) {
-        return;
-      }
-    } catch {
-      // Server not ready yet
-    }
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }
-
-  throw new Error(`Presentation server at ${url} did not respond within ${timeout}ms`);
+  return waitForServer(`http://localhost:${port}`, { timeout });
 }
 
 function getSlideNumberFromUrl(url: string): number {
@@ -86,7 +71,10 @@ describe('Presentation Viewing E2E', () => {
 
     browser = await launchBrowser();
     const context = await browser.newContext();
-    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    const browserName = (process.env.BROWSER || 'chromium').toLowerCase();
+    if (browserName === 'chromium') {
+      await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    }
     dashboardPage = await context.newPage();
 
     const dashboardInfo = await startDashboard(projectPath);

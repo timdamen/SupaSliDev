@@ -51,14 +51,9 @@ jobs:
 
       - run: pnpm install
 
-      - name: Install Playwright browser
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      - name: Install Playwright browser and dependencies
         shell: bash
         run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
-
-      - name: Install Playwright dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest' && steps.playwright-cache.outputs.cache-hit == 'true'
-        run: pnpm exec playwright install-deps ${{ matrix.browser }}
 
       - name: Run E2E tests
         run: pnpm test:e2e
