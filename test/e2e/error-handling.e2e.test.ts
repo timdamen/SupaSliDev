@@ -233,28 +233,28 @@ describe('Error Handling E2E', () => {
       const result = runDashboardCli('dev', ISOLATED_DIR);
 
       expect(result.exitCode).not.toBe(0);
-      expect(result.stderr.toLowerCase()).toContain('could not find a supaslidev project');
+      expect(result.stderr).toContain('Could not find a Supaslidev project');
     });
 
     it('create command fails when no project is found', () => {
       const result = runDashboardCli('create my-deck', ISOLATED_DIR);
 
       expect(result.exitCode).not.toBe(0);
-      expect(result.stderr.toLowerCase()).toContain('could not find a supaslidev project');
+      expect(result.stderr).toContain('Could not find a Supaslidev project');
     });
 
     it('export command fails when no project is found', () => {
       const result = runDashboardCli('export my-deck', ISOLATED_DIR);
 
       expect(result.exitCode).not.toBe(0);
-      expect(result.stderr.toLowerCase()).toContain('could not find a supaslidev project');
+      expect(result.stderr).toContain('Could not find a Supaslidev project');
     });
 
     it('deploy command fails when no project is found', () => {
       const result = runDashboardCli('deploy my-deck', ISOLATED_DIR);
 
       expect(result.exitCode).not.toBe(0);
-      expect(result.stderr.toLowerCase()).toContain('could not find a supaslidev project');
+      expect(result.stderr).toContain('Could not find a Supaslidev project');
     });
   });
 });
