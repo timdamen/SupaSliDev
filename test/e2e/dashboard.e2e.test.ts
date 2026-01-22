@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { chromium, Browser, Page } from 'playwright';
+import { Browser, Page } from 'playwright';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, cpSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,6 +10,7 @@ import {
   getBaseProjectPath,
   getTmpDir,
   cleanupProject,
+  launchBrowser,
 } from './setup/test-utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -89,7 +90,7 @@ describe('Dashboard Display E2E', () => {
 
     cpSync(baseProjectPath, projectPath, { recursive: true });
 
-    browser = await chromium.launch();
+    browser = await launchBrowser();
     page = await browser.newPage();
 
     const dashboardInfo = await startDashboard(projectPath);
