@@ -5,7 +5,6 @@ A monorepo for managing multiple [Slidev](https://sli.dev) presentations with sh
 ## Features
 
 - **Monorepo Structure**: Manage multiple presentations in a single repository using pnpm workspaces
-- **Shared Resources**: Reusable components, styles, and themes across all presentations
 - **Native Slidev CLI**: Use the official Slidev wizard with automatic version management via pnpm catalog
 - **Independent Development**: Run and build presentations individually
 - **Consistent Tooling**: Shared TypeScript configuration and development scripts
@@ -65,6 +64,7 @@ pnpm prepare:deploy <presentation-name>
 ```
 
 This creates a standalone deployment package in `deploy/<presentation-name>/` with:
+
 - Built static files
 - `vercel.json` for Vercel
 - `netlify.toml` for Netlify
@@ -81,27 +81,21 @@ See [docs/deployment.md](docs/deployment.md) for detailed deployment instruction
 
 ## Commands Reference
 
-| Command | Description |
-|---------|-------------|
-| `pnpm install` | Install all dependencies |
-| `pnpm create:presentation <name>` | Create a new presentation |
-| `pnpm dev <name>` | Start dev server for a presentation |
-| `pnpm dev:all` | Start dev servers for all presentations in parallel |
-| `pnpm build @supaslidev/<name> build` | Build a single presentation |
-| `pnpm build:all` | Build all presentations |
-| `pnpm export:pdf <name>` | Export presentation to PDF |
-| `pnpm prepare:deploy <name>` | Prepare presentation for deployment |
+| Command                               | Description                                         |
+| ------------------------------------- | --------------------------------------------------- |
+| `pnpm install`                        | Install all dependencies                            |
+| `pnpm create:presentation <name>`     | Create a new presentation                           |
+| `pnpm dev <name>`                     | Start dev server for a presentation                 |
+| `pnpm dev:all`                        | Start dev servers for all presentations in parallel |
+| `pnpm build @supaslidev/<name> build` | Build a single presentation                         |
+| `pnpm build:all`                      | Build all presentations                             |
+| `pnpm export:pdf <name>`              | Export presentation to PDF                          |
+| `pnpm prepare:deploy <name>`          | Prepare presentation for deployment                 |
 
 ## Project Structure
 
 ```
 supaSliDev/
-├── packages/
-│   └── shared/              # Shared resources package
-│       ├── components/      # Reusable Vue components
-│       ├── styles/          # Shared CSS styles
-│       ├── themes/          # Custom Slidev themes
-│       └── snippets/        # Code snippets for demos
 ├── presentations/           # Individual presentations
 │   └── <name>/
 │       ├── slides.md        # Presentation content
@@ -112,20 +106,6 @@ supaSliDev/
 ├── package.json
 ├── pnpm-workspace.yaml
 └── tsconfig.json
-```
-
-## Using Shared Resources
-
-Import shared components and styles in your presentations:
-
-```vue
-<script setup>
-import Counter from '@supaslidev/shared/components/Counter.vue'
-</script>
-```
-
-```css
-@import '@supaslidev/shared/styles/index.css';
 ```
 
 ## Dependency Management with pnpm Catalog
@@ -165,12 +145,14 @@ Instead of specifying versions in each presentation's `package.json`, use `catal
 To add a new shared dependency:
 
 1. Add the package and version to `pnpm-workspace.yaml`:
+
    ```yaml
    catalog:
      'new-package': ^1.0.0
    ```
 
 2. Reference it in presentation `package.json` files:
+
    ```json
    {
      "dependencies": {

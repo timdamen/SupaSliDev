@@ -1,6 +1,0 @@
-export { default as CoverLayout } from './cover.vue'
-export { default as SectionLayout } from './section.vue'
-export { default as TwoColsHeaderLayout } from './two-cols-header.vue'
-export { default as ImageLeftLayout } from './image-left.vue'
-export { default as QuoteLayout } from './quote.vue'
-export { default as FactLayout } from './fact.vue'

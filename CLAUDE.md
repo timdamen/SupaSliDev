@@ -43,19 +43,14 @@ Then authenticate with `pnpm coderabbit:auth` before using the review commands.
 ## Workflow Guidelines
 
 1. **New presentations**: Use `pnpm create:presentation` to scaffold with correct catalog dependencies
-2. **Shared resources**: Add reusable components to `packages/shared/components/`
-3. **Catalog dependencies**: Add new shared dependencies to `pnpm-workspace.yaml` catalog section
-4. **Slides syntax**: Slidev uses Markdown with YAML frontmatter - see https://sli.dev/llms.txt for syntax
+2. **Catalog dependencies**: Add new shared dependencies to `pnpm-workspace.yaml` catalog section
+3. **Slides syntax**: Slidev uses Markdown with YAML frontmatter - see https://sli.dev/llms.txt for syntax
 
 ## File Locations
 
 - Presentations live in `presentations/<name>/slides.md`
-- Shared Vue components in `packages/shared/components/`
-- Shared styles in `packages/shared/styles/`
-- Custom themes in `packages/shared/themes/`
 - Build/deploy scripts in `scripts/`
 
 ## Key Architecture Decisions
 
 - **pnpm Catalog**: Dependency versions are centralized in `pnpm-workspace.yaml`. Use `catalog:` as version in presentation `package.json` files.
-- **Workspace Packages**: Presentations can import from `@supaslidev/shared` for reusable components.
