@@ -5,7 +5,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   startDashboard,
-  stopDashboard,
+  stopDashboardAsync,
   waitForServer,
   getBaseProjectPath,
   getTmpDir,
@@ -85,7 +85,7 @@ describe('Presentation Viewing E2E', () => {
 
   afterAll(async () => {
     await browser?.close();
-    stopDashboard();
+    await stopDashboardAsync();
     cleanupProject(PRESENTATION_TEST_PROJECT);
   });
 

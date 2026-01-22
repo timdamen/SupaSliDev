@@ -5,7 +5,7 @@ import {
   getBaseProjectPath,
   cleanupTmpDir,
   installDependencies,
-  stopDashboard,
+  stopDashboardAsync,
 } from './test-utils.js';
 
 export default async function globalSetup(): Promise<() => Promise<void>> {
@@ -27,7 +27,7 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
   }
 
   return async () => {
-    stopDashboard();
+    await stopDashboardAsync();
     const testsFailed = process.env.VITEST_TESTS_FAILED === 'true';
     if (!testsFailed) {
       console.log('All tests passed. Cleaning up .tmp directory...');

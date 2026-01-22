@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   startDashboard,
   stopDashboard,
+  stopDashboardAsync,
   waitForServer,
   getBaseProjectPath,
   getTmpDir,
@@ -101,7 +102,7 @@ describe('Dashboard Display E2E', () => {
 
   afterAll(async () => {
     await browser?.close();
-    stopDashboard();
+    await stopDashboardAsync();
     cleanupProject(DASHBOARD_TEST_PROJECT);
   });
 

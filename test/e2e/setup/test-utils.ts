@@ -8,6 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '../../..');
 const TMP_DIR = join(ROOT_DIR, '.tmp');
 const CLI_PATH = join(ROOT_DIR, 'packages/cli/src/cli.ts');
+const IS_WINDOWS = process.platform === 'win32';
 
 let dashboardProcess: ChildProcess | null = null;
 
@@ -67,6 +68,7 @@ export async function startDashboard(projectPath: string): Promise<DashboardInfo
       stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env },
       shell: true,
+      detached: !IS_WINDOWS,
     });
 
     dashboardProcess = proc;
@@ -77,8 +79,8 @@ export async function startDashboard(projectPath: string): Promise<DashboardInfo
     const urlPattern = /Local:\s+(https?:\/\/localhost:\d+\/?)/;
 
     const timeout = setTimeout(() => {
-      if (!resolved) {
-        proc.kill('SIGTERM');
+      if (!resolved && proc.pid) {
+        killProcessTree(proc.pid);
         reject(new Error(`Dashboard startup timed out. Output: ${stripAnsi(output)}`));
       }
     }, 60000);
@@ -116,10 +118,56 @@ export async function startDashboard(projectPath: string): Promise<DashboardInfo
   });
 }
 
+function killProcessTree(pid: number): void {
+  if (IS_WINDOWS) {
+    try {
+      execSync(`taskkill /pid ${pid} /T /F`, { stdio: 'ignore' });
+    } catch {
+      // Process may have already exited
+    }
+  } else {
+    try {
+      process.kill(-pid, 'SIGTERM');
+    } catch {
+      try {
+        process.kill(pid, 'SIGTERM');
+      } catch {
+        // Process may have already exited
+      }
+    }
+  }
+}
+
 export function stopDashboard(): void {
-  if (dashboardProcess) {
-    dashboardProcess.kill('SIGTERM');
+  if (dashboardProcess && dashboardProcess.pid) {
+    killProcessTree(dashboardProcess.pid);
     dashboardProcess = null;
+  }
+}
+
+export async function stopDashboardAsync(): Promise<void> {
+  if (dashboardProcess && dashboardProcess.pid) {
+    const proc = dashboardProcess;
+    const pid = dashboardProcess.pid!;
+    dashboardProcess = null;
+
+    killProcessTree(pid);
+
+    await new Promise<void>((resolve) => {
+      const timeout = setTimeout(() => resolve(), 5000);
+      proc.on('exit', () => {
+        clearTimeout(timeout);
+        resolve();
+      });
+      proc.on('close', () => {
+        clearTimeout(timeout);
+        resolve();
+      });
+    });
+
+    if (IS_WINDOWS) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
   }
 }
 
@@ -145,16 +193,44 @@ export async function waitForServer(
   throw new Error(`Server at ${url} did not respond within ${timeout}ms`);
 }
 
+function rmSyncWithRetry(path: string, retries = 3, delay = 1000): void {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      rmSync(path, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+      return;
+    } catch (error) {
+      const isLastAttempt = attempt === retries - 1;
+      const isWindowsLockError =
+        IS_WINDOWS &&
+        error instanceof Error &&
+        'code' in error &&
+        (error.code === 'EBUSY' || error.code === 'EPERM');
+
+      if (isLastAttempt || !isWindowsLockError) {
+        throw error;
+      }
+
+      const sleepSync = (ms: number) => {
+        const end = Date.now() + ms;
+        while (Date.now() < end) {
+          // Busy wait
+        }
+      };
+      sleepSync(delay);
+    }
+  }
+}
+
 export function cleanupTmpDir(): void {
   if (existsSync(TMP_DIR)) {
-    rmSync(TMP_DIR, { recursive: true, force: true });
+    rmSyncWithRetry(TMP_DIR);
   }
 }
 
 export function cleanupProject(name: string): void {
   const projectPath = join(TMP_DIR, name);
   if (existsSync(projectPath)) {
-    rmSync(projectPath, { recursive: true, force: true });
+    rmSyncWithRetry(projectPath);
   }
 }
 
