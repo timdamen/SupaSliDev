@@ -31,7 +31,12 @@
     "typescript": "^5.3.3"
   },
   "lint-staged": {
-    "*.{js,mjs,ts,tsx,vue,json,md}": "oxfmt --write"
+    "*.{ts,js,mjs,vue}": [
+      "oxlint --fix",
+      "oxfmt --write"
+    ],
+    "*.{ts,tsx}": "tsc --noEmit --skipLibCheck",
+    "*.{json,md}": "oxfmt --write"
   },
   "engines": {
     "node": ">=18.0.0",
