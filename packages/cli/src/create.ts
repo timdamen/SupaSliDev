@@ -1,10 +1,12 @@
-import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import * as p from '@clack/prompts';
 import ejs from 'ejs';
 import pc from 'picocolors';
+
+const CLI_VERSION = '0.1.0';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const templatesDir = join(__dirname, '..', 'templates');
@@ -21,6 +23,8 @@ interface TemplateData {
   projectName: string;
   presentationName: string;
   description: string;
+  cliVersion: string;
+  createdAt: string;
 }
 
 const createdPaths: string[] = [];
@@ -82,15 +86,30 @@ async function renderWorkspaceTemplates(
     throw new Error(`Template "${templateName}" not found`);
   }
 
-  const templateFiles = readdirSync(templateDir).filter((f) => f.endsWith('.ejs'));
+  await renderTemplatesRecursively(templateDir, targetDir, data);
+}
 
-  for (const templateFile of templateFiles) {
-    const templatePath = join(templateDir, templateFile);
-    const outputFileName = getOutputFileName(templateFile);
-    const outputPath = join(targetDir, outputFileName);
+async function renderTemplatesRecursively(
+  sourceDir: string,
+  targetDir: string,
+  data: TemplateData,
+): Promise<void> {
+  const entries = readdirSync(sourceDir);
 
-    const content = await renderTemplate(templatePath, data);
-    writeFileSync(outputPath, content, 'utf-8');
+  for (const entry of entries) {
+    const sourcePath = join(sourceDir, entry);
+    const stat = statSync(sourcePath);
+
+    if (stat.isDirectory()) {
+      const subTargetDir = join(targetDir, entry);
+      mkdirSync(subTargetDir, { recursive: true });
+      await renderTemplatesRecursively(sourcePath, subTargetDir, data);
+    } else if (entry.endsWith('.ejs')) {
+      const outputFileName = getOutputFileName(entry);
+      const outputPath = join(targetDir, outputFileName);
+      const content = await renderTemplate(sourcePath, data);
+      writeFileSync(outputPath, content, 'utf-8');
+    }
   }
 }
 
@@ -360,6 +379,8 @@ export async function create(options: CreateOptions = {}): Promise<void> {
       projectName,
       presentationName,
       description: `${projectName} - Slidev presentations monorepo`,
+      cliVersion: CLI_VERSION,
+      createdAt: new Date().toISOString(),
     };
 
     const templateName = options.template ?? 'default';
