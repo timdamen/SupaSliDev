@@ -1,5 +1,5 @@
 {
-  "name": "@supaslidev/example",
+  "name": "@supaslidev/my-first-deck",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,5 +12,6 @@
     "@slidev/theme-default": "catalog:",
     "@slidev/theme-seriph": "catalog:",
     "vue": "catalog:"
-  }
+  },
+  "devDependencies": {}
 }

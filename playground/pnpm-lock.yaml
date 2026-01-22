@@ -21,24 +21,19 @@ catalogs:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      '@supaslidev/dashboard':
+        specifier: link:../
+        version: link:..
+      turbo:
+        specifier: ^2.7.5
+        version: 2.7.5
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
 
-  presentations/example:
-    dependencies:
-      '@slidev/cli':
-        specifier: 'catalog:'
-        version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(postcss@8.5.6)
-      '@slidev/theme-default':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@slidev/theme-seriph':
-        specifier: 'catalog:'
-        version: 0.25.0
-      vue:
-        specifier: 'catalog:'
-        version: 3.5.27(typescript@5.9.3)
-
-  presentations/test-presentation:
+  presentations/my-first-deck:
     dependencies:
       '@slidev/cli':
         specifier: 'catalog:'
@@ -2341,6 +2336,40 @@ packages:
 
   tslib@2.4.0:
     resolution: {integrity: sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==}
+
+  turbo-darwin-64@2.7.5:
+    resolution: {integrity: sha512-nN3wfLLj4OES/7awYyyM7fkU8U8sAFxsXau2bYJwAWi6T09jd87DgHD8N31zXaJ7LcpyppHWPRI2Ov9MuZEwnQ==}
+    cpu: [x64]
+    os: [darwin]
+
+  turbo-darwin-arm64@2.7.5:
+    resolution: {integrity: sha512-wCoDHMiTf3FgLAbZHDDx/unNNonSGhsF5AbbYODbxnpYyoKDpEYacUEPjZD895vDhNvYCH0Nnk24YsP4n/cD6g==}
+    cpu: [arm64]
+    os: [darwin]
+
+  turbo-linux-64@2.7.5:
+    resolution: {integrity: sha512-KKPvhOmJMmzWj/yjeO4LywkQ85vOJyhru7AZk/+c4B6OUh/odQ++SiIJBSbTG2lm1CuV5gV5vXZnf/2AMlu3Zg==}
+    cpu: [x64]
+    os: [linux]
+
+  turbo-linux-arm64@2.7.5:
+    resolution: {integrity: sha512-8PIva4L6BQhiPikUTds9lSFSHXVDAsEvV6QUlgwPsXrtXVQMVi6Sv9p+IxtlWQFvGkdYJUgX9GnK2rC030Xcmw==}
+    cpu: [arm64]
+    os: [linux]
+
+  turbo-windows-64@2.7.5:
+    resolution: {integrity: sha512-rupskv/mkIUgQXzX/wUiK00mKMorQcK8yzhGFha/D5lm05FEnLx8dsip6rWzMcVpvh+4GUMA56PgtnOgpel2AA==}
+    cpu: [x64]
+    os: [win32]
+
+  turbo-windows-arm64@2.7.5:
+    resolution: {integrity: sha512-G377Gxn6P42RnCzfMyDvsqQV7j69kVHKlhz9J4RhtJOB5+DyY4yYh/w0oTIxZQ4JRMmhjwLu3w9zncMoQ6nNDw==}
+    cpu: [arm64]
+    os: [win32]
+
+  turbo@2.7.5:
+    resolution: {integrity: sha512-7Imdmg37joOloTnj+DPrab9hIaQcDdJ5RwSzcauo/wMOSAgO+A/I/8b3hsGGs6PWQz70m/jkPgdqWsfNKtwwDQ==}
+    hasBin: true
 
   twoslash-protocol@0.3.6:
     resolution: {integrity: sha512-FHGsJ9Q+EsNr5bEbgG3hnbkvEBdW5STgPU824AHUjB4kw0Dn4p8tABT7Ncg1Ie6V0+mDg3Qpy41VafZXcQhWMA==}
@@ -5456,6 +5485,33 @@ snapshots:
   tslib@1.14.1: {}
 
   tslib@2.4.0: {}
+
+  turbo-darwin-64@2.7.5:
+    optional: true
+
+  turbo-darwin-arm64@2.7.5:
+    optional: true
+
+  turbo-linux-64@2.7.5:
+    optional: true
+
+  turbo-linux-arm64@2.7.5:
+    optional: true
+
+  turbo-windows-64@2.7.5:
+    optional: true
+
+  turbo-windows-arm64@2.7.5:
+    optional: true
+
+  turbo@2.7.5:
+    optionalDependencies:
+      turbo-darwin-64: 2.7.5
+      turbo-darwin-arm64: 2.7.5
+      turbo-linux-64: 2.7.5
+      turbo-linux-arm64: 2.7.5
+      turbo-windows-64: 2.7.5
+      turbo-windows-arm64: 2.7.5
 
   twoslash-protocol@0.3.6: {}
 
