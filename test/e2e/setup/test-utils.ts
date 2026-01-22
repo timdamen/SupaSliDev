@@ -34,7 +34,7 @@ export function scaffoldProject(name: string): string {
       {
         cwd: TMP_DIR,
         stdio: 'pipe',
-        shell: '/bin/sh',
+        shell: true,
       },
     );
   } catch (error) {
