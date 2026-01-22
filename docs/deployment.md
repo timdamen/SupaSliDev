@@ -5,6 +5,7 @@ This guide covers deploying individual Slidev presentations to popular hosting p
 ## Quick Start
 
 1. Prepare your presentation for deployment:
+
    ```bash
    pnpm prepare:deploy <presentation-name>
    ```
@@ -20,6 +21,7 @@ pnpm prepare:deploy my-presentation
 ```
 
 This creates `deploy/my-presentation/` containing:
+
 - Built static files (HTML, CSS, JS)
 - `vercel.json` for Vercel deployment
 - `netlify.toml` for Netlify deployment
@@ -46,6 +48,7 @@ Follow the prompts to link your Vercel account and deploy.
 ### Option 2: Deploy via Git
 
 1. Prepare your presentation:
+
    ```bash
    pnpm prepare:deploy my-presentation
    ```
@@ -61,6 +64,7 @@ Follow the prompts to link your Vercel account and deploy.
 If you prefer deploying directly from the monorepo:
 
 1. Navigate to your presentation:
+
    ```bash
    cd presentations/my-presentation
    ```
@@ -80,17 +84,15 @@ The `vercel.json` configuration:
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
 ```
 
-| Setting | Description |
-|---------|-------------|
-| `buildCommand` | Runs `slidev build` via npm |
-| `outputDirectory` | Slidev outputs to `dist/` |
-| `rewrites` | SPA routing - all paths serve `index.html` |
+| Setting           | Description                                |
+| ----------------- | ------------------------------------------ |
+| `buildCommand`    | Runs `slidev build` via npm                |
+| `outputDirectory` | Slidev outputs to `dist/`                  |
+| `rewrites`        | SPA routing - all paths serve `index.html` |
 
 ## Netlify Deployment
 
@@ -109,6 +111,7 @@ netlify deploy --prod
 ### Option 2: Deploy via Git
 
 1. Prepare your presentation:
+
    ```bash
    pnpm prepare:deploy my-presentation
    ```
@@ -122,6 +125,7 @@ netlify deploy --prod
 ### Option 3: Drag and Drop
 
 1. Build your presentation:
+
    ```bash
    pnpm build @supaslidev/my-presentation build
    ```
@@ -146,12 +150,12 @@ to = "/index.html"
 status = 200
 ```
 
-| Setting | Description |
-|---------|-------------|
-| `publish` | Directory containing built files |
-| `command` | Build command to run |
-| `NODE_VERSION` | Node.js version for build |
-| `redirects` | SPA routing configuration |
+| Setting        | Description                      |
+| -------------- | -------------------------------- |
+| `publish`      | Directory containing built files |
+| `command`      | Build command to run             |
+| `NODE_VERSION` | Node.js version for build        |
+| `redirects`    | SPA routing configuration        |
 
 ## Configuration Templates
 
@@ -161,9 +165,7 @@ status = 200
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
 ```
 
@@ -188,10 +190,12 @@ status = 200
 If your presentation uses environment variables, configure them in your platform:
 
 **Vercel:**
+
 - Dashboard: Project Settings > Environment Variables
 - CLI: `vercel env add`
 
 **Netlify:**
+
 - Dashboard: Site Settings > Build & Deploy > Environment
 - CLI: `netlify env:set KEY value`
 
@@ -200,11 +204,13 @@ If your presentation uses environment variables, configure them in your platform
 Both platforms support custom domains:
 
 **Vercel:**
+
 1. Go to Project Settings > Domains
 2. Add your domain
 3. Configure DNS as instructed
 
 **Netlify:**
+
 1. Go to Site Settings > Domain Management
 2. Add custom domain
 3. Configure DNS as instructed

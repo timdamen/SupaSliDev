@@ -1,16 +1,16 @@
-import { ref, readonly } from 'vue'
+import { ref, readonly } from 'vue';
 
 interface ServerInfo {
-  port: number
+  port: number;
 }
 
-const servers = ref<Record<string, ServerInfo>>({})
+const servers = ref<Record<string, ServerInfo>>({});
 
 async function fetchStatus() {
   try {
-    const response = await fetch('/api/servers')
+    const response = await fetch('/api/servers');
     if (response.ok) {
-      servers.value = await response.json()
+      servers.value = await response.json();
     }
   } catch {
     // API server not running
@@ -19,68 +19,68 @@ async function fetchStatus() {
 
 async function startServer(presentationId: string): Promise<{ success: boolean; port?: number }> {
   try {
-    const response = await fetch(`/api/servers/${presentationId}`, { method: 'POST' })
-    const result = await response.json()
+    const response = await fetch(`/api/servers/${presentationId}`, { method: 'POST' });
+    const result = await response.json();
     if (result.success) {
-      servers.value = { ...servers.value, [presentationId]: { port: result.port } }
-      return { success: true, port: result.port }
+      servers.value = { ...servers.value, [presentationId]: { port: result.port } };
+      return { success: true, port: result.port };
     }
-    return { success: false }
+    return { success: false };
   } catch {
-    return { success: false }
+    return { success: false };
   }
 }
 
 async function stopServer(presentationId: string): Promise<boolean> {
   try {
-    const response = await fetch(`/api/servers/${presentationId}`, { method: 'DELETE' })
-    const result = await response.json()
+    const response = await fetch(`/api/servers/${presentationId}`, { method: 'DELETE' });
+    const result = await response.json();
     if (result.success) {
-      const newServers = { ...servers.value }
-      delete newServers[presentationId]
-      servers.value = newServers
-      return true
+      const newServers = { ...servers.value };
+      delete newServers[presentationId];
+      servers.value = newServers;
+      return true;
     }
-    return false
+    return false;
   } catch {
-    return false
+    return false;
   }
 }
 
 async function stopAllServers(): Promise<boolean> {
   try {
-    const response = await fetch('/api/servers', { method: 'DELETE' })
-    const result = await response.json()
+    const response = await fetch('/api/servers', { method: 'DELETE' });
+    const result = await response.json();
     if (result.success) {
-      servers.value = {}
-      return true
+      servers.value = {};
+      return true;
     }
-    return false
+    return false;
   } catch {
-    return false
+    return false;
   }
 }
 
 function isRunning(presentationId: string): boolean {
-  return presentationId in servers.value
+  return presentationId in servers.value;
 }
 
 function getPort(presentationId: string): number | undefined {
-  return servers.value[presentationId]?.port
+  return servers.value[presentationId]?.port;
 }
 
-let pollingInterval: ReturnType<typeof setInterval> | null = null
+let pollingInterval: ReturnType<typeof setInterval> | null = null;
 
 function startPolling() {
-  if (pollingInterval) return
-  fetchStatus()
-  pollingInterval = setInterval(fetchStatus, 2000)
+  if (pollingInterval) return;
+  fetchStatus();
+  pollingInterval = setInterval(fetchStatus, 2000);
 }
 
 function stopPolling() {
   if (pollingInterval) {
-    clearInterval(pollingInterval)
-    pollingInterval = null
+    clearInterval(pollingInterval);
+    pollingInterval = null;
   }
 }
 
@@ -94,6 +94,6 @@ export function useServers() {
     isRunning,
     getPort,
     startPolling,
-    stopPolling
-  }
+    stopPolling,
+  };
 }

@@ -1,46 +1,46 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { Presentation } from '../types'
-import { useServers } from '../composables/useServers'
+import { ref, computed } from 'vue';
+import type { Presentation } from '../types';
+import { useServers } from '../composables/useServers';
 
 const props = defineProps<{
-  presentation: Presentation
-}>()
+  presentation: Presentation;
+}>();
 
-const { isRunning, getPort, startServer, stopServer } = useServers()
+const { isRunning, getPort, startServer, stopServer } = useServers();
 
-const loading = ref(false)
+const loading = ref(false);
 
-const running = computed(() => isRunning(props.presentation.id))
-const port = computed(() => getPort(props.presentation.id))
+const running = computed(() => isRunning(props.presentation.id));
+const port = computed(() => getPort(props.presentation.id));
 
 async function handlePresent(event: Event) {
-  event.preventDefault()
-  event.stopPropagation()
+  event.preventDefault();
+  event.stopPropagation();
 
-  if (loading.value) return
+  if (loading.value) return;
 
-  loading.value = true
+  loading.value = true;
   try {
     if (running.value) {
-      await stopServer(props.presentation.id)
+      await stopServer(props.presentation.id);
     } else {
-      const result = await startServer(props.presentation.id)
+      const result = await startServer(props.presentation.id);
       if (result.success && result.port) {
         setTimeout(() => {
-          window.open(`http://localhost:${result.port}`, '_blank')
-        }, 1500)
+          window.open(`http://localhost:${result.port}`, '_blank');
+        }, 1500);
       }
     }
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function handleCardClick(event: Event) {
   if (running.value && port.value) {
-    event.preventDefault()
-    window.open(`http://localhost:${port.value}`, '_blank')
+    event.preventDefault();
+    window.open(`http://localhost:${port.value}`, '_blank');
   }
 }
 </script>
@@ -56,7 +56,9 @@ function handleCardClick(event: Event) {
   >
     <div
       class="card-image"
-      :style="{ backgroundImage: presentation.background ? `url(${presentation.background})` : undefined }"
+      :style="{
+        backgroundImage: presentation.background ? `url(${presentation.background})` : undefined,
+      }"
     >
       <div v-if="running" class="status-indicator" title="Server running" />
     </div>
@@ -99,7 +101,8 @@ function handleCardClick(event: Event) {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -120,7 +123,9 @@ function handleCardClick(event: Event) {
   border: none;
   border-radius: 0.5rem;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
   background: var(--primary);
   color: white;
   display: flex;

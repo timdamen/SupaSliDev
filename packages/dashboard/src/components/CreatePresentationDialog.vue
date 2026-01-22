@@ -1,110 +1,110 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import type { Presentation } from '../types'
+import { ref, computed, watch } from 'vue';
+import type { Presentation } from '../types';
 
 defineProps<{
-  open: boolean
-}>()
+  open: boolean;
+}>();
 
 const emit = defineEmits<{
-  close: []
-  created: [presentation: Presentation]
-}>()
+  close: [];
+  created: [presentation: Presentation];
+}>();
 
-const name = ref('')
-const isSubmitting = ref(false)
-const nameError = ref('')
+const name = ref('');
+const isSubmitting = ref(false);
+const nameError = ref('');
 
 const isValid = computed(() => {
-  if (!name.value.trim()) return false
-  if (nameError.value) return false
-  return true
-})
+  if (!name.value.trim()) return false;
+  if (nameError.value) return false;
+  return true;
+});
 
 function validateName(value: string) {
   if (!value.trim()) {
-    nameError.value = 'Name is required'
-    return
+    nameError.value = 'Name is required';
+    return;
   }
 
-  const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+  const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
   if (!slugRegex.test(value)) {
-    nameError.value = 'Name must be a valid slug (lowercase letters, numbers, hyphens only)'
-    return
+    nameError.value = 'Name must be a valid slug (lowercase letters, numbers, hyphens only)';
+    return;
   }
 
-  nameError.value = ''
+  nameError.value = '';
 }
 
-watch(name, validateName)
+watch(name, validateName);
 
 function resetForm() {
-  name.value = ''
-  nameError.value = ''
-  isSubmitting.value = false
+  name.value = '';
+  nameError.value = '';
+  isSubmitting.value = false;
 }
 
 function handleClose() {
-  resetForm()
-  emit('close')
+  resetForm();
+  emit('close');
 }
 
 async function handleSubmit() {
-  validateName(name.value)
-  if (!isValid.value || isSubmitting.value) return
+  validateName(name.value);
+  if (!isValid.value || isSubmitting.value) return;
 
-  isSubmitting.value = true
+  isSubmitting.value = true;
 
   try {
     const response = await fetch('/api/presentations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name.value })
-    })
+      body: JSON.stringify({ name: name.value }),
+    });
 
     if (!response.ok) {
-      const error = await response.json()
+      const error = await response.json();
       if (error.field === 'name') {
-        nameError.value = error.message
+        nameError.value = error.message;
       }
-      return
+      return;
     }
 
-    const presentation = await response.json()
-    emit('created', presentation)
-    handleClose()
+    const presentation = await response.json();
+    emit('created', presentation);
+    handleClose();
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
 }
 
 function handleBackdropClick(event: MouseEvent) {
   if (event.target === event.currentTarget) {
-    handleClose()
+    handleClose();
   }
 }
 
 function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
-    handleClose()
+    handleClose();
   }
 }
 </script>
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="open"
-      class="dialog-backdrop"
-      @click="handleBackdropClick"
-      @keydown="handleKeydown"
-    >
+    <div v-if="open" class="dialog-backdrop" @click="handleBackdropClick" @keydown="handleKeydown">
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
         <div class="dialog-header">
           <h2 id="dialog-title">Create New Presentation</h2>
           <button class="close-button" @click="handleClose" aria-label="Close">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path
+                d="M15 5L5 15M5 5L15 15"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
             </svg>
           </button>
         </div>
@@ -124,14 +124,12 @@ function handleKeydown(event: KeyboardEvent) {
           </div>
 
           <p class="info-text">
-            The presentation will be created using Slidev's default template.
-            You can customize the title, theme, and content by editing slides.md after creation.
+            The presentation will be created using Slidev's default template. You can customize the
+            title, theme, and content by editing slides.md after creation.
           </p>
 
           <div class="dialog-actions">
-            <button type="button" class="btn-secondary" @click="handleClose">
-              Cancel
-            </button>
+            <button type="button" class="btn-secondary" @click="handleClose">Cancel</button>
             <button type="submit" class="btn-primary" :disabled="!isValid || isSubmitting">
               <span v-if="isSubmitting" class="spinner"></span>
               {{ isSubmitting ? 'Creating...' : 'Create Presentation' }}
@@ -189,7 +187,9 @@ function handleKeydown(event: KeyboardEvent) {
   align-items: center;
   justify-content: center;
   border-radius: 0.25rem;
-  transition: color 0.2s, background 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
 }
 
 .close-button:hover {
@@ -227,7 +227,9 @@ function handleKeydown(event: KeyboardEvent) {
   border: 1px solid var(--border);
   border-radius: 0.5rem;
   color: var(--text);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   font-family: inherit;
 }
 

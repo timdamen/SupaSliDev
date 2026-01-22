@@ -5,3 +5,5 @@ deploy
 *.log
 .slidev
 *.ralph-tui
+tasks
+.turbo

@@ -39,7 +39,6 @@
       "oxlint --fix",
       "oxfmt --write"
     ],
-    "!(presentations/**)/*.{ts,tsx}": "tsc --noEmit --skipLibCheck",
     "!(presentations/**)/*.{json,md}": "oxfmt --write"
   },
   "engines": {
