@@ -151,12 +151,6 @@ importers:
       '@supaslidev/dashboard':
         specifier: link:../
         version: link:..
-      turbo:
-        specifier: ^2.7.5
-        version: 2.7.5
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
 
   playground/presentations/my-first-deck:
     dependencies:
