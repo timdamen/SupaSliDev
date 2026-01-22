@@ -15,7 +15,9 @@
     "@clack/prompts": "^0.9.1",
     "commander": "^13.1.0",
     "ejs": "^3.1.10",
-    "picocolors": "^1.1.1"
+    "picocolors": "^1.1.1",
+    "ts-morph": "^24.0.0",
+    "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@types/ejs": "^3.1.5",
