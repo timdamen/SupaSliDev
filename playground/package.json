@@ -1,0 +1,9 @@
+{
+  "name": "supaslidev-playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @supaslidev/example dev",
+    "build": "pnpm --filter @supaslidev/example build"
+  }
+}
