@@ -7,7 +7,7 @@
     "dev": "slidev --open",
     "export": "slidev export",
     "typecheck": "vue-tsc --noEmit",
-    "lint": "vue-tsc --noEmit"
+    "lint": "oxlint --config ../../oxlint.json ."
   },
   "dependencies": {
     "@slidev/cli": "^52.11.3",

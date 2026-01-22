@@ -6,7 +6,7 @@
   "description": "Shared components, styles, and utilities for supaslidev presentations",
   "scripts": {
     "typecheck": "vue-tsc --noEmit",
-    "lint": "vue-tsc --noEmit"
+    "lint": "oxlint --config ../../oxlint.json ."
   },
   "exports": {
     ".": {

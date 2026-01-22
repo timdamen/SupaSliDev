@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@supaslidev/dashboard": "workspace:*",
+    "oxlint": "^1.41.0",
     "playwright-chromium": "^1.49.0",
     "turbo": "^2.7.5",
     "typescript": "^5.3.3"

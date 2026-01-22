@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "ignorePatterns": [
+    "node_modules",
+    "**/node_modules",
+    "dist",
+    "**/dist",
+    ".turbo",
+    "**/.turbo"
+  ],
+  "plugins": ["import"],
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-console": "off"
+  }
+}
