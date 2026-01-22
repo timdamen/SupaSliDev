@@ -13,8 +13,8 @@
     "create:presentation": "node scripts/create-presentation.mjs",
     "export:pdf": "node scripts/export-pdf.mjs",
     "prepare:deploy": "node scripts/prepare-deploy.mjs",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint --continue",
+    "typecheck": "turbo run typecheck --continue",
     "format": "turbo run format",
     "test": "echo 'No tests configured yet'"
   },
