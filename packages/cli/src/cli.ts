@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { create, type CreateOptions } from './create.js';
 import { status } from './commands/status.js';
+import { migrate, type MigrateOptions } from './commands/migrate.js';
 
 const program = new Command();
 
@@ -28,6 +29,14 @@ program
   .description('Show project status and check for updates')
   .action(async () => {
     await status();
+  });
+
+program
+  .command('migrate')
+  .description('Run migrations to update the workspace')
+  .option('--apply', 'Execute migrations (default is dry-run mode)')
+  .action(async (options: MigrateOptions) => {
+    await migrate(options);
   });
 
 export async function run(): Promise<void> {
