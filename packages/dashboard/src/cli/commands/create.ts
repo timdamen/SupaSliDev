@@ -12,6 +12,13 @@ function validateName(name: string): void {
   }
 }
 
+function checkDuplicateName(presentationsDir: string, name: string): void {
+  const presentationPath = join(presentationsDir, name);
+  if (existsSync(presentationPath)) {
+    throw new Error(`Presentation "${name}" already exists`);
+  }
+}
+
 export async function create(name?: string): Promise<void> {
   const projectRoot = findProjectRoot();
 
@@ -31,6 +38,7 @@ export async function create(name?: string): Promise<void> {
   if (name) {
     try {
       validateName(name);
+      checkDuplicateName(presentationsDir, name);
     } catch (err) {
       console.error(`Error: ${err instanceof Error ? err.message : 'Invalid name'}`);
       process.exit(1);
