@@ -1,153 +1,110 @@
 # Supaslidev
 
-A monorepo for managing multiple [Slidev](https://sli.dev) presentations with shared resources, components, and themes.
+A monorepo toolkit for managing multiple [Slidev](https://sli.dev) presentations with shared resources, components, and themes using pnpm workspaces.
 
 ## Features
 
-- **Monorepo Structure**: Manage multiple presentations in a single repository using pnpm workspaces
-- **Native Slidev CLI**: Use the official Slidev wizard with automatic version management via pnpm catalog
-- **Independent Development**: Run and build presentations individually
-- **Consistent Tooling**: Shared TypeScript configuration and development scripts
+- **Monorepo Structure**: Manage multiple presentations in a single workspace using pnpm workspaces
+- **Interactive Dashboard**: Visual UI for managing and running presentations
+- **Native Slidev CLI**: Uses the official Slidev wizard with automatic version management via pnpm catalog
+- **Migration System**: Built-in migrations to keep workspaces up-to-date
+- **Independent Development**: Run and build presentations individually or all at once
 
-## Quick Start
+## Getting Started
 
 ### Prerequisites
 
 - Node.js >= 18.0.0
 - pnpm >= 9.0.0
 
-### Installation
+### Create a New Workspace
+
+Use the scaffolding CLI to create a new Supaslidev workspace:
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/Supaslidev.git
-cd Supaslidev
-
-# Install dependencies
-pnpm install
+pnpm create supaslidev
 ```
 
-### Create a New Presentation
+This will guide you through creating a new workspace with your first presentation.
 
-Use the dashboard CLI to create presentations:
+### Managing Presentations
+
+Once inside a Supaslidev workspace, use the dashboard CLI:
 
 ```bash
+# Start interactive dashboard UI
+pnpm dashboard
+
+# Create a new presentation
 pnpm dashboard create my-presentation
+
+# Start dev server for a presentation
+pnpm dashboard dev my-presentation
+
+# Export to PDF
+pnpm dashboard export my-presentation
+
+# Build for deployment
+pnpm dashboard deploy my-presentation
 ```
-
-### Run a Presentation
-
-```bash
-pnpm dashboard dev <name>
-```
-
-Or run all presentations simultaneously:
-
-```bash
-pnpm dev:all
-```
-
-### Build a Presentation
-
-```bash
-pnpm build @supaslidev/<name> build
-```
-
-### Deploy a Presentation
-
-```bash
-pnpm dashboard deploy <name>
-```
-
-### Export to PDF
-
-```bash
-pnpm dashboard export <name>
-```
-
-See [docs/deployment.md](docs/deployment.md) for detailed deployment instructions.
 
 ## Commands Reference
 
-| Command                               | Description                                         |
-| ------------------------------------- | --------------------------------------------------- |
-| `pnpm install`                        | Install all dependencies                            |
-| `pnpm dashboard create <name>`        | Create a new presentation                           |
-| `pnpm dashboard dev <name>`           | Start dev server for a presentation                 |
-| `pnpm dev:all`                        | Start dev servers for all presentations in parallel |
-| `pnpm build @supaslidev/<name> build` | Build a single presentation                         |
-| `pnpm build:all`                      | Build all presentations                             |
-| `pnpm dashboard export <name>`        | Export presentation to PDF                          |
-| `pnpm dashboard deploy <name>`        | Deploy presentation                                 |
+### Dashboard CLI (within a workspace)
+
+| Command                        | Description                         |
+| ------------------------------ | ----------------------------------- |
+| `pnpm dashboard`               | Start interactive dashboard UI      |
+| `pnpm dashboard create <name>` | Create a new presentation           |
+| `pnpm dashboard dev <name>`    | Start dev server for a presentation |
+| `pnpm dashboard export <name>` | Export presentation to PDF          |
+| `pnpm dashboard deploy <name>` | Build and prepare for deployment    |
+
+### Workspace Commands
+
+| Command          | Description                                         |
+| ---------------- | --------------------------------------------------- |
+| `pnpm install`   | Install all dependencies                            |
+| `pnpm dev:all`   | Start dev servers for all presentations in parallel |
+| `pnpm build:all` | Build all presentations                             |
+| `pnpm lint`      | Run linting                                         |
+| `pnpm typecheck` | Run TypeScript type checking                        |
+| `pnpm test`      | Run tests                                           |
+
+### Scaffolding CLI
+
+| Command                     | Description                            |
+| --------------------------- | -------------------------------------- |
+| `pnpm create supaslidev`    | Create a new Supaslidev workspace      |
+| `create-supaslidev status`  | Show workspace status and version info |
+| `create-supaslidev migrate` | Run migrations to update workspace     |
+| `create-supaslidev update`  | Check for CLI updates                  |
 
 ## Project Structure
 
+A Supaslidev workspace has this structure:
+
 ```
-Supaslidev/
-├── packages/
-│   ├── cli/                 # create-supaslidev CLI tool
-│   └── dashboard/           # Dashboard and CLI for managing presentations
-├── playground/              # Local development playground
-├── dist/                    # Built presentations
+my-workspace/
+├── presentations/           # Your presentations live here
+│   ├── my-first-deck/
+│   │   ├── package.json    # Uses catalog: versions
+│   │   └── slides.md       # Slidev markdown slides
+│   └── another-deck/
+├── packages/                # Shared packages (components, utils)
 ├── package.json
-├── pnpm-workspace.yaml
-└── tsconfig.json
+├── pnpm-workspace.yaml      # Workspace config with catalog
+└── .supaslidev/             # Workspace state
+    └── state.json
 ```
 
-## Dependency Management with pnpm Catalog
+## Roadmap
 
-This project uses [pnpm catalog](https://pnpm.io/catalogs) for centralized dependency version management. The catalog is defined in `pnpm-workspace.yaml`:
+- Share utils, components, and styles between presentations via shared packages
 
-```yaml
-catalog:
-  '@slidev/cli': ^52.11.3
-  '@slidev/theme-default': latest
-  '@slidev/theme-seriph': latest
-  vue: ^3.5.26
-```
+## Contributing
 
-### How It Works
-
-Instead of specifying versions in each presentation's `package.json`, use `catalog:` as the version:
-
-```json
-{
-  "dependencies": {
-    "@slidev/cli": "catalog:",
-    "vue": "catalog:"
-  }
-}
-```
-
-### Benefits
-
-- **Single source of truth**: Update versions in one place (`pnpm-workspace.yaml`)
-- **Automatic inheritance**: New presentations created with `pnpm create slidev` automatically use catalog versions
-- **Consistency**: All presentations use the same dependency versions
-- **Easy upgrades**: Bump versions across all presentations by editing the catalog
-
-### Adding New Catalog Entries
-
-To add a new shared dependency:
-
-1. Add the package and version to `pnpm-workspace.yaml`:
-
-   ```yaml
-   catalog:
-     'new-package': ^1.0.0
-   ```
-
-2. Reference it in presentation `package.json` files:
-
-   ```json
-   {
-     "dependencies": {
-       "new-package": "catalog:"
-     }
-   }
-   ```
-
-3. Run `pnpm install` to update lockfile
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ## License
 

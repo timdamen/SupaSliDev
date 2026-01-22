@@ -1,42 +1,45 @@
-# Project Overview
+# Supaslidev - AI Agent Context
 
-Supaslidev is a monorepo for managing multiple [Slidev](https://sli.dev/) presentations with shared resources, components, and themes using pnpm workspaces.
+Monorepo toolkit for managing multiple [Slidev](https://sli.dev/) presentations with pnpm workspaces.
 
-## Official Documentation
+## Quick Reference
 
-Before making changes to presentation content or configuration, consult:
+**Slidev Docs**: https://sli.dev/llms.txt (fetch for syntax/features)
 
-- **Slidev Website**: https://sli.dev/
-- **LLM-optimized docs**: https://sli.dev/llms.txt
+## Structure
 
-Fetch the llms.txt file for up-to-date Slidev syntax, features, and best practices.
+- `packages/cli/` - `create-supaslidev`: scaffolds new workspaces
+- `packages/dashboard/` - `@supaslidev/dashboard`: manages presentations (UI + CLI)
+- `playground/` - test workspace for local development
 
-## Commands
+## Key Commands
 
-| Command                               | Description                                         |
-| ------------------------------------- | --------------------------------------------------- |
-| `pnpm install`                        | Install all dependencies                            |
-| `pnpm create:presentation <name>`     | Create a new presentation using Slidev wizard       |
-| `pnpm dev <name>`                     | Start dev server for a presentation                 |
-| `pnpm dev:all`                        | Start dev servers for all presentations in parallel |
-| `pnpm build @supaslidev/<name> build` | Build a single presentation                         |
-| `pnpm build:all`                      | Build all presentations                             |
-| `pnpm export:pdf <name>`              | Export presentation to PDF                          |
-| `pnpm prepare:deploy <name>`          | Prepare presentation for deployment                 |
-| `pnpm lint`                           | Run TypeScript type checking                        |
-| `pnpm typecheck`                      | Run TypeScript type checking                        |
+```bash
+pnpm dashboard                 # Interactive dashboard
+pnpm dashboard create <name>   # New presentation
+pnpm dashboard dev <name>      # Dev server
+pnpm dashboard export <name>   # Export PDF
+pnpm dashboard deploy <name>   # Build for deployment
+pnpm test                      # Run tests
+pnpm lint                      # Linting
+pnpm typecheck                 # Type checking
+```
 
-## Workflow Guidelines
+## Architecture
 
-1. **New presentations**: Use `pnpm create:presentation` to scaffold with correct catalog dependencies
-2. **Catalog dependencies**: Add new shared dependencies to `pnpm-workspace.yaml` catalog section
-3. **Slides syntax**: Slidev uses Markdown with YAML frontmatter - see https://sli.dev/llms.txt for syntax
+- **pnpm Catalog**: Dependency versions in `pnpm-workspace.yaml`, referenced as `catalog:` in package.json
+- **Workspace State**: `.supaslidev/state.json` tracks workspace version and migrations
+- **Dashboard Server**: `packages/dashboard/server/api.js` manages Slidev dev server processes
 
-## File Locations
+## Entry Points
 
-- Presentations live in `presentations/<name>/slides.md`
-- Build/deploy scripts in `scripts/`
+| Package   | CLI Entry          | UI Entry      |
+| --------- | ------------------ | ------------- |
+| cli       | `src/cli.ts`       | -             |
+| dashboard | `src/cli/index.ts` | `src/App.vue` |
 
-## Key Architecture Decisions
+## Testing
 
-- **pnpm Catalog**: Dependency versions are centralized in `pnpm-workspace.yaml`. Use `catalog:` as version in presentation `package.json` files.
+- E2E tests in `packages/*/tests/e2e/`
+- Run with `pnpm test`
+- Playground used for integration testing
