@@ -1,34 +1,23 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { themes, type ThemeName } from '@supaslidev/shared/themes'
+import type { Presentation } from '../types'
 
-const props = defineProps<{
+defineProps<{
   open: boolean
 }>()
 
 const emit = defineEmits<{
   close: []
-  created: [presentation: { id: string; title: string; description: string; theme: string }]
+  created: [presentation: Presentation]
 }>()
 
 const name = ref('')
-const title = ref('')
-const description = ref('')
-const selectedTheme = ref<ThemeName | 'custom'>('default')
-const customTheme = ref('')
 const isSubmitting = ref(false)
 const nameError = ref('')
-
-const isCustomTheme = computed(() => selectedTheme.value === 'custom')
-
-const actualTheme = computed(() =>
-  isCustomTheme.value ? customTheme.value : selectedTheme.value
-)
 
 const isValid = computed(() => {
   if (!name.value.trim()) return false
   if (nameError.value) return false
-  if (isCustomTheme.value && !customTheme.value.trim()) return false
   return true
 })
 
@@ -51,10 +40,6 @@ watch(name, validateName)
 
 function resetForm() {
   name.value = ''
-  title.value = ''
-  description.value = ''
-  selectedTheme.value = 'default'
-  customTheme.value = ''
   nameError.value = ''
   isSubmitting.value = false
 }
@@ -74,12 +59,7 @@ async function handleSubmit() {
     const response = await fetch('/api/presentations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: name.value,
-        title: title.value || name.value,
-        description: description.value,
-        theme: actualTheme.value
-      })
+      body: JSON.stringify({ name: name.value })
     })
 
     if (!response.ok) {
@@ -143,47 +123,10 @@ function handleKeydown(event: KeyboardEvent) {
             <span v-else class="field-hint">Lowercase letters, numbers, and hyphens only</span>
           </div>
 
-          <div class="form-field">
-            <label for="title">Title</label>
-            <input
-              id="title"
-              v-model="title"
-              type="text"
-              placeholder="My Awesome Presentation"
-            />
-            <span class="field-hint">Defaults to name if not provided</span>
-          </div>
-
-          <div class="form-field">
-            <label for="description">Description</label>
-            <textarea
-              id="description"
-              v-model="description"
-              placeholder="A brief description of your presentation..."
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div class="form-field">
-            <label for="theme">Theme</label>
-            <select id="theme" v-model="selectedTheme">
-              <option v-for="theme in themes" :key="theme" :value="theme">
-                {{ theme }}
-              </option>
-              <option value="custom">Custom...</option>
-            </select>
-          </div>
-
-          <div v-if="isCustomTheme" class="form-field">
-            <label for="custom-theme">Custom Theme Name</label>
-            <input
-              id="custom-theme"
-              v-model="customTheme"
-              type="text"
-              placeholder="@slidev/theme-apple-basic"
-            />
-            <span class="field-hint">Enter a Slidev theme package name</span>
-          </div>
+          <p class="info-text">
+            The presentation will be created using Slidev's default template.
+            You can customize the title, theme, and content by editing slides.md after creation.
+          </p>
 
           <div class="dialog-actions">
             <button type="button" class="btn-secondary" @click="handleClose">
@@ -277,9 +220,7 @@ function handleKeydown(event: KeyboardEvent) {
   color: #ef4444;
 }
 
-.form-field input,
-.form-field select,
-.form-field textarea {
+.form-field input {
   padding: 0.75rem 1rem;
   font-size: 0.9375rem;
   background: var(--bg);
@@ -290,22 +231,21 @@ function handleKeydown(event: KeyboardEvent) {
   font-family: inherit;
 }
 
-.form-field textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.form-field input::placeholder,
-.form-field textarea::placeholder {
+.form-field input::placeholder {
   color: var(--text-muted);
 }
 
-.form-field input:focus,
-.form-field select:focus,
-.form-field textarea:focus {
+.form-field input:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.info-text {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
 }
 
 .form-field input.input-error {

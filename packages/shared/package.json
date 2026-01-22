@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "description": "Shared components, styles, and utilities for supaslidev presentations",
+  "scripts": {
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "vue-tsc --noEmit"
+  },
   "exports": {
     ".": {
       "import": "./index.ts"

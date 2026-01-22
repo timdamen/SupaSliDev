@@ -5,20 +5,23 @@
   "type": "module",
   "description": "A monorepo for managing multiple Slidev presentations with shared resources",
   "scripts": {
-    "dashboard": "pnpm --filter @supaslidev/dashboard dev",
+    "dashboard": "supaslidev-dashboard",
     "dev": "node scripts/dev-presentation.mjs",
-    "dev:all": "pnpm -r --parallel dev",
+    "dev:all": "turbo run dev",
     "build": "pnpm --filter",
-    "build:all": "pnpm -r build",
+    "build:all": "turbo run build",
     "create:presentation": "node scripts/create-presentation.mjs",
     "export:pdf": "node scripts/export-pdf.mjs",
     "prepare:deploy": "node scripts/prepare-deploy.mjs",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "turbo run format",
     "test": "echo 'No tests configured yet'"
   },
   "devDependencies": {
+    "@supaslidev/dashboard": "workspace:*",
     "playwright-chromium": "^1.49.0",
+    "turbo": "^2.7.5",
     "typescript": "^5.3.3"
   },
   "packageManager": "pnpm@9.15.0",

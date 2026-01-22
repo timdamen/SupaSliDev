@@ -1,20 +1,26 @@
 {
   "name": "@supaslidev/dashboard",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
+  "bin": {
+    "supaslidev-dashboard": "./bin/cli.mjs"
+  },
   "scripts": {
-    "dev": "node scripts/generate-presentations.mjs && node server/api.js & vite",
+    "dev": "node bin/cli.mjs",
     "dev:api": "node server/api.js",
     "build": "node scripts/generate-presentations.mjs && vite build",
     "preview": "vite preview",
-    "generate": "node scripts/generate-presentations.mjs"
+    "generate": "node scripts/generate-presentations.mjs",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "vue": "catalog:"
+    "vue": "^3.5.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
-    "vite": "^6.0.7"
+    "typescript": "^5.3.3",
+    "vite": "^6.0.7",
+    "vue-tsc": "^2.0.0"
   }
 }

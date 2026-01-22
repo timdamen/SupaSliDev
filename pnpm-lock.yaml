@@ -4,31 +4,19 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-catalogs:
-  default:
-    '@slidev/cli':
-      specifier: ^52.11.3
-      version: 52.11.3
-    '@slidev/theme-default':
-      specifier: latest
-      version: 0.25.0
-    '@slidev/theme-seriph':
-      specifier: latest
-      version: 0.25.0
-    '@vue/compiler-sfc':
-      specifier: ^3.5.27
-      version: 3.5.27
-    vue:
-      specifier: ^3.5.26
-      version: 3.5.27
-
 importers:
 
   .:
     devDependencies:
+      '@supaslidev/dashboard':
+        specifier: workspace:*
+        version: link:packages/dashboard
       playwright-chromium:
         specifier: ^1.49.0
         version: 1.57.0
+      turbo:
+        specifier: ^2.7.5
+        version: 2.7.5
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
@@ -36,15 +24,21 @@ importers:
   packages/dashboard:
     dependencies:
       vue:
-        specifier: 'catalog:'
+        specifier: ^3.5.0
         version: 3.5.27(typescript@5.9.3)
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
         version: 5.2.4(vite@6.4.1(@types/node@22.19.7)(jiti@2.6.1)(yaml@2.8.2))(vue@3.5.27(typescript@5.9.3))
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
       vite:
         specifier: ^6.0.7
         version: 6.4.1(@types/node@22.19.7)(jiti@2.6.1)(yaml@2.8.2)
+      vue-tsc:
+        specifier: ^2.0.0
+        version: 2.2.12(typescript@5.9.3)
 
   packages/shared:
     dependencies:
@@ -74,102 +68,11 @@ importers:
         specifier: ^3.5.26
         version: 3.5.27(typescript@5.9.3)
 
-  presentations/example:
-    dependencies:
-      '@slidev/cli':
-        specifier: 'catalog:'
-        version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
-      '@slidev/theme-default':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@slidev/theme-seriph':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@supaslidev/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      vue:
-        specifier: 'catalog:'
-        version: 3.5.27(typescript@5.9.3)
-    devDependencies:
-      '@vue/compiler-sfc':
-        specifier: 'catalog:'
-        version: 3.5.27
-
-  presentations/p-1:
-    dependencies:
-      '@slidev/cli':
-        specifier: 'catalog:'
-        version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
-      '@slidev/theme-default':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@slidev/theme-seriph':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@supaslidev/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      vue:
-        specifier: 'catalog:'
-        version: 3.5.27(typescript@5.9.3)
-    devDependencies:
-      '@vue/compiler-sfc':
-        specifier: 'catalog:'
-        version: 3.5.27
-
-  presentations/p-2:
-    dependencies:
-      '@slidev/cli':
-        specifier: 'catalog:'
-        version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
-      '@slidev/theme-default':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@slidev/theme-seriph':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@supaslidev/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      vue:
-        specifier: 'catalog:'
-        version: 3.5.27(typescript@5.9.3)
-    devDependencies:
-      '@vue/compiler-sfc':
-        specifier: 'catalog:'
-        version: 3.5.27
-
-  presentations/p-3:
-    dependencies:
-      '@slidev/cli':
-        specifier: 'catalog:'
-        version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
-      '@slidev/theme-default':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@slidev/theme-seriph':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@supaslidev/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      vue:
-        specifier: 'catalog:'
-        version: 3.5.27(typescript@5.9.3)
-    devDependencies:
-      '@vue/compiler-sfc':
-        specifier: 'catalog:'
-        version: 3.5.27
-
-  presentations/sb10:
+  presentations/test-cli-create:
     dependencies:
       '@slidev/cli':
         specifier: ^52.11.3
         version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
-      '@slidev/theme-apple-basic':
-        specifier: ^0.25.1
-        version: 0.25.1
       '@slidev/theme-default':
         specifier: latest
         version: 0.25.0
@@ -180,29 +83,7 @@ importers:
         specifier: ^3.5.26
         version: 3.5.27(typescript@5.9.3)
 
-  presentations/storybook-10-features:
-    dependencies:
-      '@slidev/cli':
-        specifier: 'catalog:'
-        version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2)(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)
-      '@slidev/theme-default':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@slidev/theme-seriph':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@supaslidev/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      vue:
-        specifier: 'catalog:'
-        version: 3.5.27(typescript@5.9.3)
-    devDependencies:
-      '@vue/compiler-sfc':
-        specifier: 'catalog:'
-        version: 3.5.27
-
-  presentations/test:
+  presentations/www:
     dependencies:
       '@slidev/cli':
         specifier: ^52.11.3
@@ -972,10 +853,6 @@ packages:
 
   '@slidev/rough-notation@0.1.0':
     resolution: {integrity: sha512-a/CbVmjuoO3E4JbUr2HOTsXndbcrdLWOM+ajbSQIY3gmLFzhjeXHGksGcp1NZ08pJjLZyTCxfz1C7v/ltJqycA==}
-
-  '@slidev/theme-apple-basic@0.25.1':
-    resolution: {integrity: sha512-saA5yYui+jTT13tP+QJKnWeM8sK0IA1iln2E3sWAJsfKdQHUD3fw8+AlUHLUH6yc8NPq3ewtZcwWx49a/iF8Tg==}
-    engines: {node: '>=14.0.0', slidev: '>=v0.47.0'}
 
   '@slidev/theme-default@0.25.0':
     resolution: {integrity: sha512-iWvthH1Ny+i6gTwRnEeeU+EiqsHC56UdEO45bqLSNmymRAOWkKUJ/M0o7iahLzHSXsiPu71B7C715WxqjXk2hw==}
@@ -2729,6 +2606,40 @@ packages:
   tslib@2.4.0:
     resolution: {integrity: sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==}
 
+  turbo-darwin-64@2.7.5:
+    resolution: {integrity: sha512-nN3wfLLj4OES/7awYyyM7fkU8U8sAFxsXau2bYJwAWi6T09jd87DgHD8N31zXaJ7LcpyppHWPRI2Ov9MuZEwnQ==}
+    cpu: [x64]
+    os: [darwin]
+
+  turbo-darwin-arm64@2.7.5:
+    resolution: {integrity: sha512-wCoDHMiTf3FgLAbZHDDx/unNNonSGhsF5AbbYODbxnpYyoKDpEYacUEPjZD895vDhNvYCH0Nnk24YsP4n/cD6g==}
+    cpu: [arm64]
+    os: [darwin]
+
+  turbo-linux-64@2.7.5:
+    resolution: {integrity: sha512-KKPvhOmJMmzWj/yjeO4LywkQ85vOJyhru7AZk/+c4B6OUh/odQ++SiIJBSbTG2lm1CuV5gV5vXZnf/2AMlu3Zg==}
+    cpu: [x64]
+    os: [linux]
+
+  turbo-linux-arm64@2.7.5:
+    resolution: {integrity: sha512-8PIva4L6BQhiPikUTds9lSFSHXVDAsEvV6QUlgwPsXrtXVQMVi6Sv9p+IxtlWQFvGkdYJUgX9GnK2rC030Xcmw==}
+    cpu: [arm64]
+    os: [linux]
+
+  turbo-windows-64@2.7.5:
+    resolution: {integrity: sha512-rupskv/mkIUgQXzX/wUiK00mKMorQcK8yzhGFha/D5lm05FEnLx8dsip6rWzMcVpvh+4GUMA56PgtnOgpel2AA==}
+    cpu: [x64]
+    os: [win32]
+
+  turbo-windows-arm64@2.7.5:
+    resolution: {integrity: sha512-G377Gxn6P42RnCzfMyDvsqQV7j69kVHKlhz9J4RhtJOB5+DyY4yYh/w0oTIxZQ4JRMmhjwLu3w9zncMoQ6nNDw==}
+    cpu: [arm64]
+    os: [win32]
+
+  turbo@2.7.5:
+    resolution: {integrity: sha512-7Imdmg37joOloTnj+DPrab9hIaQcDdJ5RwSzcauo/wMOSAgO+A/I/8b3hsGGs6PWQz70m/jkPgdqWsfNKtwwDQ==}
+    hasBin: true
+
   twoslash-protocol@0.3.6:
     resolution: {integrity: sha512-FHGsJ9Q+EsNr5bEbgG3hnbkvEBdW5STgPU824AHUjB4kw0Dn4p8tABT7Ncg1Ie6V0+mDg3Qpy41VafZXcQhWMA==}
 
@@ -3931,12 +3842,6 @@ snapshots:
   '@slidev/rough-notation@0.1.0':
     dependencies:
       roughjs: 4.6.6
-
-  '@slidev/theme-apple-basic@0.25.1':
-    dependencies:
-      '@slidev/types': 0.47.5
-      codemirror-theme-vars: 0.1.2
-      prism-theme-vars: 0.2.5
 
   '@slidev/theme-default@0.25.0':
     dependencies:
@@ -6062,6 +5967,33 @@ snapshots:
   tslib@1.14.1: {}
 
   tslib@2.4.0: {}
+
+  turbo-darwin-64@2.7.5:
+    optional: true
+
+  turbo-darwin-arm64@2.7.5:
+    optional: true
+
+  turbo-linux-64@2.7.5:
+    optional: true
+
+  turbo-linux-arm64@2.7.5:
+    optional: true
+
+  turbo-windows-64@2.7.5:
+    optional: true
+
+  turbo-windows-arm64@2.7.5:
+    optional: true
+
+  turbo@2.7.5:
+    optionalDependencies:
+      turbo-darwin-64: 2.7.5
+      turbo-darwin-arm64: 2.7.5
+      turbo-linux-64: 2.7.5
+      turbo-linux-arm64: 2.7.5
+      turbo-windows-64: 2.7.5
+      turbo-windows-arm64: 2.7.5
 
   twoslash-protocol@0.3.6: {}
 
