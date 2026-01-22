@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import pc from 'picocolors';
+import { create, type CreateOptions } from './create.js';
 
 const program = new Command();
 
@@ -9,14 +9,17 @@ program
   .version('0.1.0');
 
 program
-  .command('create')
-  .description('Create a new supaSliDev presentation')
-  .argument('[name]', 'Name of the presentation')
+  .command('create', { isDefault: true })
+  .description('Create a new supaSliDev workspace')
+  .option('-n, --name <name>', 'Name of the workspace')
+  .option('-p, --presentation <name>', 'Name of the first presentation')
   .option('-t, --template <template>', 'Template to use', 'default')
-  .action(async (name: string | undefined, options: { template: string }) => {
-    console.log(pc.cyan('Creating new presentation...'));
-    console.log(`Name: ${name ?? 'not specified'}`);
-    console.log(`Template: ${options.template}`);
+  .option('--git', 'Initialize a git repository')
+  .option('--no-git', 'Skip git initialization')
+  .option('--install', 'Run pnpm install after scaffolding')
+  .option('--no-install', 'Skip pnpm install')
+  .action(async (options: CreateOptions) => {
+    await create(options);
   });
 
 export async function run(): Promise<void> {
