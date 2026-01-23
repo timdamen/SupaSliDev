@@ -182,7 +182,7 @@ describe('Scaffolding E2E', () => {
     expect(packageJson.devDependencies['supaslidev']).toBe('^0.1.0');
   });
 
-  it('includes dashboard script in package.json', async () => {
+  it('includes supaslidev script in package.json', async () => {
     await create({
       name: 'test-project',
       presentation: 'test-deck',
@@ -193,6 +193,6 @@ describe('Scaffolding E2E', () => {
     const packageJsonPath = join(TEST_DIR, 'test-project', 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
-    expect(packageJson.scripts.dashboard).toBe('supaslidev');
+    expect(packageJson.scripts.supaslidev).toBe('supaslidev');
   });
 });
