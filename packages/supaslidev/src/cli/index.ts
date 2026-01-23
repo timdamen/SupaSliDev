@@ -9,14 +9,11 @@ import { deploy } from './commands/deploy.js';
 
 const program = new Command();
 
-program
-  .name('supaslidev')
-  .description('Supaslidev dashboard and presentation management CLI')
-  .version('0.1.0');
+program.name('supaslidev').description('Supaslidev presentation management CLI').version('0.1.0');
 
 program
   .command('dev', { isDefault: true })
-  .description('Start the dashboard UI and development server')
+  .description('Start the Supaslidev UI and development server')
   .action(async () => {
     await dev();
   });

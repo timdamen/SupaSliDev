@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { findProjectRoot } from '../utils.js';
 
-export function findDashboardPackageRoot(): string {
+export function findSupaslidevPackageRoot(): string {
   let dir = dirname(fileURLToPath(import.meta.url));
 
   while (dir !== dirname(dir)) {
@@ -25,7 +25,7 @@ export function findDashboardPackageRoot(): string {
   throw new Error('Could not find supaslidev package root');
 }
 
-const packageRoot = findDashboardPackageRoot();
+const packageRoot = findSupaslidevPackageRoot();
 
 export async function dev(): Promise<void> {
   const projectRoot = findProjectRoot();
@@ -43,7 +43,7 @@ export async function dev(): Promise<void> {
     process.exit(1);
   }
 
-  console.log(`Starting dashboard for project: ${projectRoot}`);
+  console.log(`Starting Supaslidev for project: ${projectRoot}`);
   console.log(`Presentations directory: ${presentationsDir}`);
 
   process.env.SUPASLIDEV_PROJECT_ROOT = projectRoot;

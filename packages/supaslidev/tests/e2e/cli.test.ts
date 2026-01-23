@@ -6,9 +6,9 @@ import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const TEST_DIR = join(tmpdir(), 'supaslidev-dashboard-cli-test');
-const DASHBOARD_ROOT = join(__dirname, '../..');
-const CLI_PATH = join(DASHBOARD_ROOT, 'src/cli/index.ts');
+const TEST_DIR = join(tmpdir(), 'supaslidev-cli-test');
+const SUPASLIDEV_ROOT = join(__dirname, '../..');
+const CLI_PATH = join(SUPASLIDEV_ROOT, 'src/cli/index.ts');
 
 function cleanTestDir(): void {
   if (existsSync(TEST_DIR)) {
@@ -20,7 +20,7 @@ function runCLI(
   args: string,
   cwd: string = TEST_DIR,
 ): { stdout: string; stderr: string; exitCode: number } {
-  const tsxPath = join(DASHBOARD_ROOT, 'node_modules/.bin/tsx');
+  const tsxPath = join(SUPASLIDEV_ROOT, 'node_modules/.bin/tsx');
   try {
     const stdout = execSync(`"${tsxPath}" "${CLI_PATH}" ${args}`, {
       cwd,
@@ -41,7 +41,7 @@ describe('CLI Help & Version', () => {
   it('shows help with --help flag', () => {
     const { stdout } = runCLI('--help', process.cwd());
     expect(stdout).toContain('supaslidev');
-    expect(stdout).toContain('dashboard');
+    expect(stdout).toContain('Supaslidev');
   });
 
   it('shows version with --version flag', () => {
@@ -52,7 +52,7 @@ describe('CLI Help & Version', () => {
   it('shows help for dev command', () => {
     const { stdout } = runCLI('dev --help', process.cwd());
     expect(stdout).toContain('dev');
-    expect(stdout).toContain('dashboard');
+    expect(stdout).toContain('Supaslidev');
   });
 
   it('shows help for new command', () => {

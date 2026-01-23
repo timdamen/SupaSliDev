@@ -10,7 +10,7 @@ import {
   createDeployPackageJson,
 } from '../../src/cli/utils.js';
 
-const TEST_DIR = join(tmpdir(), 'supaslidev-dashboard-utils-test');
+const TEST_DIR = join(tmpdir(), 'supaslidev-utils-test');
 
 function cleanTestDir(): void {
   if (existsSync(TEST_DIR)) {
