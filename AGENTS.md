@@ -9,7 +9,7 @@ Monorepo toolkit for managing multiple [Slidev](https://sli.dev/) presentations 
 ## Structure
 
 - `packages/cli/` - `create-supaslidev`: scaffolds new workspaces
-- `packages/dashboard/` - `@supaslidev/dashboard`: manages presentations (UI + CLI)
+- `packages/supaslidev/` - `@supaslidev/dashboard`: manages presentations (UI + CLI)
 - `playground/` - test workspace for local development
 
 ## Key Commands
@@ -29,7 +29,7 @@ pnpm typecheck                 # Type checking
 
 - **pnpm Catalog**: Dependency versions in `pnpm-workspace.yaml`, referenced as `catalog:` in package.json
 - **Workspace State**: `.supaslidev/state.json` tracks workspace version and migrations
-- **Dashboard Server**: `packages/dashboard/server/api.js` manages Slidev dev server processes
+- **Dashboard Server**: `packages/supaslidev/server/api.js` manages Slidev dev server processes
 
 ## Entry Points
 

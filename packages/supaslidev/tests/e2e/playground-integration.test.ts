@@ -119,8 +119,8 @@ describe('Monorepo Structure', () => {
     expect(existsSync(join(MONOREPO_ROOT, 'packages'))).toBe(true);
   });
 
-  it('monorepo has dashboard package', () => {
-    expect(existsSync(join(MONOREPO_ROOT, 'packages', 'dashboard'))).toBe(true);
+  it('monorepo has supaslidev package', () => {
+    expect(existsSync(join(MONOREPO_ROOT, 'packages', 'supaslidev'))).toBe(true);
   });
 
   it('monorepo has cli package', () => {

@@ -15,8 +15,8 @@ export default defineConfig({
       },
       {
         test: {
-          name: 'dashboard',
-          root: './packages/dashboard',
+          name: 'supaslidev',
+          root: './packages/supaslidev',
           include: ['src/**/*.test.ts', 'tests/**/*.test.ts'],
         },
       },

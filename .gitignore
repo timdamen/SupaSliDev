@@ -12,8 +12,8 @@ coverage
 .vitest
 .tmp
 
-# Auto-generated 
-packages/dashboard/src/data/*
+# Auto-generated
+packages/supaslidev/src/data/*
 
 # type declarations
 auto-imports.d.ts

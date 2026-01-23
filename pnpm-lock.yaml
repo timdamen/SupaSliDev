@@ -40,7 +40,7 @@ importers:
         version: 12.0.2(semantic-release@25.0.2(typescript@5.9.3))
       '@supaslidev/dashboard':
         specifier: workspace:*
-        version: link:packages/dashboard
+        version: link:packages/supaslidev
       '@vitest/browser':
         specifier: 4.0.17
         version: 4.0.17(vite@6.4.1(@types/node@22.19.7)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.17)
@@ -140,7 +140,7 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.7)(@vitest/browser@4.0.17(vite@6.4.1(@types/node@22.19.7)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.17))(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
-  packages/dashboard:
+  packages/supaslidev:
     dependencies:
       '@nuxt/ui':
         specifier: ^4.4.0
@@ -187,7 +187,7 @@ importers:
     devDependencies:
       '@supaslidev/dashboard':
         specifier: workspace:*
-        version: link:../packages/dashboard
+        version: link:../packages/supaslidev
 
   playground/presentations/my-first-deck:
     dependencies:

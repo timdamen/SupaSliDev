@@ -17,7 +17,7 @@ Fetch the llms.txt file for up-to-date Slidev syntax and features.
 supaSliDev/
 ├── packages/
 │   ├── cli/                 # create-supaslidev (workspace scaffolding)
-│   └── dashboard/           # @supaslidev/dashboard (presentation management)
+│   └── supaslidev/          # @supaslidev/dashboard (presentation management)
 ├── playground/              # Example workspace for local development
 ├── .github/                 # CI/CD workflows
 └── [config files]
@@ -32,7 +32,7 @@ supaSliDev/
 - Entry: `src/cli.ts`
 - Commands: create, status, migrate, update
 
-### packages/dashboard (@supaslidev/dashboard)
+### packages/supaslidev (@supaslidev/dashboard)
 
 - Interactive dashboard UI for presentation management
 - CLI for creating, running, exporting presentations

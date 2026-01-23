@@ -9,7 +9,7 @@ import { scaffoldProject, cleanupProject, getTmpDir } from './setup/test-utils.j
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '../..');
 const CLI_PATH = join(ROOT_DIR, 'packages/cli/src/cli.ts');
-const DASHBOARD_CLI_PATH = join(ROOT_DIR, 'packages/dashboard/src/cli/index.ts');
+const DASHBOARD_CLI_PATH = join(ROOT_DIR, 'packages/supaslidev/src/cli/index.ts');
 
 function getTsxPath(): string {
   return join(ROOT_DIR, 'node_modules/.bin/tsx');

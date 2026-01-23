@@ -60,7 +60,7 @@ export interface DashboardInfo {
 }
 
 export async function startDashboard(projectPath: string): Promise<DashboardInfo> {
-  const dashboardCliPath = join(ROOT_DIR, 'packages/dashboard/src/cli/index.ts');
+  const dashboardCliPath = join(ROOT_DIR, 'packages/supaslidev/src/cli/index.ts');
 
   return new Promise((resolve, reject) => {
     const proc = spawn('npx', ['tsx', dashboardCliPath, 'dev'], {
