@@ -1,18 +1,26 @@
 [
   {
-    "id": "second-deck",
-    "title": "second-deck",
-    "description": "",
+    "id": "intro-to-vue",
+    "title": "Introduction to Vue 3",
+    "description": "A comprehensive guide to getting started with Vue 3 and the Composition API",
     "theme": "default",
-    "background": "",
-    "duration": ""
+    "background": "#1a1a2e",
+    "duration": "45 min"
   },
   {
-    "id": "test-deck",
-    "title": "test-deck",
-    "description": "A new Slidev presentation",
-    "theme": "default",
-    "background": "",
-    "duration": ""
+    "id": "typescript-deep-dive",
+    "title": "TypeScript Deep Dive",
+    "description": "Advanced TypeScript patterns and best practices for large-scale applications",
+    "theme": "seriph",
+    "background": "#0f0f23",
+    "duration": "60 min"
+  },
+  {
+    "id": "nuxt-workshop",
+    "title": "Nuxt 3 Workshop",
+    "description": "Building full-stack applications with Nuxt 3, Nitro, and server components",
+    "theme": "apple-basic",
+    "background": "#16213e",
+    "duration": "90 min"
   }
 ]
