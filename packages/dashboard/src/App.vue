@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useColorMode } from '#imports';
 import PresentationCard from './components/PresentationCard.vue';
 import CreatePresentationDialog from './components/CreatePresentationDialog.vue';
 import type { Presentation } from './types';
@@ -7,6 +8,14 @@ import presentationsData from './data/presentations.json';
 import { useServers } from './composables/useServers';
 
 const { startPolling, stopPolling, stopAllServers } = useServers();
+
+const colorMode = useColorMode();
+const isDark = computed({
+  get: () => colorMode.value === 'dark',
+  set: (value: boolean) => {
+    colorMode.preference = value ? 'dark' : 'light';
+  },
+});
 
 const isDialogOpen = ref(false);
 
@@ -57,7 +66,16 @@ const filteredPresentations = computed(() => {
               </h1>
               <p class="text-muted text-lg">Your presentations dashboard</p>
             </div>
-            <UButton icon="i-lucide-plus" @click="isDialogOpen = true">New Presentation</UButton>
+            <div class="flex items-center gap-3">
+              <UButton
+                :icon="isDark ? 'i-lucide-sun' : 'i-lucide-moon'"
+                color="neutral"
+                variant="ghost"
+                size="lg"
+                @click="isDark = !isDark"
+              />
+              <UButton icon="i-lucide-plus" @click="isDialogOpen = true">New Presentation</UButton>
+            </div>
           </div>
         </header>
 

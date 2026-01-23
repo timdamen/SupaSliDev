@@ -11,3 +11,11 @@ declare module '*/presentations.json' {
   const presentations: Presentation[];
   export default presentations;
 }
+
+declare module '#imports' {
+  export function useColorMode(): {
+    preference: 'dark' | 'light' | 'system';
+    readonly value: 'dark' | 'light';
+    forced: boolean;
+  };
+}
