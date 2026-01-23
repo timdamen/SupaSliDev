@@ -33,8 +33,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@nuxt/ui": "^4.4.0",
     "commander": "^13.1.0",
-    "vue": "^3.5.0"
+    "tailwindcss": "^4.1.18",
+    "vue": "^3.5.0",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

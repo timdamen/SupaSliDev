@@ -44,53 +44,55 @@ const filteredPresentations = computed(() => {
 </script>
 
 <template>
-  <div class="dashboard">
-    <header class="header">
-      <div class="header-content">
-        <div class="header-text">
-          <h1>Supaslidev</h1>
-          <p>Your presentations dashboard</p>
+  <UApp>
+    <div class="min-h-screen bg-default">
+      <div class="max-w-7xl mx-auto p-8">
+        <header class="mb-12">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h1
+                class="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+              >
+                Supaslidev
+              </h1>
+              <p class="text-muted text-lg">Your presentations dashboard</p>
+            </div>
+            <UButton icon="i-lucide-plus" @click="isDialogOpen = true">New Presentation</UButton>
+          </div>
+        </header>
+
+        <div class="mb-8 flex justify-center">
+          <UInput
+            v-model="searchQuery"
+            icon="i-lucide-search"
+            placeholder="Search presentations by title..."
+            class="max-w-md w-full"
+            size="lg"
+          />
         </div>
-        <button class="btn-new" @click="isDialogOpen = true">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path
-              d="M10 4V16M4 10H16"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            />
-          </svg>
-          New Presentation
-        </button>
+
+        <div
+          v-if="filteredPresentations.length > 0"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          <PresentationCard
+            v-for="presentation in filteredPresentations"
+            :key="presentation.id"
+            :presentation="presentation"
+          />
+        </div>
+
+        <div v-else class="text-center py-16 text-muted">
+          <h3 class="text-xl mb-2 text-default">No presentations found</h3>
+          <p>Try adjusting your search query</p>
+        </div>
+
+        <CreatePresentationDialog
+          :open="isDialogOpen"
+          @close="isDialogOpen = false"
+          @created="handlePresentationCreated"
+        />
       </div>
-    </header>
-
-    <div class="filter-container">
-      <input
-        v-model="searchQuery"
-        type="text"
-        class="filter-input"
-        placeholder="Search presentations by title..."
-      />
     </div>
-
-    <div v-if="filteredPresentations.length > 0" class="grid">
-      <PresentationCard
-        v-for="presentation in filteredPresentations"
-        :key="presentation.id"
-        :presentation="presentation"
-      />
-    </div>
-
-    <div v-else class="no-results">
-      <h3>No presentations found</h3>
-      <p>Try adjusting your search query</p>
-    </div>
-
-    <CreatePresentationDialog
-      :open="isDialogOpen"
-      @close="isDialogOpen = false"
-      @created="handlePresentationCreated"
-    />
-  </div>
+  </UApp>
 </template>

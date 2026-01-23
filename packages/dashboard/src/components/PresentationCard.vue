@@ -46,132 +46,53 @@ function handleCardClick(event: Event) {
 </script>
 
 <template>
-  <a
+  <UCard
+    as="a"
     :href="running && port ? `http://localhost:${port}` : '#'"
-    class="card"
     target="_blank"
     rel="noopener noreferrer"
     :title="`Open ${presentation.title}`"
+    class="group hover:-translate-y-1 transition-transform duration-200"
     @click="handleCardClick"
   >
-    <div
-      class="card-image"
-      :style="{
-        backgroundImage: presentation.background ? `url(${presentation.background})` : undefined,
-      }"
-    >
-      <div v-if="running" class="status-indicator" title="Server running" />
-    </div>
-    <div class="card-content">
-      <h3 class="card-title">{{ presentation.title }}</h3>
-      <p v-if="presentation.description" class="card-description">
-        {{ presentation.description }}
-      </p>
-      <div class="card-meta">
-        <span class="badge badge-theme">{{ presentation.theme }}</span>
-        <span v-if="presentation.duration" class="badge badge-duration">
-          {{ presentation.duration }}
-        </span>
-      </div>
-      <button
-        class="present-button"
-        :class="{ 'present-button--stop': running, 'present-button--loading': loading }"
-        :disabled="loading"
-        @click="handlePresent"
+    <template #header>
+      <div
+        class="h-44 -mx-4 -mt-4 bg-cover bg-center bg-elevated relative"
+        :style="{
+          backgroundImage: presentation.background ? `url(${presentation.background})` : undefined,
+        }"
       >
-        <span v-if="loading" class="button-spinner" />
-        <span v-else>{{ running ? 'Stop' : 'Present' }}</span>
-      </button>
+        <div
+          class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60"
+        />
+        <div
+          v-if="running"
+          class="absolute top-3 right-3 w-3 h-3 bg-success rounded-full shadow-[0_0_8px_theme(colors.green.500)] animate-pulse z-10"
+          title="Server running"
+        />
+      </div>
+    </template>
+
+    <h3 class="text-lg font-semibold mb-2">{{ presentation.title }}</h3>
+    <p v-if="presentation.description" class="text-muted text-sm mb-4 line-clamp-2">
+      {{ presentation.description }}
+    </p>
+
+    <div class="flex gap-2 flex-wrap items-center">
+      <UBadge color="secondary" variant="subtle">{{ presentation.theme }}</UBadge>
+      <UBadge v-if="presentation.duration" color="success" variant="subtle">
+        {{ presentation.duration }}
+      </UBadge>
     </div>
-  </a>
+
+    <UButton
+      class="mt-4 w-full"
+      :color="running ? 'error' : 'primary'"
+      :loading="loading"
+      :disabled="loading"
+      @click="handlePresent"
+    >
+      {{ running ? 'Stop' : 'Present' }}
+    </UButton>
+  </UCard>
 </template>
-
-<style scoped>
-.status-indicator {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 12px;
-  height: 12px;
-  background: #22c55e;
-  border-radius: 50%;
-  box-shadow: 0 0 8px #22c55e;
-  z-index: 1;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-.card-image {
-  position: relative;
-}
-
-.present-button {
-  margin-top: 1rem;
-  width: 100%;
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition:
-    background-color 0.2s,
-    transform 0.1s;
-  background: var(--primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.present-button:hover:not(:disabled) {
-  background: #2563eb;
-  transform: translateY(-1px);
-}
-
-.present-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.present-button--stop {
-  background: #ef4444;
-}
-
-.present-button--stop:hover:not(:disabled) {
-  background: #dc2626;
-}
-
-.present-button--loading {
-  cursor: wait;
-  opacity: 0.8;
-}
-
-.present-button:disabled {
-  cursor: not-allowed;
-}
-
-.button-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-</style>
