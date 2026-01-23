@@ -5,7 +5,6 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   startDashboard,
-  stopDashboard,
   stopDashboardAsync,
   waitForServer,
   getBaseProjectPath,
@@ -170,7 +169,7 @@ describe('Dashboard Display E2E', () => {
     beforeAll(async () => {
       createSecondPresentation(projectPath);
 
-      stopDashboard();
+      await stopDashboardAsync();
 
       const dashboardInfo = await startDashboard(projectPath);
       dashboardUrl = dashboardInfo.url;

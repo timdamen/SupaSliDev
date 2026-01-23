@@ -33,32 +33,32 @@ Once inside a Supaslidev workspace, use the dashboard CLI:
 
 ```bash
 # Start interactive dashboard UI
-pnpm dashboard
+pnpm dev
 
 # Create a new presentation
-pnpm dashboard new my-presentation
+pnpm new my-presentation
 
 # Start dev server for a presentation
-pnpm dashboard present my-presentation
+pnpm present my-presentation
 
 # Export to PDF
-pnpm dashboard export my-presentation
+pnpm export my-presentation
 
 # Build for deployment
-pnpm dashboard deploy my-presentation
+pnpm deploy my-presentation
 ```
 
 ## Commands Reference
 
 ### Dashboard CLI (within a workspace)
 
-| Command                            | Description                         |
-| ---------------------------------- | ----------------------------------- |
-| `pnpm dashboard`                   | Start interactive dashboard UI      |
-| `pnpm dashboard new <name>`        | Create a new presentation           |
-| `pnpm dashboard present <name>`    | Start dev server for a presentation |
-| `pnpm dashboard export <name>`     | Export presentation to PDF          |
-| `pnpm dashboard deploy <name>`     | Build and prepare for deployment    |
+| Command                | Description                         |
+| ---------------------- | ----------------------------------- |
+| `pnpm dev`             | Start interactive dashboard UI      |
+| `pnpm new <name>`      | Create a new presentation           |
+| `pnpm present <name>`  | Start dev server for a presentation |
+| `pnpm export <name>`   | Export presentation to PDF          |
+| `pnpm deploy <name>`   | Build and prepare for deployment    |
 
 ### Workspace Commands
 

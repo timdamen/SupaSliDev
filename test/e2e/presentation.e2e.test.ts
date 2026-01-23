@@ -11,6 +11,7 @@ import {
   getTmpDir,
   cleanupProject,
   launchBrowser,
+  installDependencies,
 } from './setup/test-utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -68,6 +69,7 @@ describe('Presentation Viewing E2E', () => {
     projectPath = join(getTmpDir(), PRESENTATION_TEST_PROJECT);
 
     cpSync(baseProjectPath, projectPath, { recursive: true });
+    installDependencies(projectPath);
 
     browser = await launchBrowser();
     const context = await browser.newContext();
@@ -81,6 +83,7 @@ describe('Presentation Viewing E2E', () => {
     dashboardUrl = dashboardInfo.url;
 
     await waitForServer(dashboardUrl);
+    await waitForServer('http://localhost:3001/api/servers');
   }, 120000);
 
   afterAll(async () => {

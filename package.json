@@ -3,11 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "supaslidev": "supaslidev",
-    "new": "supaslidev create",
-    "dev": "supaslidev dev",
-    "export": "supaslidev export",
-    "deploy": "supaslidev deploy",
     "dev:all": "turbo run dev",
     "build": "pnpm --filter",
     "build:all": "turbo run build",

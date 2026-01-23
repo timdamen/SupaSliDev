@@ -110,7 +110,7 @@ describe('Error Handling E2E', () => {
         true,
       );
 
-      const result = runDashboardCli('create InvalidName', projectPath);
+      const result = runDashboardCli('new InvalidName', projectPath);
 
       expect(result.exitCode).not.toBe(0);
       expect(result.stderr).toContain('lowercase');
@@ -121,7 +121,7 @@ describe('Error Handling E2E', () => {
         true,
       );
 
-      const result = runDashboardCli('create invalid_name!', projectPath);
+      const result = runDashboardCli('new invalid_name!', projectPath);
 
       expect(result.exitCode).not.toBe(0);
       expect(result.stderr).toContain('alphanumeric');
@@ -132,7 +132,7 @@ describe('Error Handling E2E', () => {
         true,
       );
 
-      const result = runDashboardCli('create -- -invalid', projectPath);
+      const result = runDashboardCli('new -- -invalid', projectPath);
 
       expect(result.exitCode).not.toBe(0);
       expect(result.stderr).toContain('hyphen');
@@ -143,7 +143,7 @@ describe('Error Handling E2E', () => {
         true,
       );
 
-      const result = runDashboardCli('create invalid-', projectPath);
+      const result = runDashboardCli('new invalid-', projectPath);
 
       expect(result.exitCode).not.toBe(0);
       expect(result.stderr).toContain('hyphen');
@@ -160,7 +160,7 @@ describe('Error Handling E2E', () => {
       const presentationPath = join(projectPath, 'presentations', existingPresentation);
       expect(existsSync(presentationPath)).toBe(true);
 
-      const result = runDashboardCli(`create ${existingPresentation}`, projectPath);
+      const result = runDashboardCli(`new ${existingPresentation}`, projectPath);
 
       expect(result.exitCode).not.toBe(0);
       expect(result.stderr).toContain('already exists');
@@ -237,7 +237,7 @@ describe('Error Handling E2E', () => {
     });
 
     it('create command fails when no project is found', () => {
-      const result = runDashboardCli('create my-deck', ISOLATED_DIR);
+      const result = runDashboardCli('new my-deck', ISOLATED_DIR);
 
       expect(result.exitCode).not.toBe(0);
       expect(result.stderr).toContain('Could not find a Supaslidev project');

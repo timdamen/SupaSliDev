@@ -97,7 +97,7 @@ describe('CLI Scaffolding E2E', () => {
       const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
       expect(packageJson.scripts).toBeDefined();
-      expect(packageJson.scripts.supaslidev).toBe('supaslidev');
+      expect(packageJson.scripts.dev).toBe('supaslidev');
     });
 
     it('includes supaslidev in devDependencies', () => {

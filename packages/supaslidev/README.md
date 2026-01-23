@@ -14,13 +14,13 @@ Within a Supaslidev workspace:
 
 ```bash
 # Start interactive dashboard
-pnpm dashboard
+pnpm dev
 
 # Or use CLI commands directly
-pnpm dashboard new my-presentation
-pnpm dashboard present my-presentation
-pnpm dashboard export my-presentation
-pnpm dashboard deploy my-presentation
+pnpm new my-presentation
+pnpm present my-presentation
+pnpm export my-presentation
+pnpm deploy my-presentation
 ```
 
 ## Commands
