@@ -97,15 +97,15 @@ describe('CLI Scaffolding E2E', () => {
       const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
       expect(packageJson.scripts).toBeDefined();
-      expect(packageJson.scripts.dashboard).toBe('supaslidev');
+      expect(packageJson.scripts.supaslidev).toBe('supaslidev');
     });
 
-    it('includes @supaslidev/dashboard in devDependencies', () => {
+    it('includes supaslidev in devDependencies', () => {
       const packageJsonPath = join(projectPath, 'package.json');
       const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
       expect(packageJson.devDependencies).toBeDefined();
-      expect(packageJson.devDependencies['@supaslidev/dashboard']).toBeDefined();
+      expect(packageJson.devDependencies['supaslidev']).toBeDefined();
     });
 
     it('creates presentation package.json with correct name format', () => {
@@ -247,7 +247,7 @@ describe('CLI Scaffolding E2E', () => {
       const packageJsonPath = join(projectPath, 'package.json');
       const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
       // Remove unpublished local package to allow pnpm install to succeed in test environment
-      delete packageJson.devDependencies['@supaslidev/dashboard'];
+      delete packageJson.devDependencies['supaslidev'];
       writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
 
       execSync('pnpm install', {

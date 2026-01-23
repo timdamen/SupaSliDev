@@ -237,8 +237,8 @@ export function cleanupProject(name: string): void {
 export function installDependencies(projectPath: string): void {
   const packageJsonPath = join(projectPath, 'package.json');
   const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-  if (packageJson.devDependencies?.['@supaslidev/dashboard']) {
-    delete packageJson.devDependencies['@supaslidev/dashboard'];
+  if (packageJson.devDependencies?.['supaslidev']) {
+    delete packageJson.devDependencies['supaslidev'];
   }
   writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
 
