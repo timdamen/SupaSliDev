@@ -1,14 +1,36 @@
 packages:
-  - 'packages/*'
-  - 'playground'
-  - 'playground/presentations/*'
-  - 'docs'
+  - packages/*
+  - playground
+  - playground/presentations/*
+  - docs
 
 catalog:
   '@slidev/cli': ^52.11.3
   '@slidev/theme-default': latest
   '@slidev/theme-seriph': latest
-  vue: ^3.5.26
   '@vue/compiler-sfc': ^3.5.27
   typescript: ^5.3.3
+  vue: ^3.5.26
   vue-tsc: ^2.0.0
+
+
+ignoredOptionalDependencies:
+  - '@resvg/resvg-js-android-arm-eabi'
+  - '@resvg/resvg-js-android-arm64'
+  - '@resvg/resvg-js-darwin-x64'
+  - '@resvg/resvg-js-linux-arm-gnueabihf'
+  - '@resvg/resvg-js-linux-arm64-gnu'
+  - '@resvg/resvg-js-linux-arm64-musl'
+  - '@resvg/resvg-js-linux-x64-gnu'
+  - '@resvg/resvg-js-linux-x64-musl'
+  - '@resvg/resvg-js-win32-arm64-msvc'
+  - '@resvg/resvg-js-win32-ia32-msvc'
+  - '@resvg/resvg-js-win32-x64-msvc'
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - better-sqlite3
+  - esbuild
+  - playwright-chromium
+  - sharp
+  - vue-demi

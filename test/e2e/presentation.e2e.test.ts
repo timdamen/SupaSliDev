@@ -120,36 +120,39 @@ describe('Presentation Viewing E2E', () => {
         { timeout: 60000 },
       );
 
-      let popup;
-      try {
-        popup = await popupPromise;
-        await popup.waitForLoadState('domcontentloaded');
-        presentationUrl = popup.url();
-        await popup.close();
-      } catch {
-        // Popup may have been blocked, get URL from card href
+      // Get the server port from the API (most reliable source)
+      const servers = await dashboardPage.evaluate(async () => {
+        const res = await fetch('/api/servers');
+        return res.json() as Promise<Record<string, { port: number }>>;
+      });
+
+      const firstServer = Object.values(servers)[0];
+      if (firstServer) {
+        presentationUrl = `http://localhost:${firstServer.port}`;
       }
 
-      if (
-        !presentationUrl ||
-        presentationUrl === 'about:blank' ||
-        presentationUrl.startsWith('chrome-error')
-      ) {
-        const cardLink = dashboardPage.locator('.card').first();
-        const href = await cardLink.getAttribute('href');
-        if (href && href.startsWith('http')) {
-          presentationUrl = href;
-        } else {
-          const apiUrl = dashboardUrl.replace(/:\d+$/, ':3001');
-          const serversResponse = await fetch(`${apiUrl}/api/servers`);
-          if (serversResponse.ok) {
-            const servers = (await serversResponse.json()) as Record<string, { port: number }>;
-            const firstServer = Object.values(servers)[0];
-            if (firstServer) {
-              presentationUrl = `http://localhost:${firstServer.port}`;
-            }
-          }
+      // Fallback: try to get URL from popup if API didn't work
+      if (!presentationUrl) {
+        let popup;
+        try {
+          popup = await popupPromise;
+          await popup.waitForLoadState('domcontentloaded');
+          presentationUrl = popup.url();
+          await popup.close();
+        } catch {
+          // Popup may have been blocked
         }
+      }
+
+      // Close popup if it's still open
+      try {
+        const popup = await Promise.race([
+          popupPromise,
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 100)),
+        ]);
+        if (popup) await popup.close();
+      } catch {
+        // Popup already closed or didn't open
       }
 
       expect(presentationUrl).toMatch(/http:\/\/localhost:\d+/);
@@ -161,7 +164,8 @@ describe('Presentation Viewing E2E', () => {
     });
 
     it('presentation server responds to requests', async () => {
-      await waitForPresentationServer(parseInt(presentationUrl.split(':')[2]) || 3030, 30000);
+      const port = parseInt(new URL(presentationUrl).port) || 3030;
+      await waitForPresentationServer(port, 30000);
       const response = await fetch(presentationUrl);
       expect(response.ok).toBe(true);
     }, 35000);
@@ -196,6 +200,14 @@ describe('Presentation Viewing E2E', () => {
   });
 
   describe('slide navigation with controls', () => {
+    beforeAll(async () => {
+      if (!presentationPage || presentationPage.isClosed()) {
+        presentationPage = await browser.newPage();
+      }
+      await presentationPage.goto(presentationUrl);
+      await presentationPage.waitForSelector('.slidev-page', { timeout: 30000 });
+    }, 35000);
+
     it('navigating to next slide changes URL', async () => {
       const initialSlide = getSlideNumberFromUrl(presentationPage.url());
 

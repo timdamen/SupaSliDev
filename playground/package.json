@@ -10,7 +10,7 @@
     "build": "pnpm --filter @supaslidev/* run build"
   },
   "devDependencies": {
-    "@supaslidev/dashboard": "link:../"
+    "@supaslidev/dashboard": "workspace:*"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -10,3 +10,13 @@ tasks
 coverage
 .vitest
 .tmp
+
+# Auto-generated 
+packages/dashboard/src/data/*
+
+# type declarations
+auto-imports.d.ts
+components.d.ts
+
+# Nuxt Content cache
+.data/
