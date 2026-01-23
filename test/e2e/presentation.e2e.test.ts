@@ -96,7 +96,7 @@ describe('Presentation Viewing E2E', () => {
 
       const presentButton = dashboardPage.locator('.present-button').first();
       expect(await presentButton.isVisible()).toBe(true);
-      expect(await presentButton.textContent()).toBe('Present');
+      expect(await presentButton.textContent()).toContain('dev');
 
       const popupPromise = dashboardPage.context().waitForEvent('page', { timeout: 90000 });
       await presentButton.click();
@@ -105,7 +105,7 @@ describe('Presentation Viewing E2E', () => {
         () => {
           const button = document.querySelector('.present-button');
           return (
-            button?.textContent?.trim() === 'Stop' ||
+            button?.textContent?.includes('stop') ||
             button?.classList.contains('present-button--loading')
           );
         },
@@ -115,7 +115,7 @@ describe('Presentation Viewing E2E', () => {
       await dashboardPage.waitForFunction(
         () => {
           const button = document.querySelector('.present-button');
-          return button?.textContent?.trim() === 'Stop';
+          return button?.textContent?.includes('stop');
         },
         { timeout: 60000 },
       );
@@ -155,9 +155,9 @@ describe('Presentation Viewing E2E', () => {
       expect(presentationUrl).toMatch(/http:\/\/localhost:\d+/);
     }, 120000);
 
-    it('present button shows Stop when server is running', async () => {
+    it('present button shows stop when server is running', async () => {
       const presentButton = dashboardPage.locator('.present-button').first();
-      expect(await presentButton.textContent()).toBe('Stop');
+      expect(await presentButton.textContent()).toContain('stop');
     });
 
     it('presentation server responds to requests', async () => {
@@ -378,7 +378,7 @@ describe('Presentation Viewing E2E', () => {
         await dashboardPage.waitForFunction(
           () => {
             const button = document.querySelector('.present-button');
-            return button?.textContent?.trim() === 'Stop';
+            return button?.textContent?.includes('stop');
           },
           { timeout: 10000 },
         );
@@ -389,15 +389,15 @@ describe('Presentation Viewing E2E', () => {
         await dashboardPage.waitForFunction(
           () => {
             const button = document.querySelector('.present-button');
-            return button?.textContent?.trim() === 'Present';
+            return button?.textContent?.includes('dev');
           },
           { timeout: 20000 },
         );
 
-        expect(await stopButton.textContent()).toBe('Present');
+        expect(await stopButton.textContent()).toContain('dev');
       } else {
         const stopButton = dashboardPage.locator('.present-button').first();
-        expect(await stopButton.textContent()).toBe('Present');
+        expect(await stopButton.textContent()).toContain('dev');
       }
     }, 60000);
   });

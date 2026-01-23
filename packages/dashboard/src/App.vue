@@ -1,21 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useColorMode } from '#imports';
+import AppHeader from './components/AppHeader.vue';
 import PresentationCard from './components/PresentationCard.vue';
 import CreatePresentationDialog from './components/CreatePresentationDialog.vue';
+import EmptyState from './components/EmptyState.vue';
 import type { Presentation } from './types';
 import presentationsData from './data/presentations.json';
 import { useServers } from './composables/useServers';
 
 const { startPolling, stopPolling, stopAllServers } = useServers();
-
-const colorMode = useColorMode();
-const isDark = computed({
-  get: () => colorMode.value === 'dark',
-  set: (value: boolean) => {
-    colorMode.preference = value ? 'dark' : 'light';
-  },
-});
 
 const isDialogOpen = ref(false);
 
@@ -55,62 +48,81 @@ const filteredPresentations = computed(() => {
 <template>
   <UApp>
     <div class="min-h-screen bg-default">
-      <div class="max-w-7xl mx-auto p-8">
-        <header class="mb-12">
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <h1
-                class="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
-              >
-                Supaslidev
-              </h1>
-              <p class="text-muted text-lg">Your presentations dashboard</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <UButton
-                :icon="isDark ? 'i-lucide-sun' : 'i-lucide-moon'"
-                color="neutral"
-                variant="ghost"
-                size="lg"
-                @click="isDark = !isDark"
-              />
-              <UButton icon="i-lucide-plus" @click="isDialogOpen = true">New Presentation</UButton>
-            </div>
+      <UContainer class="py-6 sm:py-8 lg:py-10">
+        <AppHeader />
+
+        <template v-if="presentations.length === 0">
+          <EmptyState
+            icon="i-lucide-presentation"
+            title="No presentations yet"
+            description="Create your first presentation to get started with supaslidev."
+          >
+            <UButton class="font-mono" @click="isDialogOpen = true">
+              <template #leading>
+                <span class="opacity-70">$</span>
+              </template>
+              create presentation
+            </UButton>
+          </EmptyState>
+        </template>
+
+        <template v-else>
+          <div class="flex items-center justify-between mb-6">
+            <p class="text-muted font-mono text-sm">
+              {{ filteredPresentations.length }} presentation{{
+                filteredPresentations.length !== 1 ? 's' : ''
+              }}
+            </p>
+            <UButton class="btn-new font-mono" @click="isDialogOpen = true">
+              <template #leading>
+                <span class="opacity-70">$</span>
+              </template>
+              new
+            </UButton>
           </div>
-        </header>
 
-        <div class="mb-8 flex justify-center">
-          <UInput
-            v-model="searchQuery"
-            icon="i-lucide-search"
-            placeholder="Search presentations by title..."
-            class="max-w-md w-full"
-            size="lg"
-          />
-        </div>
+          <div class="mb-6 flex justify-center">
+            <UInput
+              v-model="searchQuery"
+              icon="i-lucide-search"
+              placeholder="Search presentations by title..."
+              class="filter-input max-w-md w-full"
+              size="lg"
+            />
+          </div>
 
-        <div
-          v-if="filteredPresentations.length > 0"
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          <PresentationCard
-            v-for="presentation in filteredPresentations"
-            :key="presentation.id"
-            :presentation="presentation"
-          />
-        </div>
+          <div
+            v-if="filteredPresentations.length > 0"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+          >
+            <PresentationCard
+              v-for="presentation in filteredPresentations"
+              :key="presentation.id"
+              :presentation="presentation"
+            />
+          </div>
 
-        <div v-else class="text-center py-16 text-muted">
-          <h3 class="text-xl mb-2 text-default">No presentations found</h3>
-          <p>Try adjusting your search query</p>
-        </div>
+          <EmptyState
+            v-else
+            icon="i-lucide-search-x"
+            title="No presentations found"
+            description="Try adjusting your search query."
+          >
+            <UButton variant="soft" class="font-mono" @click="searchQuery = ''">
+              <template #leading>
+                <span class="opacity-70">$</span>
+              </template>
+              clear search
+            </UButton>
+          </EmptyState>
+        </template>
 
         <CreatePresentationDialog
           :open="isDialogOpen"
           @close="isDialogOpen = false"
           @created="handlePresentationCreated"
         />
-      </div>
+      </UContainer>
     </div>
   </UApp>
 </template>

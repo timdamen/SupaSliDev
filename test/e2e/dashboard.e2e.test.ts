@@ -113,15 +113,12 @@ describe('Dashboard Display E2E', () => {
       expect(response?.ok()).toBe(true);
 
       const pageTitle = await page.locator('h1').textContent();
-      expect(pageTitle).toBe('Supaslidev');
-
-      const subtitle = await page.locator('.header-text p').textContent();
-      expect(subtitle).toBe('Your presentations dashboard');
+      expect(pageTitle).toBe('supaslidev');
     });
 
     it('takes initial screenshot of dashboard', async () => {
       await page.goto(dashboardUrl);
-      await page.waitForSelector('.grid');
+      await page.waitForSelector('.card');
 
       const screenshot = await takeScreenshot(page, 'dashboard-initial');
       expect(screenshot.length).toBeGreaterThan(0);
@@ -144,15 +141,11 @@ describe('Dashboard Display E2E', () => {
       const card = page.locator('.card').first();
       expect(await card.isVisible()).toBe(true);
 
-      const cardImage = card.locator('.card-image');
-      expect(await cardImage.isVisible()).toBe(true);
+      const cardTitle = card.locator('.card-title');
+      expect(await cardTitle.isVisible()).toBe(true);
 
-      const cardContent = card.locator('.card-content');
-      expect(await cardContent.isVisible()).toBe(true);
-
-      const themeBadge = card.locator('.badge-theme');
-      expect(await themeBadge.isVisible()).toBe(true);
-      expect(await themeBadge.textContent()).toBe('default');
+      const presentButton = card.locator('.present-button');
+      expect(await presentButton.isVisible()).toBe(true);
     });
 
     it('each presentation card has a present button', async () => {
@@ -167,7 +160,7 @@ describe('Dashboard Display E2E', () => {
         const presentButton = card.locator('.present-button');
 
         expect(await presentButton.isVisible()).toBe(true);
-        expect(await presentButton.textContent()).toBe('Present');
+        expect(await presentButton.textContent()).toContain('dev');
         expect(await presentButton.isEnabled()).toBe(true);
       }
     });
@@ -220,7 +213,7 @@ describe('Dashboard Display E2E', () => {
       for (let i = 0; i < buttonCount; i++) {
         const button = presentButtons.nth(i);
         expect(await button.isVisible()).toBe(true);
-        expect(await button.textContent()).toBe('Present');
+        expect(await button.textContent()).toContain('dev');
       }
     });
 
@@ -239,13 +232,13 @@ describe('Dashboard Display E2E', () => {
 
       const newButton = page.locator('.btn-new');
       expect(await newButton.isVisible()).toBe(true);
-      expect(await newButton.textContent()).toContain('New Presentation');
+      expect(await newButton.textContent()).toContain('new');
     });
 
     it('has a search input', async () => {
       await page.goto(dashboardUrl);
 
-      const searchInput = page.locator('.filter-input');
+      const searchInput = page.locator('.filter-input input');
       expect(await searchInput.isVisible()).toBe(true);
       expect(await searchInput.getAttribute('placeholder')).toBe(
         'Search presentations by title...',
@@ -256,7 +249,7 @@ describe('Dashboard Display E2E', () => {
       await page.goto(dashboardUrl);
       await page.waitForSelector('.card');
 
-      const searchInput = page.locator('.filter-input');
+      const searchInput = page.locator('.filter-input input');
       await searchInput.fill('second');
 
       await page.waitForTimeout(100);

@@ -74,7 +74,7 @@ function handleCardClick(event: Event) {
     target="_blank"
     rel="noopener noreferrer"
     :title="`Open ${presentation.title}`"
-    class="terminal-card group transition-all duration-300"
+    class="card terminal-card group transition-all duration-300"
     :class="{ 'terminal-card--running': running }"
     :ui="{
       root: 'overflow-hidden',
@@ -125,7 +125,7 @@ function handleCardClick(event: Event) {
           <span class="text-[var(--ui-success)] font-mono text-sm shrink-0">❯</span>
           <div class="min-w-0">
             <h3
-              class="font-mono text-base font-semibold text-[var(--ui-text)] leading-tight truncate"
+              class="card-title font-mono text-base font-semibold text-[var(--ui-text)] leading-tight truncate"
             >
               {{ presentation.title }}
             </h3>
@@ -159,7 +159,7 @@ function handleCardClick(event: Event) {
           :color="running ? 'error' : 'success'"
           variant="soft"
           size="sm"
-          class="flex-1 terminal-btn font-mono"
+          class="present-button flex-1 terminal-btn font-mono"
           :loading="loading.dev"
           :disabled="loading.dev"
           @click="handleDev"
