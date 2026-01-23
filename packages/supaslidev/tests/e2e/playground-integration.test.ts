@@ -105,7 +105,7 @@ describe('Dashboard Package Detection', () => {
   it('dashboard has correct package name', () => {
     const packagePath = join(DASHBOARD_ROOT, 'package.json');
     const pkg = JSON.parse(readFileSync(packagePath, 'utf-8'));
-    expect(pkg.name).toBe('@supaslidev/dashboard');
+    expect(pkg.name).toBe('supaslidev');
   });
 
   it('dashboard CLI entry point exists', () => {

@@ -12,7 +12,7 @@ export function findDashboardPackageRoot(): string {
     if (existsSync(packageJsonPath)) {
       try {
         const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-        if (pkg.name === '@supaslidev/dashboard') {
+        if (pkg.name === 'supaslidev') {
           return dir;
         }
       } catch {
@@ -22,7 +22,7 @@ export function findDashboardPackageRoot(): string {
     dir = dirname(dir);
   }
 
-  throw new Error('Could not find @supaslidev/dashboard package root');
+  throw new Error('Could not find supaslidev package root');
 }
 
 const packageRoot = findDashboardPackageRoot();

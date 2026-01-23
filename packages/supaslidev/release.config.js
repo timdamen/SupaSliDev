@@ -20,9 +20,9 @@ export default {
       {
         assets: ['CHANGELOG.md', 'package.json'],
         message:
-          'chore(release): @supaslidev/dashboard@${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
+          'chore(release): supaslidev@${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
       },
     ],
   ],
-  tagFormat: '@supaslidev/dashboard@${version}',
+  tagFormat: 'supaslidev@${version}',
 };
