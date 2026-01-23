@@ -55,10 +55,16 @@ describe('CLI Help & Version', () => {
     expect(stdout).toContain('dashboard');
   });
 
-  it('shows help for create command', () => {
-    const { stdout } = runCLI('create --help', process.cwd());
-    expect(stdout).toContain('create');
+  it('shows help for new command', () => {
+    const { stdout } = runCLI('new --help', process.cwd());
+    expect(stdout).toContain('new');
     expect(stdout).toContain('presentation');
+  });
+
+  it('shows help for present command', () => {
+    const { stdout } = runCLI('present --help', process.cwd());
+    expect(stdout).toContain('present');
+    expect(stdout).toContain('dev server');
   });
 
   it('shows help for export command', () => {
@@ -90,8 +96,14 @@ describe('CLI Project Detection', () => {
     expect(stderr).toContain('Could not find a Supaslidev project');
   });
 
-  it('fails create command when no project is found', () => {
-    const { stderr, exitCode } = runCLI('create test-deck', TEST_DIR);
+  it('fails new command when no project is found', () => {
+    const { stderr, exitCode } = runCLI('new test-deck', TEST_DIR);
+    expect(exitCode).not.toBe(0);
+    expect(stderr).toContain('Could not find a Supaslidev project');
+  });
+
+  it('fails present command when no project is found', () => {
+    const { stderr, exitCode } = runCLI('present test-deck', TEST_DIR);
     expect(exitCode).not.toBe(0);
     expect(stderr).toContain('Could not find a Supaslidev project');
   });

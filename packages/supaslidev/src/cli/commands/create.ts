@@ -65,7 +65,7 @@ export async function create(name?: string): Promise<void> {
         return;
       }
       console.log('\nPresentation created successfully!');
-      console.log('Run "supaslidev" to start the dashboard and view your presentations.');
+      console.log('Run "supaslidev present <name>" to start a dev server for your presentation.');
       resolve();
     });
 

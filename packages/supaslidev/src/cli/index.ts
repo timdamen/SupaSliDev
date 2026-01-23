@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import { dev } from './commands/dev.js';
 import { create } from './commands/create.js';
+import { present } from './commands/present.js';
 import { exportPdf } from './commands/export.js';
 import { deploy } from './commands/deploy.js';
 
@@ -21,11 +22,19 @@ program
   });
 
 program
-  .command('create')
+  .command('new')
   .description('Create a new presentation')
   .argument('[name]', 'Name of the presentation')
   .action(async (name?: string) => {
     await create(name);
+  });
+
+program
+  .command('present')
+  .description('Start a presentation dev server')
+  .argument('<name>', 'Name of the presentation to start')
+  .action(async (name: string) => {
+    await present(name);
   });
 
 program
