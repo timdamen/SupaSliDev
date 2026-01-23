@@ -15,14 +15,14 @@ Monorepo toolkit for managing multiple [Slidev](https://sli.dev/) presentations 
 ## Key Commands
 
 ```bash
-pnpm dashboard                 # Interactive dashboard
-pnpm dashboard create <name>   # New presentation
-pnpm dashboard dev <name>      # Dev server
-pnpm dashboard export <name>   # Export PDF
-pnpm dashboard deploy <name>   # Build for deployment
-pnpm test                      # Run tests
-pnpm lint                      # Linting
-pnpm typecheck                 # Type checking
+pnpm dashboard                   # Interactive dashboard
+pnpm dashboard new <name>        # New presentation
+pnpm dashboard present <name>    # Dev server for presentation
+pnpm dashboard export <name>     # Export PDF
+pnpm dashboard deploy <name>     # Build for deployment
+pnpm test                        # Run tests
+pnpm lint                        # Linting
+pnpm typecheck                   # Type checking
 ```
 
 ## Architecture

@@ -37,22 +37,22 @@ supaSliDev/
 - Interactive dashboard UI for presentation management
 - CLI for creating, running, exporting presentations
 - Entry: `src/cli/index.ts` (CLI), `src/App.vue` (UI)
-- Commands: dev, create, export, deploy
+- Commands: dev, new, present, export, deploy
 
 ## Commands
 
-| Command                        | Description                       |
-| ------------------------------ | --------------------------------- |
-| `pnpm dashboard`               | Start interactive dashboard       |
-| `pnpm dashboard create <name>` | Create new presentation           |
-| `pnpm dashboard dev <name>`    | Start dev server                  |
-| `pnpm dashboard export <name>` | Export to PDF                     |
-| `pnpm dashboard deploy <name>` | Build for deployment              |
-| `pnpm dev:all`                 | Dev servers for all presentations |
-| `pnpm build:all`               | Build all presentations           |
-| `pnpm lint`                    | Run linting                       |
-| `pnpm typecheck`               | TypeScript type checking          |
-| `pnpm test`                    | Run tests                         |
+| Command                            | Description                       |
+| ---------------------------------- | --------------------------------- |
+| `pnpm dashboard`                   | Start interactive dashboard       |
+| `pnpm dashboard new <name>`        | Create new presentation           |
+| `pnpm dashboard present <name>`    | Start dev server for presentation |
+| `pnpm dashboard export <name>`     | Export to PDF                     |
+| `pnpm dashboard deploy <name>`     | Build for deployment              |
+| `pnpm dev:all`                     | Dev servers for all presentations |
+| `pnpm build:all`                   | Build all presentations           |
+| `pnpm lint`                        | Run linting                       |
+| `pnpm typecheck`                   | TypeScript type checking          |
+| `pnpm test`                        | Run tests                         |
 
 ## Key Architecture Decisions
 
@@ -63,5 +63,5 @@ supaSliDev/
 ## Development Workflow
 
 1. **Testing locally**: Use `playground/` as a test workspace
-2. **New presentations**: Always use `pnpm dashboard create` to ensure correct catalog dependencies
+2. **New presentations**: Always use `pnpm dashboard new` to ensure correct catalog dependencies
 3. **CLI changes**: Build with `pnpm --filter create-supaslidev build` or `pnpm --filter @supaslidev/dashboard build`

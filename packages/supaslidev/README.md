@@ -17,8 +17,8 @@ Within a Supaslidev workspace:
 pnpm dashboard
 
 # Or use CLI commands directly
-pnpm dashboard create my-presentation
-pnpm dashboard dev my-presentation
+pnpm dashboard new my-presentation
+pnpm dashboard present my-presentation
 pnpm dashboard export my-presentation
 pnpm dashboard deploy my-presentation
 ```
@@ -35,12 +35,20 @@ supaslidev
 supaslidev dev
 ```
 
-### create
+### new
 
 Creates a new presentation using the Slidev wizard.
 
 ```bash
-supaslidev create my-presentation
+supaslidev new my-presentation
+```
+
+### present
+
+Starts a dev server for a specific presentation.
+
+```bash
+supaslidev present my-presentation
 ```
 
 ### export
