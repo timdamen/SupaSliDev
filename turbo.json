@@ -21,6 +21,15 @@
       "inputs": ["src/**", "**/*.ts", "**/*.vue", "package.json"],
       "outputs": ["dist/**"]
     },
+    "@supaslidev/docs#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["**/*.md", "**/*.vue", "**/*.ts", "nuxt.config.ts", "package.json"],
+      "outputs": [".output/**"]
+    },
+    "playground#build": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true

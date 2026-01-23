@@ -4,6 +4,7 @@ deploy
 .DS_Store
 *.log
 .slidev
+**/presentations/*/index.html
 *.ralph-tui
 tasks
 .turbo
