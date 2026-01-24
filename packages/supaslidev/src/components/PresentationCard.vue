@@ -228,7 +228,7 @@ function handleCardClick(event: Event) {
   --terminal-glow-color: rgba(39, 201, 63, 0.2);
   --terminal-glow-strong: rgba(39, 201, 63, 0.4);
   border: 1px solid var(--ui-border);
-  background: var(--ui-bg);
+  background: var(--ui-bg-elevated);
 }
 
 .terminal-card:hover {
