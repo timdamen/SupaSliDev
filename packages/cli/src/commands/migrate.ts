@@ -2,6 +2,7 @@ import pc from 'picocolors';
 import { join } from 'node:path';
 import { findWorkspaceRoot } from '../state.js';
 import { dryRun, run, formatDryRunOutput, formatRunOutput } from '../migrations/runner.js';
+import { loadMigrations } from '../migrations/loader.js';
 
 export interface MigrateOptions {
   apply?: boolean;
@@ -31,11 +32,12 @@ export async function getMigrateResult(options: MigrateOptions = {}): Promise<Mi
   const migrationsDir = join(workspaceDir, '.supaslidev', 'migrations');
 
   if (options.apply) {
+    const { migrations } = await loadMigrations();
     const result = await run({
       workspaceDir,
       migrationsDir,
       apply: true,
-      migrations: [],
+      migrations,
     });
 
     return {
