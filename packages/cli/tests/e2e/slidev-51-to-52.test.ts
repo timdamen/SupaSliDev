@@ -6,7 +6,7 @@ import { createInitialState, writeState, readState } from '../../src/state.js';
 import { writeManifest } from '../../src/migrations/manifest.js';
 import { run } from '../../src/migrations/runner.js';
 import type { Migration } from '../../src/migrations/types.js';
-import { up } from '../../src/migrations/slidev-51-to-52.js';
+import { up, getAffectedPresentations } from '../../src/migrations/slidev-51-to-52.js';
 
 const TEST_DIR = join(tmpdir(), 'supaslidev-e2e-slidev-51-to-52');
 
@@ -335,5 +335,347 @@ describe('Slidev 51 to 52 Migration', () => {
     const deps = pkg.dependencies as Record<string, string>;
     expect(deps['@slidev/cli']).toBe('catalog:');
     expect(deps['vue']).toBe('^3.4.0');
+  });
+
+  describe('getAffectedPresentations', () => {
+    it('returns presentations with Slidev 51.x pinned', () => {
+      const workspaceDir = createTestWorkspace();
+
+      createPresentation(workspaceDir, 'legacy-deck', {
+        name: '@supaslidev/legacy-deck',
+        dependencies: {
+          '@slidev/cli': '^51.5.0',
+        },
+      });
+
+      createPresentation(workspaceDir, 'another-legacy', {
+        name: '@supaslidev/another-legacy',
+        dependencies: {
+          '@slidev/cli': '^51.0.0',
+        },
+      });
+
+      const affected = getAffectedPresentations(workspaceDir);
+
+      expect(affected).toHaveLength(2);
+      expect(affected.map((p) => p.name).sort()).toEqual(['another-legacy', 'legacy-deck']);
+      expect(affected.find((p) => p.name === 'legacy-deck')?.currentVersion).toBe('^51.5.0');
+    });
+
+    it('excludes presentations already using catalog:', () => {
+      const workspaceDir = createTestWorkspace();
+
+      createPresentation(workspaceDir, 'legacy-deck', {
+        name: '@supaslidev/legacy-deck',
+        dependencies: {
+          '@slidev/cli': '^51.5.0',
+        },
+      });
+
+      createPresentation(workspaceDir, 'modern-deck', {
+        name: '@supaslidev/modern-deck',
+        dependencies: {
+          '@slidev/cli': 'catalog:',
+        },
+      });
+
+      const affected = getAffectedPresentations(workspaceDir);
+
+      expect(affected).toHaveLength(1);
+      expect(affected[0].name).toBe('legacy-deck');
+    });
+
+    it('returns empty array when no presentations need migration', () => {
+      const workspaceDir = createTestWorkspace();
+
+      createPresentation(workspaceDir, 'modern-deck', {
+        name: '@supaslidev/modern-deck',
+        dependencies: {
+          '@slidev/cli': '^52.11.3',
+        },
+      });
+
+      const affected = getAffectedPresentations(workspaceDir);
+
+      expect(affected).toHaveLength(0);
+    });
+
+    it('returns empty array when no presentations directory exists', () => {
+      const workspaceDir = createTestWorkspace();
+
+      const affected = getAffectedPresentations(workspaceDir);
+
+      expect(affected).toHaveLength(0);
+    });
+  });
+
+  describe('Interactive Selection', () => {
+    it('converts selected presentations to catalog: and unselected to pinned version', async () => {
+      const workspaceDir = createTestWorkspace();
+      const migrationsDir = createMigrationsDir(workspaceDir);
+
+      createPresentation(workspaceDir, 'deck-a', {
+        name: '@supaslidev/deck-a',
+        dependencies: {
+          '@slidev/cli': '^51.1.0',
+          vue: '^3.5.13',
+        },
+      });
+
+      createPresentation(workspaceDir, 'deck-b', {
+        name: '@supaslidev/deck-b',
+        dependencies: {
+          '@slidev/cli': '^51.2.0',
+          vue: '^3.5.13',
+        },
+      });
+
+      createPresentation(workspaceDir, 'deck-c', {
+        name: '@supaslidev/deck-c',
+        dependencies: {
+          '@slidev/cli': '^51.3.0',
+          vue: '^3.5.13',
+        },
+      });
+
+      const manifest = {
+        version: '1.0.0',
+        migrations: [
+          { id: 'slidev-51-to-52', description: 'Migrate Slidev 51.x to 52.x', version: '0.1.0' },
+        ],
+      };
+      writeManifest(migrationsDir, manifest);
+
+      const migrations: Migration[] = [
+        { id: 'slidev-51-to-52', description: 'Migrate Slidev 51.x to 52.x', up },
+      ];
+
+      await run({
+        workspaceDir,
+        migrationsDir,
+        apply: true,
+        migrations,
+        migrationOptions: {
+          'slidev-51-to-52': {
+            interactive: true,
+            selectedForCatalog: ['deck-a', 'deck-c'],
+          },
+        },
+      });
+
+      const pkgA = readPresentationPackageJson(workspaceDir, 'deck-a');
+      const depsA = pkgA.dependencies as Record<string, string>;
+      expect(depsA['@slidev/cli']).toBe('catalog:');
+      expect(depsA['vue']).toBe('catalog:');
+
+      const pkgB = readPresentationPackageJson(workspaceDir, 'deck-b');
+      const depsB = pkgB.dependencies as Record<string, string>;
+      expect(depsB['@slidev/cli']).toBe('^52.11.3');
+      expect(depsB['vue']).toBe('^3.5.26');
+
+      const pkgC = readPresentationPackageJson(workspaceDir, 'deck-c');
+      const depsC = pkgC.dependencies as Record<string, string>;
+      expect(depsC['@slidev/cli']).toBe('catalog:');
+      expect(depsC['vue']).toBe('catalog:');
+    });
+
+    it('converts all presentations to pinned when none selected', async () => {
+      const workspaceDir = createTestWorkspace();
+      const migrationsDir = createMigrationsDir(workspaceDir);
+
+      createPresentation(workspaceDir, 'deck-a', {
+        name: '@supaslidev/deck-a',
+        dependencies: {
+          '@slidev/cli': '^51.1.0',
+          vue: '^3.5.13',
+        },
+      });
+
+      createPresentation(workspaceDir, 'deck-b', {
+        name: '@supaslidev/deck-b',
+        dependencies: {
+          '@slidev/cli': '^51.2.0',
+          vue: '^3.5.13',
+        },
+      });
+
+      const manifest = {
+        version: '1.0.0',
+        migrations: [
+          { id: 'slidev-51-to-52', description: 'Migrate Slidev 51.x to 52.x', version: '0.1.0' },
+        ],
+      };
+      writeManifest(migrationsDir, manifest);
+
+      const migrations: Migration[] = [
+        { id: 'slidev-51-to-52', description: 'Migrate Slidev 51.x to 52.x', up },
+      ];
+
+      await run({
+        workspaceDir,
+        migrationsDir,
+        apply: true,
+        migrations,
+        migrationOptions: {
+          'slidev-51-to-52': {
+            interactive: true,
+            selectedForCatalog: [],
+          },
+        },
+      });
+
+      const pkgA = readPresentationPackageJson(workspaceDir, 'deck-a');
+      const depsA = pkgA.dependencies as Record<string, string>;
+      expect(depsA['@slidev/cli']).toBe('^52.11.3');
+      expect(depsA['vue']).toBe('^3.5.26');
+
+      const pkgB = readPresentationPackageJson(workspaceDir, 'deck-b');
+      const depsB = pkgB.dependencies as Record<string, string>;
+      expect(depsB['@slidev/cli']).toBe('^52.11.3');
+      expect(depsB['vue']).toBe('^3.5.26');
+    });
+
+    it('converts all presentations to catalog when all selected', async () => {
+      const workspaceDir = createTestWorkspace();
+      const migrationsDir = createMigrationsDir(workspaceDir);
+
+      createPresentation(workspaceDir, 'deck-a', {
+        name: '@supaslidev/deck-a',
+        dependencies: {
+          '@slidev/cli': '^51.1.0',
+          vue: '^3.5.13',
+        },
+      });
+
+      createPresentation(workspaceDir, 'deck-b', {
+        name: '@supaslidev/deck-b',
+        dependencies: {
+          '@slidev/cli': '^51.2.0',
+          vue: '^3.5.13',
+        },
+      });
+
+      const manifest = {
+        version: '1.0.0',
+        migrations: [
+          { id: 'slidev-51-to-52', description: 'Migrate Slidev 51.x to 52.x', version: '0.1.0' },
+        ],
+      };
+      writeManifest(migrationsDir, manifest);
+
+      const migrations: Migration[] = [
+        { id: 'slidev-51-to-52', description: 'Migrate Slidev 51.x to 52.x', up },
+      ];
+
+      await run({
+        workspaceDir,
+        migrationsDir,
+        apply: true,
+        migrations,
+        migrationOptions: {
+          'slidev-51-to-52': {
+            interactive: true,
+            selectedForCatalog: ['deck-a', 'deck-b'],
+          },
+        },
+      });
+
+      const pkgA = readPresentationPackageJson(workspaceDir, 'deck-a');
+      const depsA = pkgA.dependencies as Record<string, string>;
+      expect(depsA['@slidev/cli']).toBe('catalog:');
+      expect(depsA['vue']).toBe('catalog:');
+
+      const pkgB = readPresentationPackageJson(workspaceDir, 'deck-b');
+      const depsB = pkgB.dependencies as Record<string, string>;
+      expect(depsB['@slidev/cli']).toBe('catalog:');
+      expect(depsB['vue']).toBe('catalog:');
+    });
+
+    it('handles devDependencies in interactive mode', async () => {
+      const workspaceDir = createTestWorkspace();
+      const migrationsDir = createMigrationsDir(workspaceDir);
+
+      createPresentation(workspaceDir, 'deck-dev', {
+        name: '@supaslidev/deck-dev',
+        dependencies: {},
+        devDependencies: {
+          '@slidev/cli': '^51.1.0',
+          vue: '^3.5.13',
+        },
+      });
+
+      const manifest = {
+        version: '1.0.0',
+        migrations: [
+          { id: 'slidev-51-to-52', description: 'Migrate Slidev 51.x to 52.x', version: '0.1.0' },
+        ],
+      };
+      writeManifest(migrationsDir, manifest);
+
+      const migrations: Migration[] = [
+        { id: 'slidev-51-to-52', description: 'Migrate Slidev 51.x to 52.x', up },
+      ];
+
+      await run({
+        workspaceDir,
+        migrationsDir,
+        apply: true,
+        migrations,
+        migrationOptions: {
+          'slidev-51-to-52': {
+            interactive: true,
+            selectedForCatalog: [],
+          },
+        },
+      });
+
+      const pkg = readPresentationPackageJson(workspaceDir, 'deck-dev');
+      const devDeps = pkg.devDependencies as Record<string, string>;
+      expect(devDeps['@slidev/cli']).toBe('^52.11.3');
+      expect(devDeps['vue']).toBe('^3.5.26');
+    });
+
+    it('preserves vue version when not matching ^3.5.13 in interactive mode', async () => {
+      const workspaceDir = createTestWorkspace();
+      const migrationsDir = createMigrationsDir(workspaceDir);
+
+      createPresentation(workspaceDir, 'deck-custom-vue', {
+        name: '@supaslidev/deck-custom-vue',
+        dependencies: {
+          '@slidev/cli': '^51.1.0',
+          vue: '^3.4.0',
+        },
+      });
+
+      const manifest = {
+        version: '1.0.0',
+        migrations: [
+          { id: 'slidev-51-to-52', description: 'Migrate Slidev 51.x to 52.x', version: '0.1.0' },
+        ],
+      };
+      writeManifest(migrationsDir, manifest);
+
+      const migrations: Migration[] = [
+        { id: 'slidev-51-to-52', description: 'Migrate Slidev 51.x to 52.x', up },
+      ];
+
+      await run({
+        workspaceDir,
+        migrationsDir,
+        apply: true,
+        migrations,
+        migrationOptions: {
+          'slidev-51-to-52': {
+            interactive: true,
+            selectedForCatalog: [],
+          },
+        },
+      });
+
+      const pkg = readPresentationPackageJson(workspaceDir, 'deck-custom-vue');
+      const deps = pkg.dependencies as Record<string, string>;
+      expect(deps['@slidev/cli']).toBe('^52.11.3');
+      expect(deps['vue']).toBe('^3.4.0');
+    });
   });
 });

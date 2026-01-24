@@ -2,7 +2,8 @@ import pc from 'picocolors';
 import { join } from 'node:path';
 import { findWorkspaceRoot } from '../state.js';
 import { dryRun, run, formatDryRunOutput, formatRunOutput } from '../migrations/runner.js';
-import { loadMigrations } from '../migrations/loader.js';
+import { loadMigrations, loadInteractiveMigration } from '../migrations/loader.js';
+import { promptForCatalogSelection } from '../prompts.js';
 
 export interface MigrateOptions {
   apply?: boolean;
@@ -33,11 +34,35 @@ export async function getMigrateResult(options: MigrateOptions = {}): Promise<Mi
 
   if (options.apply) {
     const { migrations } = await loadMigrations();
+    const migrationOptions: Record<string, Record<string, unknown>> = {};
+
+    const slidev51to52 = await loadInteractiveMigration('slidev-51-to-52');
+    if (slidev51to52?.getAffectedPresentations) {
+      const affected = slidev51to52.getAffectedPresentations(workspaceDir);
+      if (affected.length > 0) {
+        const selectionResult = await promptForCatalogSelection(affected);
+        if (selectionResult.cancelled) {
+          return {
+            success: false,
+            dryRun: false,
+            migrationsToApply: 0,
+            migrationsApplied: 0,
+            output: 'Migration cancelled by user.',
+          };
+        }
+        migrationOptions['slidev-51-to-52'] = {
+          interactive: true,
+          selectedForCatalog: selectionResult.selectedForCatalog,
+        };
+      }
+    }
+
     const result = await run({
       workspaceDir,
       migrationsDir,
       apply: true,
       migrations,
+      migrationOptions,
     });
 
     return {

@@ -1,6 +1,6 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Migration } from './types.ts';
+import type { Migration, PresentationInfo } from './types.ts';
 import { readManifest, validateManifest, getMigrationOrder } from './manifest.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -8,6 +8,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export interface LoadedMigrations {
   migrations: Migration[];
   order: string[];
+}
+
+export interface LoadedInteractiveMigration {
+  migration: Migration;
+  getAffectedPresentations?: (workspaceDir: string) => PresentationInfo[];
 }
 
 export async function loadMigrations(): Promise<LoadedMigrations> {
@@ -52,4 +57,37 @@ export async function loadMigrations(): Promise<LoadedMigrations> {
 export async function getMigrationById(id: string): Promise<Migration | null> {
   const { migrations } = await loadMigrations();
   return migrations.find((m) => m.id === id) ?? null;
+}
+
+export async function loadInteractiveMigration(
+  id: string,
+): Promise<LoadedInteractiveMigration | null> {
+  const migrationsDir = __dirname;
+  const manifest = readManifest(migrationsDir);
+
+  if (!manifest) {
+    return null;
+  }
+
+  const entry = manifest.migrations.find((m) => m.id === id);
+  if (!entry) {
+    return null;
+  }
+
+  const modulePath = join(migrationsDir, `${id}.js`);
+
+  try {
+    const module = await import(modulePath);
+    return {
+      migration: {
+        id: entry.id,
+        description: entry.description,
+        up: module.up,
+        down: module.down,
+      },
+      getAffectedPresentations: module.getAffectedPresentations,
+    };
+  } catch {
+    return null;
+  }
 }

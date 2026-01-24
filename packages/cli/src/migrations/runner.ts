@@ -11,6 +11,7 @@ export interface RunnerOptions {
   migrationsDir: string;
   apply?: boolean;
   migrations?: Migration[];
+  migrationOptions?: Record<string, Record<string, unknown>>;
 }
 
 export interface DryRunResult {
@@ -130,7 +131,13 @@ async function executeMigration(
 }
 
 export async function run(options: RunnerOptions): Promise<RunResult> {
-  const { workspaceDir, migrationsDir, apply = false, migrations = [] } = options;
+  const {
+    workspaceDir,
+    migrationsDir,
+    apply = false,
+    migrations = [],
+    migrationOptions = {},
+  } = options;
 
   if (!apply) {
     const dryRunResults = dryRun(options);
@@ -176,7 +183,7 @@ export async function run(options: RunnerOptions): Promise<RunResult> {
     throw new Error('State file not found. Is this a Supaslidev workspace?');
   }
 
-  const context: MigrationContext = {
+  const baseContext: Omit<MigrationContext, 'options'> = {
     workspaceDir,
     state,
     backupPath: backupId ? join(workspaceDir, '.supaslidev', 'backups', backupId) : null,
@@ -197,6 +204,11 @@ export async function run(options: RunnerOptions): Promise<RunResult> {
       };
       break;
     }
+
+    const context: MigrationContext = {
+      ...baseContext,
+      options: migrationOptions[id],
+    };
 
     const result = await executeMigration(migration, context);
 

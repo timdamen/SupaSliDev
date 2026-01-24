@@ -1,9 +1,11 @@
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import type { MigrationContext } from './types.ts';
+import { basename, join } from 'node:path';
+import type { MigrationContext, PresentationInfo } from './types.ts';
 
 const SLIDEV_51_PATTERN = /^\^51\.\d+\.\d+$/;
 const VUE_OLD_PATTERN = /^\^3\.5\.13$/;
+const PINNED_SLIDEV_VERSION = '^52.11.3';
+const PINNED_VUE_VERSION = '^3.5.26';
 
 interface PackageJson {
   name?: string;
@@ -45,14 +47,18 @@ function writePackageJson(path: string, pkg: PackageJson): void {
   writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n', 'utf-8');
 }
 
+function getSlidevVersion(pkg: PackageJson): string | undefined {
+  return pkg.dependencies?.['@slidev/cli'] ?? pkg.devDependencies?.['@slidev/cli'];
+}
+
 function hasSlidev51Pinned(pkg: PackageJson): boolean {
-  const slidevVersion = pkg.dependencies?.['@slidev/cli'] ?? pkg.devDependencies?.['@slidev/cli'];
+  const slidevVersion = getSlidevVersion(pkg);
   return slidevVersion !== undefined && SLIDEV_51_PATTERN.test(slidevVersion);
 }
 
-export async function up(context: MigrationContext): Promise<void> {
-  const { workspaceDir } = context;
+export function getAffectedPresentations(workspaceDir: string): PresentationInfo[] {
   const presentationDirs = findPresentationDirs(workspaceDir);
+  const affected: PresentationInfo[] = [];
 
   for (const dir of presentationDirs) {
     const packageJsonPath = join(dir, 'package.json');
@@ -62,18 +68,50 @@ export async function up(context: MigrationContext): Promise<void> {
       continue;
     }
 
+    const version = getSlidevVersion(pkg);
+    affected.push({
+      name: basename(dir),
+      path: dir,
+      currentVersion: version ?? 'unknown',
+    });
+  }
+
+  return affected;
+}
+
+export async function up(context: MigrationContext): Promise<void> {
+  const { workspaceDir, options } = context;
+  const presentationDirs = findPresentationDirs(workspaceDir);
+
+  const selectedForCatalog = (options?.selectedForCatalog as string[] | undefined) ?? [];
+  const useInteractiveMode = options?.interactive === true;
+
+  for (const dir of presentationDirs) {
+    const packageJsonPath = join(dir, 'package.json');
+    const pkg = readPackageJson(packageJsonPath);
+
+    if (!pkg || !hasSlidev51Pinned(pkg)) {
+      continue;
+    }
+
+    const presentationName = basename(dir);
+    const useCatalog = !useInteractiveMode || selectedForCatalog.includes(presentationName);
+
+    const slidevTarget = useCatalog ? 'catalog:' : PINNED_SLIDEV_VERSION;
+    const vueTarget = useCatalog ? 'catalog:' : PINNED_VUE_VERSION;
+
     if (pkg.dependencies?.['@slidev/cli']) {
-      pkg.dependencies['@slidev/cli'] = 'catalog:';
+      pkg.dependencies['@slidev/cli'] = slidevTarget;
     }
     if (pkg.devDependencies?.['@slidev/cli']) {
-      pkg.devDependencies['@slidev/cli'] = 'catalog:';
+      pkg.devDependencies['@slidev/cli'] = slidevTarget;
     }
 
     if (pkg.dependencies?.['vue'] && VUE_OLD_PATTERN.test(pkg.dependencies['vue'])) {
-      pkg.dependencies['vue'] = 'catalog:';
+      pkg.dependencies['vue'] = vueTarget;
     }
     if (pkg.devDependencies?.['vue'] && VUE_OLD_PATTERN.test(pkg.devDependencies['vue'])) {
-      pkg.devDependencies['vue'] = 'catalog:';
+      pkg.devDependencies['vue'] = vueTarget;
     }
 
     writePackageJson(packageJsonPath, pkg);
