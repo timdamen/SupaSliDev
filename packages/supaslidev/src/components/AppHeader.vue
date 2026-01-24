@@ -11,8 +11,9 @@ const { commands } = defineProps<{
   commands: CommandOption[];
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   'open-command-palette': [];
+  'execute-command': [command: string];
 }>();
 
 const colorMode = useColorMode();
@@ -64,11 +65,17 @@ function handleInputKeydown(event: KeyboardEvent) {
   } else if (event.key === 'ArrowUp' && showDropdown.value) {
     event.preventDefault();
     selectedIndex.value = Math.max(selectedIndex.value - 1, 0);
-  } else if (event.key === 'Enter' && showDropdown.value) {
+  } else if (event.key === 'Enter') {
     event.preventDefault();
-    const selected = filteredCommands.value[selectedIndex.value];
-    if (selected) {
-      selected.onSelect();
+    if (showDropdown.value) {
+      const selected = filteredCommands.value[selectedIndex.value];
+      if (selected) {
+        selected.onSelect();
+        inputValue.value = '';
+        inputRef.value?.blur();
+      }
+    } else if (inputValue.value.trim()) {
+      emit('execute-command', inputValue.value.trim());
       inputValue.value = '';
       inputRef.value?.blur();
     }

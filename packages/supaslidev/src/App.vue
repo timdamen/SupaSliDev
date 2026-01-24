@@ -122,6 +122,40 @@ function handleToggleThemeCommand() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark';
 }
 
+function findPresentationByName(name: string): Presentation | undefined {
+  const normalizedName = name.toLowerCase().trim();
+  return presentations.value.find(
+    (p) => p.id.toLowerCase() === normalizedName || p.title.toLowerCase() === normalizedName,
+  );
+}
+
+function handleExecuteCommand(command: string) {
+  const parts = command.trim().split(/\s+/);
+  const action = parts[0]?.toLowerCase();
+  const arg = parts.slice(1).join(' ');
+
+  if (action === 'new') {
+    handleCreateCommand();
+    return;
+  }
+
+  if (action === 'present' && arg) {
+    const presentation = findPresentationByName(arg);
+    if (presentation) {
+      handlePresentCommand(presentation);
+    }
+    return;
+  }
+
+  if (action === 'export' && arg) {
+    const presentation = findPresentationByName(arg);
+    if (presentation) {
+      handleExportCommand(presentation);
+    }
+    return;
+  }
+}
+
 const commandPaletteGroups = computed<CommandPaletteGroup[]>(() => [
   {
     id: 'actions',
@@ -204,6 +238,7 @@ const commandOptions = computed(() => {
           ref="appHeaderRef"
           :commands="commandOptions"
           @open-command-palette="isCommandPaletteOpen = true"
+          @execute-command="handleExecuteCommand"
         />
 
         <template v-if="presentations.length === 0">
