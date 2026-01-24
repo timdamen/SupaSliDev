@@ -25,31 +25,28 @@ const isMac = computed(() => {
         <span class="terminal-dot terminal-dot--maximize" />
       </div>
 
-      <div class="header-content">
+      <div
+        class="header-content"
+        role="button"
+        tabindex="0"
+        @click="$emit('open-command-palette')"
+        @keydown.enter="$emit('open-command-palette')"
+        @keydown.space.prevent="$emit('open-command-palette')"
+      >
         <div class="header-left">
           <div class="logo">
-            <span class="logo-symbol">❯</span>
-            <h1 class="logo-text">supaslidev</h1>
+            <span class="logo-symbol">%</span>
             <span class="logo-cursor" />
           </div>
 
-          <nav class="breadcrumbs">
-            <span class="breadcrumb-separator">/</span>
-            <span class="breadcrumb-item breadcrumb-item--active">presentations</span>
-          </nav>
+          <span class="header-hint">Click to type a command...</span>
         </div>
 
-        <div class="header-right">
-          <button
-            class="command-palette-trigger"
-            title="Open command palette"
-            @click="$emit('open-command-palette')"
-          >
-            <UIcon name="i-lucide-command" class="command-icon" />
-            <span class="command-text">Command</span>
+        <div class="header-right" @click.stop>
+          <div class="command-shortcut">
             <UKbd size="sm" class="command-kbd">{{ isMac ? '⌘' : 'Ctrl' }}</UKbd>
             <UKbd size="sm" class="command-kbd">K</UKbd>
-          </button>
+          </div>
 
           <UButton
             :icon="isDark ? 'i-lucide-sun' : 'i-lucide-moon'"
@@ -123,6 +120,17 @@ const isMac = computed(() => {
   justify-content: space-between;
   padding: 1rem 1.5rem;
   gap: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.header-content:hover {
+  background: var(--ui-bg-elevated);
+}
+
+.header-content:focus {
+  outline: none;
+  background: var(--ui-bg-elevated);
 }
 
 .header-left {
@@ -141,22 +149,20 @@ const isMac = computed(() => {
 .logo-symbol {
   color: var(--ui-success);
   font-weight: 600;
-}
-
-.logo-text {
-  font-size: 1.25rem;
-  font-weight: 700;
-  background: linear-gradient(to right, var(--ui-primary), var(--ui-secondary));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 1rem;
 }
 
 .logo-cursor {
-  width: 2px;
+  width: 8px;
   height: 1.25rem;
   background: var(--ui-primary);
   animation: blink 1s step-end infinite;
+}
+
+.header-hint {
+  color: var(--ui-text-muted);
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.875rem;
 }
 
 @keyframes blink {
@@ -169,74 +175,20 @@ const isMac = computed(() => {
   }
 }
 
-.breadcrumbs {
-  display: flex;
-  align-items: center;
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-  font-size: 0.875rem;
-}
-
-.breadcrumb-separator {
-  color: var(--ui-text-muted);
-  margin: 0 0.25rem;
-}
-
-.breadcrumb-item {
-  color: var(--ui-text-muted);
-}
-
-.breadcrumb-item--active {
-  color: var(--ui-text);
-}
-
 .header-right {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.command-palette-trigger {
+.command-shortcut {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
-  background: var(--ui-bg-elevated);
-  border: 1px solid var(--ui-border);
-  border-radius: 0.5rem;
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-  font-size: 0.75rem;
-  color: var(--ui-text-muted);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.command-palette-trigger:hover {
-  border-color: var(--ui-border-accented);
-  color: var(--ui-text);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
-}
-
-.command-icon {
-  width: 14px;
-  height: 14px;
-}
-
-.command-text {
-  display: none;
-}
-
-@media (min-width: 640px) {
-  .command-text {
-    display: inline;
-  }
+  gap: 0.25rem;
 }
 
 .command-kbd {
   opacity: 0.7;
-}
-
-.command-palette-trigger:hover .command-kbd {
-  opacity: 1;
 }
 
 .theme-toggle {
