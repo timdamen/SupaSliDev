@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import type { CommandPaletteGroup, CommandPaletteItem } from '@nuxt/ui';
 import AppHeader from './components/AppHeader.vue';
 import PresentationCard from './components/PresentationCard.vue';
 import CreatePresentationDialog from './components/CreatePresentationDialog.vue';
@@ -8,9 +9,17 @@ import type { Presentation } from './types';
 import presentationsData from './data/presentations.json';
 import { useServers } from './composables/useServers';
 
-const { startPolling, stopPolling, stopAllServers } = useServers();
+const { startPolling, stopPolling, stopAllServers, startServer } = useServers();
 
 const isDialogOpen = ref(false);
+const isCommandPaletteOpen = ref(false);
+
+function handleKeydown(event: KeyboardEvent) {
+  if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+    event.preventDefault();
+    isCommandPaletteOpen.value = !isCommandPaletteOpen.value;
+  }
+}
 
 function handlePresentationCreated(presentation: Presentation) {
   presentations.value = [...presentations.value, presentation].sort((a, b) =>
@@ -25,16 +34,43 @@ function handleBeforeUnload() {
 onMounted(() => {
   startPolling();
   window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('keydown', handleKeydown);
 });
 
 onUnmounted(() => {
   stopPolling();
   stopAllServers();
   window.removeEventListener('beforeunload', handleBeforeUnload);
+  window.removeEventListener('keydown', handleKeydown);
 });
 
 const presentations = ref<Presentation[]>(presentationsData);
 const searchQuery = ref('');
+
+async function handlePresentCommand(presentation: Presentation) {
+  isCommandPaletteOpen.value = false;
+  const result = await startServer(presentation.id);
+  if (result.success && result.port) {
+    setTimeout(() => {
+      window.open(`http://localhost:${result.port}`, '_blank');
+    }, 1500);
+  }
+}
+
+const commandPaletteGroups = computed<CommandPaletteGroup[]>(() => [
+  {
+    id: 'presentations',
+    label: 'Presentations',
+    items: presentations.value.map(
+      (p): CommandPaletteItem => ({
+        label: p.title,
+        suffix: p.description,
+        icon: 'i-lucide-presentation',
+        onSelect: () => handlePresentCommand(p),
+      }),
+    ),
+  },
+]);
 
 const filteredPresentations = computed(() => {
   if (!searchQuery.value.trim()) {
@@ -49,7 +85,7 @@ const filteredPresentations = computed(() => {
   <UApp>
     <div class="min-h-screen bg-default">
       <UContainer class="py-6 sm:py-8 lg:py-10">
-        <AppHeader />
+        <AppHeader @open-command-palette="isCommandPaletteOpen = true" />
 
         <template v-if="presentations.length === 0">
           <EmptyState
@@ -122,6 +158,16 @@ const filteredPresentations = computed(() => {
           @close="isDialogOpen = false"
           @created="handlePresentationCreated"
         />
+
+        <UModal v-model:open="isCommandPaletteOpen">
+          <template #body>
+            <UCommandPalette
+              :groups="commandPaletteGroups"
+              placeholder="Search presentations..."
+              class="h-80"
+            />
+          </template>
+        </UModal>
       </UContainer>
     </div>
   </UApp>
