@@ -31,6 +31,16 @@ const isMac = computed(() => {
 const inputValue = ref('');
 const inputRef = ref<HTMLInputElement | null>(null);
 const isFocused = ref(false);
+const selectedIndex = ref(0);
+
+const filteredCommands = computed(() => {
+  if (!inputValue.value.trim()) return [];
+
+  const query = inputValue.value.toLowerCase();
+  return commands.filter((cmd) => cmd.label.toLowerCase().includes(query));
+});
+
+const showDropdown = computed(() => isFocused.value && filteredCommands.value.length > 0);
 
 const ghostText = computed(() => {
   if (!inputValue.value.trim()) return '';
@@ -44,26 +54,38 @@ const ghostText = computed(() => {
   return '';
 });
 
-const matchedCommand = computed(() => {
-  if (!inputValue.value.trim()) return null;
-
-  const query = inputValue.value.toLowerCase();
-  return commands.find((cmd) => cmd.label.toLowerCase().startsWith(query)) || null;
-});
-
 function handleInputKeydown(event: KeyboardEvent) {
   if (event.key === 'Tab' && ghostText.value) {
     event.preventDefault();
     inputValue.value = inputValue.value + ghostText.value;
-  } else if (event.key === 'Enter' && matchedCommand.value) {
+  } else if (event.key === 'ArrowDown' && showDropdown.value) {
     event.preventDefault();
-    matchedCommand.value.onSelect();
-    inputValue.value = '';
-    inputRef.value?.blur();
+    selectedIndex.value = Math.min(selectedIndex.value + 1, filteredCommands.value.length - 1);
+  } else if (event.key === 'ArrowUp' && showDropdown.value) {
+    event.preventDefault();
+    selectedIndex.value = Math.max(selectedIndex.value - 1, 0);
+  } else if (event.key === 'Enter' && showDropdown.value) {
+    event.preventDefault();
+    const selected = filteredCommands.value[selectedIndex.value];
+    if (selected) {
+      selected.onSelect();
+      inputValue.value = '';
+      inputRef.value?.blur();
+    }
   } else if (event.key === 'Escape') {
     inputValue.value = '';
     inputRef.value?.blur();
   }
+}
+
+function selectOption(option: CommandOption) {
+  option.onSelect();
+  inputValue.value = '';
+  inputRef.value?.blur();
+}
+
+function handleInputChange() {
+  selectedIndex.value = 0;
 }
 
 function handleHeaderClick() {
@@ -102,6 +124,7 @@ defineExpose({ focusInput, inputRef });
               class="terminal-input"
               placeholder="Type a command..."
               @keydown="handleInputKeydown"
+              @input="handleInputChange"
               @focus="isFocused = true"
               @blur="isFocused = false"
             />
@@ -129,6 +152,19 @@ defineExpose({ focusInput, inputRef });
             @click="isDark = !isDark"
           />
         </div>
+      </div>
+
+      <div v-if="showDropdown" class="dropdown">
+        <button
+          v-for="(option, index) in filteredCommands"
+          :key="option.label"
+          class="dropdown-item"
+          :class="{ 'dropdown-item--selected': index === selectedIndex }"
+          @mousedown.prevent="selectOption(option)"
+          @mouseenter="selectedIndex = index"
+        >
+          {{ option.label }}
+        </button>
       </div>
     </div>
   </header>
@@ -299,5 +335,34 @@ defineExpose({ focusInput, inputRef });
 
 .theme-toggle:hover {
   box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+.dropdown {
+  border-top: 1px solid var(--ui-border);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--ui-text);
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.dropdown-item:hover,
+.dropdown-item--selected {
+  background: var(--ui-bg-elevated);
+}
+
+.dropdown-item--selected {
+  color: var(--ui-primary);
 }
 </style>
