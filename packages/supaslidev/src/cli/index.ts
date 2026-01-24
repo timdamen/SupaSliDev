@@ -6,6 +6,7 @@ import { create } from './commands/create.js';
 import { present } from './commands/present.js';
 import { exportPdf } from './commands/export.js';
 import { deploy } from './commands/deploy.js';
+import { importPresentation } from './commands/import.js';
 
 const program = new Command();
 
@@ -50,6 +51,15 @@ program
   .option('-o, --output <path>', 'Output directory for deployment files')
   .action(async (name: string, options: { output?: string }) => {
     await deploy(name, options);
+  });
+
+program
+  .command('import')
+  .description('Import an existing Slidev presentation')
+  .argument('<source>', 'Path to existing Slidev presentation directory')
+  .argument('[name]', 'Name for the imported presentation')
+  .action(async (source: string, name?: string) => {
+    await importPresentation(source, name);
   });
 
 export async function run(): Promise<void> {
