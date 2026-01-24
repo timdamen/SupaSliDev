@@ -26,11 +26,39 @@ function handleExportError(message: string) {
 
 const isDialogOpen = ref(false);
 const isCommandPaletteOpen = ref(false);
+const initialSearchQuery = ref('');
 
 function handleKeydown(event: KeyboardEvent) {
   if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
     event.preventDefault();
     isCommandPaletteOpen.value = !isCommandPaletteOpen.value;
+    return;
+  }
+
+  if (isCommandPaletteOpen.value || isDialogOpen.value) {
+    return;
+  }
+
+  const activeElement = document.activeElement;
+  const isInputFocused =
+    activeElement instanceof HTMLInputElement ||
+    activeElement instanceof HTMLTextAreaElement ||
+    activeElement?.getAttribute('contenteditable') === 'true';
+
+  if (isInputFocused) {
+    return;
+  }
+
+  if (event.metaKey || event.ctrlKey || event.altKey) {
+    return;
+  }
+
+  const isTypingKey = event.key.length === 1 && !event.repeat;
+
+  if (isTypingKey) {
+    event.preventDefault();
+    initialSearchQuery.value = event.key;
+    isCommandPaletteOpen.value = true;
   }
 }
 
@@ -225,9 +253,10 @@ const filteredPresentations = computed(() => {
           @created="handlePresentationCreated"
         />
 
-        <UModal v-model:open="isCommandPaletteOpen">
+        <UModal v-model:open="isCommandPaletteOpen" @after-leave="initialSearchQuery = ''">
           <template #body>
             <UCommandPalette
+              v-model:search-term="initialSearchQuery"
               :groups="commandPaletteGroups"
               :fuse="{
                 fuseOptions: {
