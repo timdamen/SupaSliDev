@@ -1,4 +1,10 @@
 {
   "version": "1.0.0",
-  "migrations": []
+  "migrations": [
+    {
+      "id": "slidev-51-to-52",
+      "description": "Migrate Slidev 51.x to 52.x by updating @slidev/cli and vue dependencies to use catalog versions",
+      "version": "0.1.0"
+    }
+  ]
 }
