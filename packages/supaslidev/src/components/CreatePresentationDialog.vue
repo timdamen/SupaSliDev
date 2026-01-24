@@ -117,6 +117,8 @@ async function handleSubmit() {
     const presentation = await response.json();
     emit('created', presentation);
     handleClose();
+  } catch {
+    nameError.value = 'Failed to create presentation';
   } finally {
     isSubmitting.value = false;
   }

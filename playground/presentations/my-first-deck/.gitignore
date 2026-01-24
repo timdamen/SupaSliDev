@@ -1,3 +1,7 @@
 node_modules
+.DS_Store
 dist
-.slidev
+*.local
+.vite-inspect
+.remote-assets
+components.d.ts

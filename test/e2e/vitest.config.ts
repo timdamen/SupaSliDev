@@ -13,5 +13,6 @@ export default defineConfig({
     globalSetup: './setup/global-setup.ts',
     include: ['**/*.e2e.test.ts'],
     fileParallelism: false,
+    retry: 2,
   },
 });

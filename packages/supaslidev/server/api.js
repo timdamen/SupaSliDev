@@ -2,7 +2,7 @@ import { createServer } from 'http';
 import { spawn, execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 
 const IS_WINDOWS = process.platform === 'win32';
 
@@ -24,6 +24,7 @@ function resolvePresentationsDir() {
 
 const projectRoot = resolveProjectRoot();
 const presentationsDir = resolvePresentationsDir();
+const workspaceRoot = join(projectRoot, '..');
 
 const runningServers = new Map();
 
@@ -198,51 +199,74 @@ function createPresentation({ name }) {
       shell: true,
     });
 
-    let promptCount = 0;
-    let stdout = '';
     let stderr = '';
+    let scaffoldingDone = false;
 
     child.stdout.on('data', (data) => {
-      stdout += data.toString();
+      const text = data.toString();
+
+      if (text.includes('Done.') && !scaffoldingDone) {
+        scaffoldingDone = true;
+        setTimeout(() => {
+          child.kill('SIGTERM');
+        }, 100);
+      }
     });
 
     child.stderr.on('data', (data) => {
       stderr += data.toString();
     });
 
-    const sendResponse = () => {
-      promptCount++;
-      if (promptCount === 1) {
-        child.stdin.write('y\n');
-      } else if (promptCount === 2) {
-        child.stdin.write('\x1B[B\x1B[B\n');
-      }
-    };
-
-    const checkInterval = setInterval(sendResponse, 500);
-
     child.on('error', (err) => {
-      clearInterval(checkInterval);
       resolve({ success: false, message: `Failed to create presentation: ${err.message}` });
     });
 
-    child.on('close', (code) => {
-      clearInterval(checkInterval);
-      if (code === 0) {
-        resolve({
-          success: true,
-          presentation: {
-            id: name,
-            title: name,
-            description: '',
-            theme: 'default',
-            background: 'https://cover.sli.dev',
-            duration: '',
-          },
-        });
-      } else {
-        resolve({ success: false, message: `Slidev CLI exited with code ${code}. ${stderr}` });
+    child.on('close', () => {
+      if (!scaffoldingDone) {
+        resolve({ success: false, message: `Slidev CLI failed. ${stderr}` });
+        return;
       }
+
+      const packageJsonPath = join(presentationPath, 'package.json');
+      const catalogPackageJson = {
+        name: `@supaslidev/${name}`,
+        private: true,
+        type: 'module',
+        scripts: {
+          build: 'slidev build',
+          dev: 'slidev --open',
+          export: 'slidev export',
+        },
+        dependencies: {
+          '@slidev/cli': 'catalog:',
+          '@slidev/theme-default': 'catalog:',
+          '@slidev/theme-seriph': 'catalog:',
+          vue: 'catalog:',
+        },
+        devDependencies: {},
+      };
+
+      writeFileSync(packageJsonPath, JSON.stringify(catalogPackageJson, null, 2) + '\n');
+
+      resolve({
+        success: true,
+        presentation: {
+          id: name,
+          title: name,
+          description: '',
+          theme: 'default',
+          background: 'https://cover.sli.dev',
+          duration: '',
+        },
+      });
+
+      const install = spawn('pnpm', ['install'], {
+        cwd: workspaceRoot,
+        stdio: 'inherit',
+        shell: true,
+        detached: true,
+      });
+      install.unref();
     });
   });
 }

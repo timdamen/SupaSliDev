@@ -5,8 +5,11 @@
   "description": "playground - Slidev presentations monorepo",
   "type": "module",
   "scripts": {
-    "dashboard": "supaslidev",
-    "dev": "node scripts/dev-presentation.mjs",
+    "dev": "supaslidev",
+    "new": "supaslidev new",
+    "present": "supaslidev present",
+    "export": "supaslidev export",
+    "deploy": "supaslidev deploy",
     "build": "pnpm --filter @supaslidev/* run build"
   },
   "devDependencies": {

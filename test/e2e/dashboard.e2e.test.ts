@@ -251,7 +251,7 @@ describe('Dashboard Display E2E', () => {
       const searchInput = page.locator('.filter-input input');
       await searchInput.fill('second');
 
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(400);
 
       const visibleCards = page.locator('.card');
       expect(await visibleCards.count()).toBe(1);
