@@ -10,11 +10,25 @@ export interface AppliedMigration {
   appliedAt: string;
 }
 
+export interface DivergentDependency {
+  dependency: string;
+  pinnedVersion: string;
+  catalogVersion: string;
+}
+
+export interface ImportedPresentation {
+  name: string;
+  importedAt: string;
+  sourcePath: string;
+  divergentDependencies: DivergentDependency[];
+}
+
 export interface StateSchema {
   cliVersion: string;
   createdAt: string;
   lastUpdatedAt: string;
   appliedMigrations: AppliedMigration[];
+  importedPresentations?: ImportedPresentation[];
 }
 
 function getStatePath(workspaceDir: string): string {
@@ -128,4 +142,49 @@ export function findWorkspaceRoot(startDir: string = process.cwd()): string | nu
   }
 
   return null;
+}
+
+export function addImportedPresentation(
+  workspaceDir: string,
+  presentation: ImportedPresentation,
+): void {
+  const state = readState(workspaceDir);
+
+  if (!state) {
+    throw new Error('State file not found. Is this a Supaslidev workspace?');
+  }
+
+  if (!state.importedPresentations) {
+    state.importedPresentations = [];
+  }
+
+  const existingIndex = state.importedPresentations.findIndex((p) => p.name === presentation.name);
+
+  if (existingIndex >= 0) {
+    state.importedPresentations[existingIndex] = presentation;
+  } else {
+    state.importedPresentations.push(presentation);
+  }
+
+  writeState(workspaceDir, state);
+}
+
+export function getImportedPresentations(workspaceDir: string): ImportedPresentation[] {
+  const state = readState(workspaceDir);
+  return state?.importedPresentations ?? [];
+}
+
+export function removeImportedPresentation(workspaceDir: string, name: string): void {
+  const state = readState(workspaceDir);
+
+  if (!state) {
+    throw new Error('State file not found. Is this a Supaslidev workspace?');
+  }
+
+  if (!state.importedPresentations) {
+    return;
+  }
+
+  state.importedPresentations = state.importedPresentations.filter((p) => p.name !== name);
+  writeState(workspaceDir, state);
 }

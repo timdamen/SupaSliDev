@@ -9,7 +9,8 @@ import {
   readFileSync,
   writeFileSync,
 } from 'node:fs';
-import { findProjectRoot, getPresentations } from '../utils.js';
+import { addImportedPresentation, findWorkspaceRoot } from 'create-supaslidev';
+import { findProjectRoot, getPresentations, getVersionDivergences } from '../utils.js';
 
 const IGNORE_PATTERNS = [
   'node_modules',
@@ -185,6 +186,17 @@ export async function importPresentation(source: string, name?: string): Promise
   console.log('Ignored: ' + IGNORE_PATTERNS.join(', '));
 
   await runPnpmInstall(projectRoot);
+
+  const workspaceRoot = findWorkspaceRoot(projectRoot);
+  if (workspaceRoot) {
+    const divergences = getVersionDivergences(projectRoot, presentationName);
+    addImportedPresentation(workspaceRoot, {
+      name: presentationName,
+      importedAt: new Date().toISOString(),
+      sourcePath,
+      divergentDependencies: divergences,
+    });
+  }
 
   console.log('\nPresentation imported successfully!');
   console.log(`Run "supaslidev present ${presentationName}" to start a dev server.`);
