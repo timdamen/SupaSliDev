@@ -1,6 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, nextTick } from 'vue';
 import { useColorMode } from '#imports';
+
+interface CommandOption {
+  label: string;
+  onSelect: () => void;
+}
+
+const { commands } = defineProps<{
+  commands: CommandOption[];
+}>();
+
+defineEmits<{
+  'open-command-palette': [];
+}>();
 
 const colorMode = useColorMode();
 const isDark = computed({
@@ -14,6 +27,56 @@ const isMac = computed(() => {
   if (typeof navigator === 'undefined') return true;
   return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 });
+
+const inputValue = ref('');
+const inputRef = ref<HTMLInputElement | null>(null);
+const isFocused = ref(false);
+
+const ghostText = computed(() => {
+  if (!inputValue.value.trim()) return '';
+
+  const query = inputValue.value.toLowerCase();
+  const match = commands.find((cmd) => cmd.label.toLowerCase().startsWith(query));
+
+  if (match) {
+    return match.label.slice(inputValue.value.length);
+  }
+  return '';
+});
+
+const matchedCommand = computed(() => {
+  if (!inputValue.value.trim()) return null;
+
+  const query = inputValue.value.toLowerCase();
+  return commands.find((cmd) => cmd.label.toLowerCase().startsWith(query)) || null;
+});
+
+function handleInputKeydown(event: KeyboardEvent) {
+  if (event.key === 'Tab' && ghostText.value) {
+    event.preventDefault();
+    inputValue.value = inputValue.value + ghostText.value;
+  } else if (event.key === 'Enter' && matchedCommand.value) {
+    event.preventDefault();
+    matchedCommand.value.onSelect();
+    inputValue.value = '';
+    inputRef.value?.blur();
+  } else if (event.key === 'Escape') {
+    inputValue.value = '';
+    inputRef.value?.blur();
+  }
+}
+
+function handleHeaderClick() {
+  inputRef.value?.focus();
+}
+
+function focusInput() {
+  nextTick(() => {
+    inputRef.value?.focus();
+  });
+}
+
+defineExpose({ focusInput, inputRef });
 </script>
 
 <template>
@@ -25,21 +88,29 @@ const isMac = computed(() => {
         <span class="terminal-dot terminal-dot--maximize" />
       </div>
 
-      <div
-        class="header-content"
-        role="button"
-        tabindex="0"
-        @click="$emit('open-command-palette')"
-        @keydown.enter="$emit('open-command-palette')"
-        @keydown.space.prevent="$emit('open-command-palette')"
-      >
+      <div class="header-content" @click="handleHeaderClick">
         <div class="header-left">
           <div class="logo">
             <span class="logo-symbol">%</span>
-            <span class="logo-cursor" />
           </div>
 
-          <span class="header-hint">Click to type a command...</span>
+          <div class="input-wrapper">
+            <input
+              ref="inputRef"
+              v-model="inputValue"
+              type="text"
+              class="terminal-input"
+              placeholder="Type a command..."
+              @keydown="handleInputKeydown"
+              @focus="isFocused = true"
+              @blur="isFocused = false"
+            />
+            <span v-if="ghostText" class="ghost-text"
+              >{{ inputValue }}<span class="ghost-suffix">{{ ghostText }}</span></span
+            >
+          </div>
+
+          <span v-if="!isFocused && !inputValue" class="logo-cursor" />
         </div>
 
         <div class="header-right" @click.stop>
@@ -159,10 +230,41 @@ const isMac = computed(() => {
   animation: blink 1s step-end infinite;
 }
 
-.header-hint {
-  color: var(--ui-text-muted);
+.input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.terminal-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--ui-text);
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   font-size: 0.875rem;
+  caret-color: var(--ui-primary);
+}
+
+.terminal-input::placeholder {
+  color: var(--ui-text-muted);
+}
+
+.ghost-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  color: transparent;
+  white-space: pre;
+}
+
+.ghost-suffix {
+  color: var(--ui-text-dimmed);
+  opacity: 0.5;
 }
 
 @keyframes blink {

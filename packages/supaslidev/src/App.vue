@@ -27,6 +27,7 @@ function handleExportError(message: string) {
 const isDialogOpen = ref(false);
 const isCommandPaletteOpen = ref(false);
 const initialSearchQuery = ref('');
+const appHeaderRef = ref<InstanceType<typeof AppHeader> | null>(null);
 
 function handleKeydown(event: KeyboardEvent) {
   if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
@@ -57,8 +58,11 @@ function handleKeydown(event: KeyboardEvent) {
 
   if (isTypingKey) {
     event.preventDefault();
-    initialSearchQuery.value = event.key;
-    isCommandPaletteOpen.value = true;
+    if (appHeaderRef.value?.inputRef) {
+      appHeaderRef.value.inputRef.value = event.key;
+      appHeaderRef.value.inputRef.dispatchEvent(new Event('input', { bubbles: true }));
+      appHeaderRef.value.focusInput();
+    }
   }
 }
 
@@ -170,13 +174,37 @@ const filteredPresentations = computed(() => {
   const query = searchQuery.value.toLowerCase();
   return presentations.value.filter((p) => p.title.toLowerCase().includes(query));
 });
+
+const commandOptions = computed(() => {
+  const options: { label: string; onSelect: () => void }[] = [
+    { label: 'New', onSelect: handleCreateCommand },
+    { label: 'Toggle theme', onSelect: handleToggleThemeCommand },
+  ];
+
+  presentations.value.forEach((p) => {
+    options.push({
+      label: `Present > ${p.title}`,
+      onSelect: () => handlePresentCommand(p),
+    });
+    options.push({
+      label: `Export > ${p.title}`,
+      onSelect: () => handleExportCommand(p),
+    });
+  });
+
+  return options;
+});
 </script>
 
 <template>
   <UApp>
     <div class="min-h-screen bg-default">
       <UContainer class="py-6 sm:py-8 lg:py-10">
-        <AppHeader @open-command-palette="isCommandPaletteOpen = true" />
+        <AppHeader
+          ref="appHeaderRef"
+          :commands="commandOptions"
+          @open-command-palette="isCommandPaletteOpen = true"
+        />
 
         <template v-if="presentations.length === 0">
           <EmptyState
