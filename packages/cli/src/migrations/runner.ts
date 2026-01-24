@@ -4,7 +4,12 @@ import type { MigrationManifestEntry } from './manifest.ts';
 import { getMigrationOrder, readManifest, validateManifest } from './manifest.ts';
 import { createBackup, restoreBackup, deleteBackup } from './backup.ts';
 import { addJournalEntry, createJournalEntry } from './journal.ts';
-import { addMigration, hasMigration, readState } from '../state.ts';
+import {
+  addMigration,
+  hasMigration,
+  readState,
+  updateImportedPresentationDivergences,
+} from '../state.ts';
 
 export interface RunnerOptions {
   workspaceDir: string;
@@ -244,6 +249,7 @@ export async function run(options: RunnerOptions): Promise<RunResult> {
     failed.rolledBack = true;
   } else {
     deleteBackup(workspaceDir, backupId);
+    updateImportedPresentationDivergences(workspaceDir);
   }
 
   const skipped = order.filter(
