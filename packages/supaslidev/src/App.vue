@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useColorMode } from '#imports';
 import type { CommandPaletteGroup, CommandPaletteItem } from '@nuxt/ui';
 import AppHeader from './components/AppHeader.vue';
 import PresentationCard from './components/PresentationCard.vue';
@@ -10,8 +11,9 @@ import presentationsData from './data/presentations.json';
 import { useServers } from './composables/useServers';
 import { useToast } from '@nuxt/ui/composables';
 
-const { startPolling, stopPolling, stopAllServers, startServer } = useServers();
+const { startPolling, stopPolling, stopAllServers, startServer, exportPresentation } = useServers();
 const toast = useToast();
+const colorMode = useColorMode();
 
 function handleExportError(message: string) {
   toast.add({
@@ -68,16 +70,66 @@ async function handlePresentCommand(presentation: Presentation) {
   }
 }
 
+async function handleExportCommand(presentation: Presentation) {
+  isCommandPaletteOpen.value = false;
+  const result = await exportPresentation(presentation.id);
+  if (result.success && result.pdfPath) {
+    window.open(result.pdfPath, '_blank');
+  } else if (result.error) {
+    handleExportError(result.error);
+  }
+}
+
+function handleCreateCommand() {
+  isCommandPaletteOpen.value = false;
+  isDialogOpen.value = true;
+}
+
+function handleToggleThemeCommand() {
+  isCommandPaletteOpen.value = false;
+  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark';
+}
+
 const commandPaletteGroups = computed<CommandPaletteGroup[]>(() => [
   {
+    id: 'actions',
+    label: 'Actions',
+    items: [
+      {
+        label: 'Create new presentation',
+        suffix: 'Add a new presentation to your workspace',
+        icon: 'i-lucide-plus',
+        onSelect: handleCreateCommand,
+      },
+      {
+        label: 'Toggle theme',
+        suffix: colorMode.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
+        icon: colorMode.value === 'dark' ? 'i-lucide-sun' : 'i-lucide-moon',
+        onSelect: handleToggleThemeCommand,
+      },
+    ],
+  },
+  {
     id: 'presentations',
-    label: 'Presentations',
+    label: 'Present',
     items: presentations.value.map(
       (p): CommandPaletteItem => ({
         label: p.title,
-        suffix: p.description,
-        icon: 'i-lucide-presentation',
+        suffix: 'Start dev server and open in browser',
+        icon: 'i-lucide-play',
         onSelect: () => handlePresentCommand(p),
+      }),
+    ),
+  },
+  {
+    id: 'export',
+    label: 'Export',
+    items: presentations.value.map(
+      (p): CommandPaletteItem => ({
+        label: p.title,
+        suffix: 'Export to PDF',
+        icon: 'i-lucide-download',
+        onSelect: () => handleExportCommand(p),
       }),
     ),
   },
@@ -177,7 +229,7 @@ const filteredPresentations = computed(() => {
           <template #body>
             <UCommandPalette
               :groups="commandPaletteGroups"
-              placeholder="Search presentations..."
+              placeholder="Search commands..."
               class="h-80"
             />
           </template>
