@@ -87,11 +87,7 @@ function handleCardClick(event: Event) {
       <div
         class="terminal-header flex items-center gap-2 px-3 py-2 bg-[var(--ui-bg-elevated)] border-b border-[var(--ui-border)]"
       >
-        <div class="flex gap-1.5">
-          <span class="terminal-dot terminal-dot--close" />
-          <span class="terminal-dot terminal-dot--minimize" />
-          <span class="terminal-dot terminal-dot--maximize" />
-        </div>
+        <UIcon name="i-lucide-chevron-down" class="chevron-icon" />
         <div class="flex-1 text-center">
           <span class="font-mono text-xs text-[var(--ui-text-muted)] opacity-70"
             >~/presentations/{{ presentation.id }}</span
@@ -252,35 +248,15 @@ function handleCardClick(event: Event) {
     0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
-.terminal-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+.chevron-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--ui-text-muted);
   transition: all 0.3s ease;
 }
 
-.terminal-dot--close {
-  background: #ff5f56;
-}
-
-.terminal-dot--minimize {
-  background: #ffbd2e;
-}
-
-.terminal-dot--maximize {
-  background: #27c93f;
-}
-
-.terminal-card:hover .terminal-dot--close {
-  box-shadow: 0 0 8px #ff5f56;
-}
-
-.terminal-card:hover .terminal-dot--minimize {
-  box-shadow: 0 0 8px #ffbd2e;
-}
-
-.terminal-card:hover .terminal-dot--maximize {
-  box-shadow: 0 0 8px #27c93f;
+.terminal-card:hover .chevron-icon {
+  color: var(--ui-text);
 }
 
 .terminal-prompt-symbol {
