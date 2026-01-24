@@ -41,18 +41,18 @@ supaSliDev/
 
 ## Commands
 
-| Command                | Description                       |
-| ---------------------- | --------------------------------- |
-| `pnpm dev`             | Start interactive dashboard       |
-| `pnpm new <name>`      | Create new presentation           |
-| `pnpm present <name>`  | Start dev server for presentation |
-| `pnpm export <name>`   | Export to PDF                     |
-| `pnpm deploy <name>`   | Build for deployment              |
-| `pnpm dev:all`         | Dev servers for all presentations |
-| `pnpm build:all`       | Build all presentations           |
-| `pnpm lint`            | Run linting                       |
-| `pnpm typecheck`       | TypeScript type checking          |
-| `pnpm test`            | Run tests                         |
+| Command               | Description                       |
+| --------------------- | --------------------------------- |
+| `pnpm dev`            | Start interactive dashboard       |
+| `pnpm new <name>`     | Create new presentation           |
+| `pnpm present <name>` | Start dev server for presentation |
+| `pnpm export <name>`  | Export to PDF                     |
+| `pnpm deploy <name>`  | Build for deployment              |
+| `pnpm dev:all`        | Dev servers for all presentations |
+| `pnpm build:all`      | Build all presentations           |
+| `pnpm lint`           | Run linting                       |
+| `pnpm typecheck`      | TypeScript type checking          |
+| `pnpm test`           | Run tests                         |
 
 ## Key Architecture Decisions
 

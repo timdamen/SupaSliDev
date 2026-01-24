@@ -28,6 +28,12 @@ const workspaceRoot = join(projectRoot, '..');
 
 const runningServers = new Map();
 
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function isValidPresentationId(id) {
+  return typeof id === 'string' && id.length > 0 && id.length <= 100 && SLUG_REGEX.test(id);
+}
+
 function getNextPort() {
   const usedPorts = new Set([...runningServers.values()].map((s) => s.port));
   let port = 3030;
@@ -38,6 +44,10 @@ function getNextPort() {
 }
 
 function startServer(presentationId) {
+  if (!isValidPresentationId(presentationId)) {
+    return { success: false, error: 'Invalid presentation id' };
+  }
+
   if (runningServers.has(presentationId)) {
     return { success: true, port: runningServers.get(presentationId).port, alreadyRunning: true };
   }
@@ -114,6 +124,11 @@ function getStatus() {
 
 function exportPresentation(presentationId) {
   return new Promise((resolve) => {
+    if (!isValidPresentationId(presentationId)) {
+      resolve({ success: false, error: 'Invalid presentation id' });
+      return;
+    }
+
     const presentationPath = join(projectRoot, 'presentations', presentationId);
     const exportsDir = join(projectRoot, 'exports');
     const outputPath = join(exportsDir, `${presentationId}.pdf`);
@@ -183,8 +198,7 @@ function createPresentation({ name }) {
       return;
     }
 
-    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-    if (!slugRegex.test(name)) {
+    if (!SLUG_REGEX.test(name)) {
       resolve({
         success: false,
         field: 'name',
@@ -201,28 +215,41 @@ function createPresentation({ name }) {
 
     let stderr = '';
     let scaffoldingDone = false;
+    let pollInterval = null;
+    const slidesPath = join(presentationPath, 'slides.md');
 
-    child.stdout.on('data', (data) => {
-      const text = data.toString();
-
-      if (text.includes('Done.') && !scaffoldingDone) {
+    const checkScaffoldingComplete = () => {
+      if (existsSync(slidesPath) && !scaffoldingDone) {
         scaffoldingDone = true;
-        setTimeout(() => {
-          child.kill('SIGTERM');
-        }, 100);
+        if (pollInterval) clearInterval(pollInterval);
+        child.kill('SIGTERM');
       }
-    });
+    };
+
+    pollInterval = setInterval(checkScaffoldingComplete, 200);
+
+    const scaffoldTimeout = setTimeout(() => {
+      if (!scaffoldingDone) {
+        if (pollInterval) clearInterval(pollInterval);
+        child.kill('SIGTERM');
+      }
+    }, 60000);
 
     child.stderr.on('data', (data) => {
       stderr += data.toString();
     });
 
     child.on('error', (err) => {
+      if (pollInterval) clearInterval(pollInterval);
+      clearTimeout(scaffoldTimeout);
       resolve({ success: false, message: `Failed to create presentation: ${err.message}` });
     });
 
     child.on('close', () => {
-      if (!scaffoldingDone) {
+      if (pollInterval) clearInterval(pollInterval);
+      clearTimeout(scaffoldTimeout);
+
+      if (!existsSync(slidesPath)) {
         resolve({ success: false, message: `Slidev CLI failed. ${stderr}` });
         return;
       }

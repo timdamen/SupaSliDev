@@ -52,13 +52,13 @@ pnpm deploy my-presentation
 
 ### Dashboard CLI (within a workspace)
 
-| Command                | Description                         |
-| ---------------------- | ----------------------------------- |
-| `pnpm dev`             | Start interactive dashboard UI      |
-| `pnpm new <name>`      | Create a new presentation           |
-| `pnpm present <name>`  | Start dev server for a presentation |
-| `pnpm export <name>`   | Export presentation to PDF          |
-| `pnpm deploy <name>`   | Build and prepare for deployment    |
+| Command               | Description                         |
+| --------------------- | ----------------------------------- |
+| `pnpm dev`            | Start interactive dashboard UI      |
+| `pnpm new <name>`     | Create a new presentation           |
+| `pnpm present <name>` | Start dev server for a presentation |
+| `pnpm export <name>`  | Export presentation to PDF          |
+| `pnpm deploy <name>`  | Build and prepare for deployment    |
 
 ### Workspace Commands
 
