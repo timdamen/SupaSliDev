@@ -7,7 +7,11 @@ const props = defineProps<{
   presentation: Presentation;
 }>();
 
-const { isRunning, getPort, startServer, stopServer } = useServers();
+const { isRunning, getPort, startServer, stopServer, exportPresentation } = useServers();
+
+const emit = defineEmits<{
+  exportError: [message: string];
+}>();
 
 const loading = ref({
   dev: false,
@@ -44,10 +48,22 @@ async function handleDev(event: Event) {
 async function handleExport(event: Event) {
   event.preventDefault();
   event.stopPropagation();
+
+  if (loading.value.export) return;
+
   loading.value.export = true;
-  setTimeout(() => {
+  try {
+    const result = await exportPresentation(props.presentation.id);
+    if (result.success && result.pdfPath) {
+      window.open(result.pdfPath, '_blank');
+    } else {
+      emit('exportError', result.error || 'Export failed');
+    }
+  } catch {
+    emit('exportError', 'Failed to export presentation');
+  } finally {
     loading.value.export = false;
-  }, 1000);
+  }
 }
 
 async function handleDeploy(event: Event) {

@@ -2,7 +2,7 @@ import { createServer } from 'http';
 import { spawn, execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { existsSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 
 const IS_WINDOWS = process.platform === 'win32';
 
@@ -111,6 +111,64 @@ function getStatus() {
   return servers;
 }
 
+function exportPresentation(presentationId) {
+  return new Promise((resolve) => {
+    const presentationPath = join(projectRoot, 'presentations', presentationId);
+    const exportsDir = join(projectRoot, 'exports');
+    const outputPath = join(exportsDir, `${presentationId}.pdf`);
+
+    if (!existsSync(presentationPath)) {
+      resolve({ success: false, error: 'Presentation not found' });
+      return;
+    }
+
+    if (!existsSync(exportsDir)) {
+      mkdirSync(exportsDir, { recursive: true });
+    }
+
+    console.log(`[export] Starting export for ${presentationId}`);
+    console.log(`[export] Output: ${outputPath}`);
+
+    const child = spawn('npx', ['slidev', 'export', '--output', outputPath], {
+      cwd: presentationPath,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      shell: true,
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+      console.log(`[export] ${data.toString().trim()}`);
+    });
+
+    child.stderr.on('data', (data) => {
+      stderr += data.toString();
+      console.error(`[export] ${data.toString().trim()}`);
+    });
+
+    child.on('error', (err) => {
+      console.error(`[export] Failed to export ${presentationId}:`, err);
+      resolve({ success: false, error: `Export failed: ${err.message}` });
+    });
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        console.log(`[export] Export complete for ${presentationId}`);
+        resolve({
+          success: true,
+          pdfPath: `/exports/${presentationId}.pdf`,
+          filename: `${presentationId}.pdf`,
+        });
+      } else {
+        console.error(`[export] Export failed with code ${code}`);
+        resolve({ success: false, error: `Export failed with exit code ${code}. ${stderr}` });
+      }
+    });
+  });
+}
+
 function createPresentation({ name }) {
   return new Promise((resolve) => {
     const presentationPath = join(presentationsDir, name);
@@ -189,7 +247,7 @@ function createPresentation({ name }) {
   });
 }
 
-const server = createServer((req, res) => {
+const server = createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -261,6 +319,14 @@ const server = createServer((req, res) => {
         res.end(JSON.stringify({ message: 'Invalid JSON' }));
       }
     });
+    return;
+  }
+
+  if (path.startsWith('/api/export/') && req.method === 'POST') {
+    const presentationId = path.split('/api/export/')[1];
+    const result = await exportPresentation(presentationId);
+    res.writeHead(result.success ? 200 : 400);
+    res.end(JSON.stringify(result));
     return;
   }
 

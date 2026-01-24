@@ -8,8 +8,19 @@ import EmptyState from './components/EmptyState.vue';
 import type { Presentation } from './types';
 import presentationsData from './data/presentations.json';
 import { useServers } from './composables/useServers';
+import { useToast } from '@nuxt/ui/composables';
 
 const { startPolling, stopPolling, stopAllServers, startServer } = useServers();
+const toast = useToast();
+
+function handleExportError(message: string) {
+  toast.add({
+    title: 'Export Failed',
+    description: message,
+    color: 'error',
+    icon: 'i-lucide-alert-circle',
+  });
+}
 
 const isDialogOpen = ref(false);
 const isCommandPaletteOpen = ref(false);
@@ -137,6 +148,7 @@ const filteredPresentations = computed(() => {
               v-for="presentation in filteredPresentations"
               :key="presentation.id"
               :presentation="presentation"
+              @export-error="handleExportError"
             />
           </TransitionGroup>
 

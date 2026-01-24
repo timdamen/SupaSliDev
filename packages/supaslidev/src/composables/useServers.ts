@@ -65,6 +65,18 @@ function isRunning(presentationId: string): boolean {
   return presentationId in servers.value;
 }
 
+async function exportPresentation(
+  presentationId: string,
+): Promise<{ success: boolean; pdfPath?: string; error?: string }> {
+  try {
+    const response = await fetch(`/api/export/${presentationId}`, { method: 'POST' });
+    const result = await response.json();
+    return result;
+  } catch {
+    return { success: false, error: 'Failed to connect to export service' };
+  }
+}
+
 function getPort(presentationId: string): number | undefined {
   return servers.value[presentationId]?.port;
 }
@@ -95,5 +107,6 @@ export function useServers() {
     getPort,
     startPolling,
     stopPolling,
+    exportPresentation,
   };
 }
