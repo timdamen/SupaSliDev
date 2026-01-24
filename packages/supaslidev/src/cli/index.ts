@@ -60,9 +60,12 @@ program
   .command('import')
   .description('Import an existing Slidev presentation')
   .argument('<source>', 'Path to existing Slidev presentation directory')
-  .argument('[name]', 'Name for the imported presentation')
-  .action(async (source: string, name?: string) => {
-    await importPresentation(source, name);
+  .option(
+    '-n, --name <name>',
+    'Name for the imported presentation (defaults to source directory name)',
+  )
+  .action(async (source: string, options: { name?: string }) => {
+    await importPresentation(source, options.name);
   });
 
 export async function run(): Promise<void> {
