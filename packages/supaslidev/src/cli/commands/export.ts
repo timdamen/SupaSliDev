@@ -11,6 +11,7 @@ import {
 
 export interface ExportOptions {
   output?: string;
+  quiet?: boolean;
 }
 
 export async function exportPdf(name: string, options: ExportOptions): Promise<void> {
@@ -39,8 +40,10 @@ export async function exportPdf(name: string, options: ExportOptions): Promise<v
     mkdirSync(dirname(outputPath), { recursive: true });
   }
 
-  const divergences = getVersionDivergences(projectRoot, name);
-  printVersionDivergenceWarning(divergences);
+  if (!options.quiet) {
+    const divergences = getVersionDivergences(projectRoot, name);
+    printVersionDivergenceWarning(divergences);
+  }
 
   console.log('\n' + '='.repeat(50));
   console.log(`  Exporting PDF: ${name}`);

@@ -14,6 +14,7 @@ import {
 
 export interface DeployOptions {
   output?: string;
+  quiet?: boolean;
 }
 
 export async function deploy(name: string, options: DeployOptions): Promise<void> {
@@ -40,8 +41,10 @@ export async function deploy(name: string, options: DeployOptions): Promise<void
   const outputDir = options.output ?? join(deployDir, name);
   const outputDistDir = join(outputDir, 'dist');
 
-  const divergences = getVersionDivergences(projectRoot, name);
-  printVersionDivergenceWarning(divergences);
+  if (!options.quiet) {
+    const divergences = getVersionDivergences(projectRoot, name);
+    printVersionDivergenceWarning(divergences);
+  }
 
   console.log('\n' + '='.repeat(50));
   console.log(`  Preparing deployment: ${name}`);

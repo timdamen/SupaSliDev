@@ -3,6 +3,10 @@ import { join } from 'node:path';
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { findProjectRoot, getVersionDivergences, printVersionDivergenceWarning } from '../utils.js';
 
+export interface PresentOptions {
+  quiet?: boolean;
+}
+
 function getPresentations(presentationsDir: string): string[] {
   if (!existsSync(presentationsDir)) {
     return [];
@@ -28,7 +32,7 @@ function printAvailable(presentations: string[]): void {
   }
 }
 
-export async function present(name: string): Promise<void> {
+export async function present(name: string, options: PresentOptions = {}): Promise<void> {
   const projectRoot = findProjectRoot();
 
   if (!projectRoot) {
@@ -54,8 +58,10 @@ export async function present(name: string): Promise<void> {
 
   const packageName = `@supaslidev/${name}`;
 
-  const divergences = getVersionDivergences(projectRoot, name);
-  printVersionDivergenceWarning(divergences);
+  if (!options.quiet) {
+    const divergences = getVersionDivergences(projectRoot, name);
+    printVersionDivergenceWarning(divergences);
+  }
 
   console.log(`\nStarting dev server for ${name}...\n`);
 
