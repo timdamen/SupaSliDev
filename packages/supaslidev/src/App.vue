@@ -127,8 +127,10 @@ const filteredPresentations = computed(() => {
             />
           </div>
 
-          <div
+          <TransitionGroup
             v-if="filteredPresentations.length > 0"
+            name="card"
+            tag="div"
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
           >
             <PresentationCard
@@ -136,7 +138,7 @@ const filteredPresentations = computed(() => {
               :key="presentation.id"
               :presentation="presentation"
             />
-          </div>
+          </TransitionGroup>
 
           <EmptyState
             v-else
