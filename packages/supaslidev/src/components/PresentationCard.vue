@@ -75,30 +75,25 @@ function handleCardClick(event: Event) {
 
 <template>
   <UCard
-    as="a"
-    :href="running && port ? `http://localhost:${port}` : '#'"
-    target="_blank"
-    rel="noopener noreferrer"
-    :title="`Open ${presentation.title}`"
+    :as="running && port ? 'a' : 'div'"
+    :href="running && port ? `http://localhost:${port}` : undefined"
+    :target="running && port ? '_blank' : undefined"
+    :rel="running && port ? 'noopener noreferrer' : undefined"
+    :title="running && port ? `Open ${presentation.title}` : undefined"
     class="card terminal-card group transition-all duration-300"
-    :class="{ 'terminal-card--running': running }"
+    :class="{ 'terminal-card--running': running, 'cursor-default': !running }"
     :ui="{
       root: 'overflow-hidden',
-      header: 'p-0',
-      body: 'p-0',
+      header: 'p-0 sm:px-0 bg-[var(--ui-bg-elevated)]',
+      body: 'p-0 sm:p-0',
     }"
     @click="handleCardClick"
   >
     <template #header>
-      <div
-        class="terminal-header flex items-center gap-2 px-3 py-2 bg-[var(--ui-bg-elevated)] border-b border-[var(--ui-border)]"
-      >
-        <UIcon name="i-lucide-chevron-down" class="chevron-icon" />
-        <div class="flex-1 text-center">
-          <span class="font-mono text-xs text-[var(--ui-text-muted)] opacity-70"
-            >~/presentations/{{ presentation.id }}</span
-          >
-        </div>
+      <div class="terminal-header flex items-center px-4 py-3 gap-1.5 border-b border-default">
+        <UIcon name="i-lucide-folder" class="chevron-icon" />
+        <span class="font-mono text-xs text-muted opacity-70">~/{{ presentation.id }}</span>
+        <div class="flex-1" />
         <UBadge
           v-if="running"
           color="success"
@@ -121,7 +116,7 @@ function handleCardClick(event: Event) {
       </div>
     </template>
 
-    <div class="terminal-body p-4 space-y-4">
+    <div class="terminal-body p-5 space-y-5">
       <div class="terminal-prompt">
         <div class="flex items-start gap-2">
           <span class="text-[var(--ui-success)] font-mono text-sm shrink-0">❯</span>
@@ -232,7 +227,7 @@ function handleCardClick(event: Event) {
   --terminal-glow-color: rgba(39, 201, 63, 0.2);
   --terminal-glow-strong: rgba(39, 201, 63, 0.4);
   border: 1px solid var(--ui-border);
-  background: var(--ui-bg-elevated);
+  background: var(--ui-bg);
 }
 
 .terminal-card:hover {

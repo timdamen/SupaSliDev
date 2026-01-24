@@ -249,18 +249,24 @@ const filteredPresentations = computed(() => {
 });
 
 const commandOptions = computed(() => {
-  const options: { label: string; onSelect: () => void }[] = [
-    { label: 'New', onSelect: handleCreateCommand },
-    { label: 'Toggle theme', onSelect: handleToggleThemeCommand },
+  const options: { label: string; description?: string; onSelect: () => void }[] = [
+    { label: 'New', description: 'Create a new presentation', onSelect: handleCreateCommand },
+    {
+      label: 'Toggle theme',
+      description: colorMode.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
+      onSelect: handleToggleThemeCommand,
+    },
   ];
 
   presentations.value.forEach((p) => {
     options.push({
       label: `Present > ${p.title}`,
+      description: 'Start dev server and open in browser',
       onSelect: () => handlePresentCommand(p),
     });
     options.push({
       label: `Export > ${p.title}`,
+      description: 'Export to PDF',
       onSelect: () => handleExportCommand(p),
     });
   });

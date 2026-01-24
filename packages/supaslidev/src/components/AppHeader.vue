@@ -4,6 +4,7 @@ import { useColorMode } from '#imports';
 
 interface CommandOption {
   label: string;
+  description?: string;
   onSelect: () => void;
 }
 
@@ -122,6 +123,7 @@ defineExpose({ focusInput, inputRef });
           <div class="logo">
             <h1 class="logo-title">Supaslidev</h1>
             <span class="logo-symbol">%</span>
+            <span v-if="!isFocused && !inputValue" class="logo-cursor" />
           </div>
 
           <div class="input-wrapper">
@@ -140,8 +142,6 @@ defineExpose({ focusInput, inputRef });
               >{{ inputValue }}<span class="ghost-suffix">{{ ghostText }}</span></span
             >
           </div>
-
-          <span v-if="!isFocused && !inputValue" class="logo-cursor" />
         </div>
 
         <div class="header-right" @click.stop>
@@ -171,7 +171,10 @@ defineExpose({ focusInput, inputRef });
           @mousedown.prevent="selectOption(option)"
           @mouseenter="selectedIndex = index"
         >
-          {{ option.label }}
+          <span class="dropdown-item-label">{{ option.label }}</span>
+          <span v-if="option.description" class="dropdown-item-description">{{
+            option.description
+          }}</span>
         </button>
       </div>
     </div>
@@ -311,7 +314,6 @@ defineExpose({ focusInput, inputRef });
   outline: none;
   color: var(--ui-text);
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-  font-size: 0.875rem;
   caret-color: var(--ui-primary);
 }
 
@@ -325,14 +327,14 @@ defineExpose({ focusInput, inputRef });
   left: 0;
   pointer-events: none;
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-  font-size: 0.875rem;
   color: transparent;
   white-space: pre;
 }
 
 .ghost-suffix {
-  color: var(--ui-text-dimmed);
-  opacity: 0.5;
+  color: white;
+  opacity: 0.3;
+  margin-left: 1px;
 }
 
 @keyframes blink {
@@ -376,7 +378,10 @@ defineExpose({ focusInput, inputRef });
 }
 
 .dropdown-item {
-  display: block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
   width: 100%;
   padding: 0.75rem 1.5rem;
   text-align: left;
@@ -384,7 +389,6 @@ defineExpose({ focusInput, inputRef });
   border: none;
   color: var(--ui-text);
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-  font-size: 0.875rem;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
@@ -396,5 +400,18 @@ defineExpose({ focusInput, inputRef });
 
 .dropdown-item--selected {
   color: var(--ui-primary);
+}
+
+.dropdown-item-label {
+  flex-shrink: 0;
+}
+
+.dropdown-item-description {
+  color: var(--ui-text-muted);
+  font-size: 0.75rem;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
