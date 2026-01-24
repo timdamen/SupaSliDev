@@ -96,8 +96,8 @@ const commandPaletteGroups = computed<CommandPaletteGroup[]>(() => [
     label: 'Actions',
     items: [
       {
-        label: 'Create new presentation',
-        suffix: 'Add a new presentation to your workspace',
+        label: 'New',
+        suffix: 'Create a new presentation',
         icon: 'i-lucide-plus',
         onSelect: handleCreateCommand,
       },
@@ -114,7 +114,7 @@ const commandPaletteGroups = computed<CommandPaletteGroup[]>(() => [
     label: 'Present',
     items: presentations.value.map(
       (p): CommandPaletteItem => ({
-        label: p.title,
+        label: `Present > ${p.title}`,
         suffix: 'Start dev server and open in browser',
         icon: 'i-lucide-play',
         onSelect: () => handlePresentCommand(p),
@@ -126,7 +126,7 @@ const commandPaletteGroups = computed<CommandPaletteGroup[]>(() => [
     label: 'Export',
     items: presentations.value.map(
       (p): CommandPaletteItem => ({
-        label: p.title,
+        label: `Export > ${p.title}`,
         suffix: 'Export to PDF',
         icon: 'i-lucide-download',
         onSelect: () => handleExportCommand(p),
@@ -229,6 +229,14 @@ const filteredPresentations = computed(() => {
           <template #body>
             <UCommandPalette
               :groups="commandPaletteGroups"
+              :fuse="{
+                fuseOptions: {
+                  threshold: 0.4,
+                  keys: ['label', 'suffix'],
+                  ignoreLocation: true,
+                },
+                matchAllWhenSearchEmpty: true,
+              }"
               placeholder="Search commands..."
               class="h-80"
             />
