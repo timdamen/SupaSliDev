@@ -64,8 +64,9 @@ program
     '-n, --name <name>',
     'Name for the imported presentation (defaults to source directory name)',
   )
-  .action(async (source: string, options: { name?: string }) => {
-    await importPresentation(source, options.name);
+  .option('--no-install', 'Skip pnpm install after import')
+  .action(async (source: string, options: { name?: string; install?: boolean }) => {
+    await importPresentation(source, { name: options.name, install: options.install ?? true });
   });
 
 export async function run(): Promise<void> {

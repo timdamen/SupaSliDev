@@ -128,7 +128,16 @@ function runPnpmInstall(projectRoot: string): Promise<void> {
   });
 }
 
-export async function importPresentation(source: string, name?: string): Promise<void> {
+export interface ImportOptions {
+  name?: string;
+  install?: boolean;
+}
+
+export async function importPresentation(
+  source: string,
+  options: ImportOptions = {},
+): Promise<void> {
+  const { name, install = true } = options;
   const projectRoot = findProjectRoot();
 
   if (!projectRoot) {
@@ -185,7 +194,13 @@ export async function importPresentation(source: string, name?: string): Promise
   console.log('\nFiles copied successfully!');
   console.log('Ignored: ' + IGNORE_PATTERNS.join(', '));
 
-  await runPnpmInstall(projectRoot);
+  if (install) {
+    await runPnpmInstall(projectRoot);
+  } else {
+    console.log(
+      '\nSkipped pnpm install. Run "pnpm install" manually before using the presentation.',
+    );
+  }
 
   const workspaceRoot = findWorkspaceRoot(projectRoot);
   if (workspaceRoot) {
