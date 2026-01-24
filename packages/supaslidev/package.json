@@ -35,11 +35,13 @@
   "dependencies": {
     "@nuxt/ui": "^4.4.0",
     "commander": "^13.1.0",
+    "js-yaml": "^4.1.1",
     "tailwindcss": "^4.1.18",
     "vue": "^3.5.0",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.10.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "tsdown": "^0.12.5",

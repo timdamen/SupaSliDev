@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { existsSync, readdirSync, statSync } from 'node:fs';
-import { findProjectRoot } from '../utils.js';
+import { findProjectRoot, getVersionDivergences, printVersionDivergenceWarning } from '../utils.js';
 
 function getPresentations(presentationsDir: string): string[] {
   if (!existsSync(presentationsDir)) {
@@ -53,6 +53,9 @@ export async function present(name: string): Promise<void> {
   }
 
   const packageName = `@supaslidev/${name}`;
+
+  const divergences = getVersionDivergences(projectRoot, name);
+  printVersionDivergenceWarning(divergences);
 
   console.log(`\nStarting dev server for ${name}...\n`);
 

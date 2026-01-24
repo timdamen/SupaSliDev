@@ -8,6 +8,8 @@ import {
   createVercelConfig,
   createNetlifyConfig,
   createDeployPackageJson,
+  getVersionDivergences,
+  printVersionDivergenceWarning,
 } from '../utils.js';
 
 export interface DeployOptions {
@@ -37,6 +39,9 @@ export async function deploy(name: string, options: DeployOptions): Promise<void
   const presentationDistDir = join(presentationDir, 'dist');
   const outputDir = options.output ?? join(deployDir, name);
   const outputDistDir = join(outputDir, 'dist');
+
+  const divergences = getVersionDivergences(projectRoot, name);
+  printVersionDivergenceWarning(divergences);
 
   console.log('\n' + '='.repeat(50));
   console.log(`  Preparing deployment: ${name}`);
