@@ -16,7 +16,6 @@ const emit = defineEmits<{
 const loading = ref({
   dev: false,
   export: false,
-  deploy: false,
 });
 
 const running = computed(() => isRunning(props.presentation.id));
@@ -64,15 +63,6 @@ async function handleExport(event: Event) {
   } finally {
     loading.value.export = false;
   }
-}
-
-async function handleDeploy(event: Event) {
-  event.preventDefault();
-  event.stopPropagation();
-  loading.value.deploy = true;
-  setTimeout(() => {
-    loading.value.deploy = false;
-  }, 1000);
 }
 
 function handleCardClick(event: Event) {
@@ -203,6 +193,7 @@ function handleCardClick(event: Event) {
           </template>
         </UButton>
 
+        <!-- TODO: Re-enable when deploy functionality is implemented
         <UButton
           color="neutral"
           variant="soft"
@@ -220,6 +211,7 @@ function handleCardClick(event: Event) {
             <UKbd size="xs" class="terminal-kbd">P</UKbd>
           </template>
         </UButton>
+        -->
       </div>
 
       <div
