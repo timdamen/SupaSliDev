@@ -1,8 +1,14 @@
 import pc from 'picocolors';
-import { readState, findWorkspaceRoot } from '../state.js';
+import {
+  readState,
+  findWorkspaceRoot,
+  getImportedPresentations,
+  type ImportedPresentation,
+} from '../state.js';
 import { readManifest } from '../migrations/manifest.js';
 import { hasMigration } from '../state.js';
 import { join } from 'node:path';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { CLI_VERSION, fetchLatestVersion, compareVersions } from '../version.js';
 
 export interface StatusResult {
@@ -13,6 +19,8 @@ export interface StatusResult {
   pendingMigrations: number;
   latestVersion: string | null;
   updateAvailable: boolean;
+  nativePresentations: string[];
+  importedPresentations: ImportedPresentation[];
 }
 
 function getPendingMigrationsCount(workspaceDir: string): number {
@@ -26,12 +34,32 @@ function getPendingMigrationsCount(workspaceDir: string): number {
   return manifest.migrations.filter((m) => !hasMigration(workspaceDir, m.id)).length;
 }
 
+function getAllPresentations(workspaceDir: string): string[] {
+  const presentationsDir = join(workspaceDir, 'presentations');
+
+  if (!existsSync(presentationsDir)) {
+    return [];
+  }
+
+  return readdirSync(presentationsDir)
+    .filter((name) => {
+      const fullPath = join(presentationsDir, name);
+      return statSync(fullPath).isDirectory() && existsSync(join(fullPath, 'slides.md'));
+    })
+    .sort();
+}
+
 export async function getStatus(workspaceDir?: string): Promise<StatusResult> {
   const resolvedDir = workspaceDir ?? findWorkspaceRoot() ?? process.cwd();
   const state = readState(resolvedDir);
 
   const latestVersion = await fetchLatestVersion();
   const updateAvailable = latestVersion ? compareVersions(CLI_VERSION, latestVersion) : false;
+
+  const importedPresentations = getImportedPresentations(resolvedDir);
+  const importedNames = new Set(importedPresentations.map((p) => p.name));
+  const allPresentations = getAllPresentations(resolvedDir);
+  const nativePresentations = allPresentations.filter((name) => !importedNames.has(name));
 
   return {
     cliVersion: CLI_VERSION,
@@ -41,6 +69,8 @@ export async function getStatus(workspaceDir?: string): Promise<StatusResult> {
     pendingMigrations: state ? getPendingMigrationsCount(resolvedDir) : 0,
     latestVersion,
     updateAvailable,
+    nativePresentations,
+    importedPresentations,
   };
 }
 
@@ -86,6 +116,45 @@ export function formatStatus(status: StatusResult): string {
     lines.push(`${pc.dim('Pending Migrations:')} ${pc.yellow(String(status.pendingMigrations))}`);
   } else {
     lines.push(`${pc.dim('Pending Migrations:')} ${pc.green('0')}`);
+  }
+
+  lines.push('');
+  lines.push(pc.bold('Presentations'));
+  lines.push('─'.repeat(40));
+
+  lines.push('');
+  lines.push(pc.dim('Native:'));
+  if (status.nativePresentations.length === 0) {
+    lines.push('  No native presentations');
+  } else {
+    for (const name of status.nativePresentations) {
+      lines.push(`  ${name}`);
+    }
+  }
+
+  lines.push('');
+  lines.push(pc.dim('Imported:'));
+  if (status.importedPresentations.length === 0) {
+    lines.push('  No imported presentations');
+  } else {
+    for (const presentation of status.importedPresentations) {
+      lines.push(`  ${pc.bold(presentation.name)}`);
+      lines.push(`    ${pc.dim('Source:')} ${presentation.sourcePath}`);
+      lines.push(`    ${pc.dim('Imported:')} ${formatDate(presentation.importedAt)}`);
+
+      if (presentation.divergentDependencies.length > 0) {
+        lines.push(
+          `    ${pc.dim('Divergent deps:')} ${pc.yellow(String(presentation.divergentDependencies.length))}`,
+        );
+        for (const dep of presentation.divergentDependencies) {
+          lines.push(
+            `      ${dep.dependency}: ${dep.pinnedVersion} ${pc.dim('(catalog:')} ${dep.catalogVersion}${pc.dim(')')}`,
+          );
+        }
+      } else {
+        lines.push(`    ${pc.dim('Divergent deps:')} ${pc.green('None')}`);
+      }
+    }
   }
 
   lines.push('');
