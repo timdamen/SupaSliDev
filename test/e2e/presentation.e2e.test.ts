@@ -83,7 +83,7 @@ describe('Presentation Viewing E2E', () => {
     dashboardUrl = dashboardInfo.url;
 
     await waitForServer(dashboardUrl);
-    await waitForServer('http://localhost:3001/api/servers');
+    await waitForServer('http://localhost:7777/api/servers');
   }, 120000);
 
   afterAll(async () => {

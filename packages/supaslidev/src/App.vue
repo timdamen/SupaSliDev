@@ -139,21 +139,60 @@ function handleExecuteCommand(command: string) {
     return;
   }
 
-  if (action === 'present' && arg) {
-    const presentation = findPresentationByName(arg);
-    if (presentation) {
-      handlePresentCommand(presentation);
+  if (action === 'present') {
+    if (!arg) {
+      toast.add({
+        title: 'Missing argument',
+        description: 'Usage: present <presentation-name>',
+        color: 'warning',
+        icon: 'i-lucide-alert-triangle',
+      });
+      return;
     }
+    const presentation = findPresentationByName(arg);
+    if (!presentation) {
+      toast.add({
+        title: 'Presentation not found',
+        description: `No presentation found with name "${arg}"`,
+        color: 'warning',
+        icon: 'i-lucide-alert-triangle',
+      });
+      return;
+    }
+    handlePresentCommand(presentation);
     return;
   }
 
-  if (action === 'export' && arg) {
-    const presentation = findPresentationByName(arg);
-    if (presentation) {
-      handleExportCommand(presentation);
+  if (action === 'export') {
+    if (!arg) {
+      toast.add({
+        title: 'Missing argument',
+        description: 'Usage: export <presentation-name>',
+        color: 'warning',
+        icon: 'i-lucide-alert-triangle',
+      });
+      return;
     }
+    const presentation = findPresentationByName(arg);
+    if (!presentation) {
+      toast.add({
+        title: 'Presentation not found',
+        description: `No presentation found with name "${arg}"`,
+        color: 'warning',
+        icon: 'i-lucide-alert-triangle',
+      });
+      return;
+    }
+    handleExportCommand(presentation);
     return;
   }
+
+  toast.add({
+    title: 'Unknown command',
+    description: `"${action}" is not a recognized command. Try: new, present, export`,
+    color: 'warning',
+    icon: 'i-lucide-alert-triangle',
+  });
 }
 
 const commandPaletteGroups = computed<CommandPaletteGroup[]>(() => [
@@ -232,8 +271,8 @@ const commandOptions = computed(() => {
 
 <template>
   <UApp>
-    <div class="min-h-screen bg-default">
-      <UContainer class="py-6 sm:py-8 lg:py-10">
+    <div class="min-h-screen bg-default flex flex-col">
+      <UContainer class="py-6 sm:py-8 lg:py-10 flex-1">
         <AppHeader
           ref="appHeaderRef"
           :commands="commandOptions"
@@ -335,6 +374,46 @@ const commandOptions = computed(() => {
           </template>
         </UModal>
       </UContainer>
+
+      <footer class="footer">
+        <p class="footer-text">
+          Built on
+          <a href="https://sli.dev" target="_blank" rel="noopener" class="footer-link">Sli.dev</a>
+          by
+          <a href="https://github.com/antfu" target="_blank" rel="noopener" class="footer-link"
+            >Anthony Fu</a
+          >, Created with ❤️ by
+          <a href="https://github.com/timdamen" target="_blank" rel="noopener" class="footer-link"
+            >Tim Damen</a
+          >
+          in 🇳🇱
+        </p>
+      </footer>
     </div>
   </UApp>
 </template>
+
+<style scoped>
+.footer {
+  margin-top: auto;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.footer-text {
+  font-size: 0.75rem;
+  color: var(--ui-text-muted);
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.footer-link {
+  color: var(--ui-primary);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.footer-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+</style>

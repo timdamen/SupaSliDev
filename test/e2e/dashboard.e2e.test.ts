@@ -112,7 +112,7 @@ describe('Dashboard Display E2E', () => {
       expect(response?.ok()).toBe(true);
 
       const pageTitle = await page.locator('h1').textContent();
-      expect(pageTitle).toBe('supaslidev');
+      expect(pageTitle).toBe('Supaslidev');
     });
 
     it('takes initial screenshot of dashboard', async () => {
@@ -258,6 +258,117 @@ describe('Dashboard Display E2E', () => {
 
       const cardTitle = await visibleCards.first().locator('.card-title').textContent();
       expect(cardTitle).toBe('second-deck');
+    });
+  });
+
+  describe('terminal bar', () => {
+    it('has a terminal input field', async () => {
+      await page.goto(dashboardUrl);
+
+      const terminalInput = page.locator('.terminal-input');
+      expect(await terminalInput.isVisible()).toBe(true);
+      expect(await terminalInput.getAttribute('placeholder')).toBe('Type a command...');
+    });
+
+    it('shows ghost text autocomplete when typing', async () => {
+      await page.goto(dashboardUrl);
+
+      const terminalInput = page.locator('.terminal-input');
+      await terminalInput.focus();
+      await terminalInput.fill('Ne');
+
+      await page.waitForTimeout(100);
+
+      const ghostText = page.locator('.ghost-suffix');
+      expect(await ghostText.isVisible()).toBe(true);
+      expect(await ghostText.textContent()).toBe('w');
+    });
+
+    it('shows dropdown with matching commands', async () => {
+      await page.goto(dashboardUrl);
+
+      const terminalInput = page.locator('.terminal-input');
+      await terminalInput.focus();
+      await terminalInput.fill('Present');
+
+      await page.waitForTimeout(100);
+
+      const dropdown = page.locator('.dropdown');
+      expect(await dropdown.isVisible()).toBe(true);
+
+      const dropdownItems = page.locator('.dropdown-item');
+      expect(await dropdownItems.count()).toBeGreaterThan(0);
+    });
+
+    it('clears input after executing command', async () => {
+      await page.goto(dashboardUrl);
+
+      const terminalInput = page.locator('.terminal-input');
+      await terminalInput.focus();
+      await terminalInput.fill('new');
+      await terminalInput.press('Enter');
+
+      await page.waitForTimeout(200);
+
+      expect(await terminalInput.inputValue()).toBe('');
+    });
+  });
+
+  describe('terminal command validation', () => {
+    it('shows warning toast for present command with non-existent presentation', async () => {
+      await page.goto(dashboardUrl);
+
+      const terminalInput = page.locator('.terminal-input');
+      await terminalInput.focus();
+      await terminalInput.fill('present non-existent-deck');
+      await terminalInput.press('Enter');
+
+      const toastTitle = page.locator('[data-slot="title"]').getByText('Presentation not found');
+      await toastTitle.waitFor({ state: 'visible', timeout: 5000 });
+
+      expect(await toastTitle.isVisible()).toBe(true);
+    });
+
+    it('shows warning toast for export command with non-existent presentation', async () => {
+      await page.goto(dashboardUrl);
+
+      const terminalInput = page.locator('.terminal-input');
+      await terminalInput.focus();
+      await terminalInput.fill('export non-existent-deck');
+      await terminalInput.press('Enter');
+
+      const toastTitle = page.locator('[data-slot="title"]').getByText('Presentation not found');
+      await toastTitle.waitFor({ state: 'visible', timeout: 5000 });
+
+      expect(await toastTitle.isVisible()).toBe(true);
+    });
+
+    it('shows warning toast for unknown command', async () => {
+      await page.goto(dashboardUrl);
+
+      const terminalInput = page.locator('.terminal-input');
+      await terminalInput.focus();
+      await terminalInput.fill('unknowncommand');
+      await terminalInput.press('Enter');
+
+      const toastTitle = page.locator('[data-slot="title"]').getByText('Unknown command');
+      await toastTitle.waitFor({ state: 'visible', timeout: 5000 });
+
+      expect(await toastTitle.isVisible()).toBe(true);
+    });
+
+    it('opens create dialog when executing new command', async () => {
+      await page.goto(dashboardUrl);
+
+      const terminalInput = page.locator('.terminal-input');
+      await terminalInput.focus();
+      await terminalInput.fill('new');
+      await terminalInput.press('Enter');
+
+      const dialog = page.locator('[role="dialog"]');
+      await dialog.waitFor({ state: 'visible', timeout: 5000 });
+
+      expect(await dialog.isVisible()).toBe(true);
     });
   });
 });

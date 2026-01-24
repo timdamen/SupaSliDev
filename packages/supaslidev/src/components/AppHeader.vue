@@ -120,6 +120,7 @@ defineExpose({ focusInput, inputRef });
       <div class="header-content" @click="handleHeaderClick">
         <div class="header-left">
           <div class="logo">
+            <h1 class="logo-title">Supaslidev</h1>
             <span class="logo-symbol">%</span>
           </div>
 
@@ -260,8 +261,32 @@ defineExpose({ focusInput, inputRef });
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
+.logo-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #00dc82, #36e4da, #00dc82, #36e4da);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .logo-symbol {
-  color: var(--ui-success);
+  color: var(--ui-text);
   font-weight: 600;
   font-size: 1rem;
 }
