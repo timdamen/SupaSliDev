@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { Browser, Page } from 'playwright';
-import { existsSync, mkdirSync, writeFileSync, cpSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { cpSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   startDashboard,
   stopDashboardAsync,
@@ -13,23 +12,6 @@ import {
   launchBrowser,
   installDependencies,
 } from './setup/test-utils.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const SNAPSHOTS_DIR = join(__dirname, '..', '__snapshots__');
-
-function ensureSnapshotsDir(): void {
-  if (!existsSync(SNAPSHOTS_DIR)) {
-    mkdirSync(SNAPSHOTS_DIR, { recursive: true });
-  }
-}
-
-async function takeScreenshot(page: Page, name: string): Promise<Buffer> {
-  ensureSnapshotsDir();
-  const screenshotPath = join(SNAPSHOTS_DIR, `${name}.png`);
-  const screenshot = await page.screenshot({ fullPage: true });
-  writeFileSync(screenshotPath, screenshot);
-  return screenshot;
-}
 
 async function waitForPresentationServer(port: number, timeout = 30000): Promise<void> {
   return waitForServer(`http://localhost:${port}`, { timeout });
@@ -195,11 +177,6 @@ describe('Presentation Viewing E2E', () => {
       const bodyText = await presentationPage.locator('body').textContent();
       expect(bodyText).toContain('test-deck');
     });
-
-    it('takes screenshot of first slide', async () => {
-      const screenshot = await takeScreenshot(presentationPage, 'presentation-slide-1');
-      expect(screenshot.length).toBeGreaterThan(0);
-    });
   });
 
   describe('slide navigation with controls', () => {
@@ -226,11 +203,6 @@ describe('Presentation Viewing E2E', () => {
       const slideContent = presentationPage.locator('.slidev-page');
       const count = await slideContent.count();
       expect(count).toBeGreaterThan(0);
-    });
-
-    it('takes screenshot of second slide', async () => {
-      const screenshot = await takeScreenshot(presentationPage, 'presentation-slide-2');
-      expect(screenshot.length).toBeGreaterThan(0);
     });
 
     it('navigating to previous slide changes URL back', async () => {
@@ -348,31 +320,31 @@ describe('Presentation Viewing E2E', () => {
     });
   });
 
-  describe('visual screenshot comparison', () => {
+  describe('slide content verification', () => {
     beforeAll(async () => {
       await presentationPage.goto(presentationUrl);
       await presentationPage.waitForSelector('.slidev-page', { timeout: 10000 });
     });
 
-    it('captures full slide view screenshot', async () => {
-      const screenshot = await takeScreenshot(presentationPage, 'presentation-full-view');
-      expect(screenshot.length).toBeGreaterThan(0);
+    it('slide content is visible on first slide', async () => {
+      const slideContent = presentationPage.locator('.slidev-page');
+      expect(await slideContent.first().isVisible()).toBe(true);
     });
 
-    it('captures slide after navigation screenshot', async () => {
+    it('slide content is visible after navigation', async () => {
       await presentationPage.keyboard.press('ArrowRight');
       await presentationPage.waitForTimeout(500);
 
-      const screenshot = await takeScreenshot(presentationPage, 'presentation-after-navigation');
-      expect(screenshot.length).toBeGreaterThan(0);
+      const slideContent = presentationPage.locator('.slidev-page');
+      expect(await slideContent.first().isVisible()).toBe(true);
     });
 
-    it('captures final slide screenshot', async () => {
+    it('slide content is visible on final navigated slide', async () => {
       await presentationPage.keyboard.press('ArrowRight');
       await presentationPage.waitForTimeout(500);
 
-      const screenshot = await takeScreenshot(presentationPage, 'presentation-final-slide');
-      expect(screenshot.length).toBeGreaterThan(0);
+      const slideContent = presentationPage.locator('.slidev-page');
+      expect(await slideContent.first().isVisible()).toBe(true);
     });
   });
 
