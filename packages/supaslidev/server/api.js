@@ -344,44 +344,67 @@ function copyDirectorySelective(source, destination) {
   }
 }
 
+function validateSourceDirectory(sourcePath) {
+  if (!existsSync(sourcePath)) {
+    return { isValid: false, error: 'Source directory does not exist' };
+  }
+
+  if (!statSync(sourcePath).isDirectory()) {
+    return { isValid: false, error: 'Source path is not a directory' };
+  }
+
+  const slidesPath = join(sourcePath, 'slides.md');
+  if (!existsSync(slidesPath)) {
+    return { isValid: false, error: 'No slides.md found in source directory' };
+  }
+
+  const packageJsonPath = join(sourcePath, 'package.json');
+  if (!existsSync(packageJsonPath)) {
+    return { isValid: false, error: 'No package.json found in source directory' };
+  }
+
+  return { isValid: true };
+}
+
+function validatePath(path) {
+  const sourcePath = resolve(path);
+  const validation = validateSourceDirectory(sourcePath);
+
+  if (!validation.isValid) {
+    return {
+      path,
+      isValid: false,
+      suggestedName: null,
+      error: validation.error,
+    };
+  }
+
+  const suggestedName = basename(sourcePath)
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-');
+
+  return {
+    path,
+    isValid: true,
+    suggestedName,
+    error: null,
+  };
+}
+
+function validatePaths(paths) {
+  return paths.map(validatePath);
+}
+
 function importPresentation({ source, name }) {
   return new Promise((resolvePromise) => {
     const sourcePath = resolve(source);
+    const validation = validateSourceDirectory(sourcePath);
 
-    if (!existsSync(sourcePath)) {
+    if (!validation.isValid) {
       resolvePromise({
         success: false,
         field: 'source',
-        message: 'Source directory does not exist',
-      });
-      return;
-    }
-
-    if (!statSync(sourcePath).isDirectory()) {
-      resolvePromise({
-        success: false,
-        field: 'source',
-        message: 'Source path is not a directory',
-      });
-      return;
-    }
-
-    const slidesPath = join(sourcePath, 'slides.md');
-    if (!existsSync(slidesPath)) {
-      resolvePromise({
-        success: false,
-        field: 'source',
-        message: 'No slides.md found in source directory',
-      });
-      return;
-    }
-
-    const sourcePackageJsonPath = join(sourcePath, 'package.json');
-    if (!existsSync(sourcePackageJsonPath)) {
-      resolvePromise({
-        success: false,
-        field: 'source',
-        message: 'No package.json found in source directory',
+        message: validation.error,
       });
       return;
     }
@@ -524,6 +547,30 @@ const server = createServer(async (req, res) => {
           res.writeHead(400);
           res.end(JSON.stringify({ field: result.field, message: result.message }));
         }
+      } catch {
+        res.writeHead(400);
+        res.end(JSON.stringify({ message: 'Invalid JSON' }));
+      }
+    });
+    return;
+  }
+
+  if (path === '/api/presentations/validate' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => {
+      body += chunk;
+    });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        if (!Array.isArray(data.paths)) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ message: 'paths must be an array' }));
+          return;
+        }
+        const results = validatePaths(data.paths);
+        res.writeHead(200);
+        res.end(JSON.stringify(results));
       } catch {
         res.writeHead(400);
         res.end(JSON.stringify({ message: 'Invalid JSON' }));
