@@ -50,6 +50,9 @@ jobs:
 
       - run: pnpm install
 
+      - name: Build packages
+        run: pnpm --filter create-supaslidev build
+
       - name: Install Playwright browser and dependencies
         shell: bash
         run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
