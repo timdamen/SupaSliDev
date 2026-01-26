@@ -2,6 +2,9 @@
 import { computed, ref, nextTick } from 'vue';
 import { useColorMode } from '#imports';
 
+declare const __APP_VERSION__: string;
+const version = __APP_VERSION__;
+
 interface CommandOption {
   label: string;
   description?: string;
@@ -122,6 +125,7 @@ defineExpose({ focusInput, inputRef });
         <div class="header-left">
           <div class="logo">
             <h1 class="logo-title">Supaslidev</h1>
+            <span class="logo-version">{{ version }}</span>
             <span class="logo-symbol">%</span>
             <span v-if="!isFocused && !inputValue" class="logo-cursor" />
           </div>
@@ -286,6 +290,11 @@ defineExpose({ focusInput, inputRef });
   100% {
     background-position: 0% 50%;
   }
+}
+
+.logo-version {
+  font-size: 0.8rem;
+  font-weight: 400;
 }
 
 .logo-symbol {

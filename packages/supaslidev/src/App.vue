@@ -226,7 +226,7 @@ const commandPaletteGroups = computed<CommandPaletteGroup[]>(() => [
       },
       {
         label: 'Import',
-        suffix: 'Import an existing presentation',
+        suffix: 'Import existing Sli.dev presentation(s)',
         icon: 'i-lucide-import',
         onSelect: handleImportCommand,
       },
@@ -277,7 +277,7 @@ const commandOptions = computed(() => {
     { label: 'New', description: 'Create a new presentation', onSelect: handleCreateCommand },
     {
       label: 'Import',
-      description: 'Import an existing presentation',
+      description: 'Import existing Sli.dev presentation(s)',
       onSelect: handleImportCommand,
     },
     {

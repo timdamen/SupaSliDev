@@ -12,11 +12,6 @@ interface ImportProject {
   status: ImportStatus;
 }
 
-interface SelectedFolder {
-  path: string;
-  name: string;
-}
-
 interface ValidationResult {
   path: string;
   isValid: boolean;
@@ -34,6 +29,20 @@ interface ImportSummary {
   successCount: number;
   failureCount: number;
   errors: Array<{ path: string; error: string }>;
+}
+
+interface UploadedFile {
+  path: string;
+  content: string;
+  encoding: 'utf8' | 'base64';
+}
+
+interface UploadedProject {
+  folderName: string;
+  files: UploadedFile[];
+  isValid: boolean;
+  error: string | null;
+  suggestedName: string;
 }
 
 function createEmptyImportProject(): ImportProject {
@@ -60,32 +69,186 @@ const isSubmitting = ref(false);
 const nameError = ref('');
 const touched = ref({ path: false, name: false });
 const folderInputRef = ref<HTMLInputElement | null>(null);
-const selectedFolders = ref<SelectedFolder[]>([]);
 const isDraggingOver = ref(false);
 const validationResults = ref<ValidationResult[]>([]);
 const isValidating = ref(false);
 const importProgress = ref<ImportProgress | null>(null);
 const importSummary = ref<ImportSummary | null>(null);
+const uploadedProjects = ref<Map<string, UploadedProject>>(new Map());
+const isReadingFiles = ref(false);
 let validationDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+const TEXT_EXTENSIONS = new Set([
+  '.md',
+  '.json',
+  '.vue',
+  '.ts',
+  '.js',
+  '.css',
+  '.scss',
+  '.less',
+  '.html',
+  '.yaml',
+  '.yml',
+  '.txt',
+  '.svg',
+  '.gitignore',
+  '.npmrc',
+  '.env',
+]);
+
+const IGNORE_PATTERNS = [
+  'node_modules',
+  '.git',
+  'dist',
+  '.nuxt',
+  '.output',
+  'pnpm-lock.yaml',
+  'package-lock.json',
+  'yarn.lock',
+  '.DS_Store',
+];
+
+function shouldIgnoreFile(path: string): boolean {
+  const parts = path.split('/');
+  return parts.some((part) => IGNORE_PATTERNS.includes(part));
+}
+
+function isTextFile(filename: string): boolean {
+  const ext = filename.substring(filename.lastIndexOf('.')).toLowerCase();
+  return TEXT_EXTENSIONS.has(ext) || !filename.includes('.');
+}
+
+async function readFileContent(file: File): Promise<UploadedFile> {
+  const isText = isTextFile(file.name);
+
+  if (isText) {
+    const content = await file.text();
+    return {
+      path: file.webkitRelativePath.split('/').slice(1).join('/'),
+      content,
+      encoding: 'utf8',
+    };
+  } else {
+    const buffer = await file.arrayBuffer();
+    const base64 = btoa(
+      new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
+    );
+    return {
+      path: file.webkitRelativePath.split('/').slice(1).join('/'),
+      content: base64,
+      encoding: 'base64',
+    };
+  }
+}
+
+async function readDirectoryEntry(entry: FileSystemDirectoryEntry): Promise<UploadedFile[]> {
+  const files: UploadedFile[] = [];
+
+  async function readEntry(dirEntry: FileSystemDirectoryEntry, basePath: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const reader = dirEntry.createReader();
+      const readEntries = () => {
+        reader.readEntries(async (entries) => {
+          if (entries.length === 0) {
+            resolve();
+            return;
+          }
+
+          for (const entry of entries) {
+            const entryPath = basePath ? `${basePath}/${entry.name}` : entry.name;
+
+            if (shouldIgnoreFile(entryPath)) {
+              continue;
+            }
+
+            if (entry.isFile) {
+              const fileEntry = entry as FileSystemFileEntry;
+              const file = await new Promise<File>((res, rej) => {
+                fileEntry.file(res, rej);
+              });
+
+              const isText = isTextFile(file.name);
+              if (isText) {
+                const content = await file.text();
+                files.push({ path: entryPath, content, encoding: 'utf8' });
+              } else {
+                const buffer = await file.arrayBuffer();
+                const base64 = btoa(
+                  new Uint8Array(buffer).reduce(
+                    (data, byte) => data + String.fromCharCode(byte),
+                    '',
+                  ),
+                );
+                files.push({ path: entryPath, content: base64, encoding: 'base64' });
+              }
+            } else if (entry.isDirectory) {
+              await readEntry(entry as FileSystemDirectoryEntry, entryPath);
+            }
+          }
+
+          readEntries();
+        }, reject);
+      };
+
+      readEntries();
+    });
+  }
+
+  await readEntry(entry, '');
+  return files;
+}
+
+function validateUploadedFiles(files: UploadedFile[]): { isValid: boolean; error: string | null } {
+  const hasSlides = files.some((f) => f.path === 'slides.md');
+  const hasPackageJson = files.some((f) => f.path === 'package.json');
+
+  if (!hasSlides) {
+    return { isValid: false, error: 'No slides.md found' };
+  }
+  if (!hasPackageJson) {
+    return { isValid: false, error: 'No package.json found' };
+  }
+  return { isValid: true, error: null };
+}
+
+function toSlug(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+}
 
 const validProjects = computed(() => {
   return validationResults.value.filter((r) => r.isValid);
 });
 
+const validUploadedProjects = computed(() => {
+  return Array.from(uploadedProjects.value.values()).filter((p) => p.isValid);
+});
+
 const hasValidProjects = computed(() => {
-  return validProjects.value.length > 0;
+  return validProjects.value.length > 0 || validUploadedProjects.value.length > 0;
 });
 
 const isValid = computed(() => {
-  return hasValidProjects.value && !nameError.value && !isValidating.value;
+  return hasValidProjects.value && !nameError.value && !isValidating.value && !isReadingFiles.value;
 });
 
 const hasMultiplePaths = computed(() => {
-  return parsePaths(importProject.value.path).length > 1;
+  const pathCount = parsePaths(importProject.value.path).length;
+  const uploadCount = uploadedProjects.value.size;
+  return pathCount + uploadCount > 1;
 });
 
 const showPreviewList = computed(() => {
-  return validationResults.value.length > 0 || isValidating.value;
+  return (
+    validationResults.value.length > 0 ||
+    uploadedProjects.value.size > 0 ||
+    isValidating.value ||
+    isReadingFiles.value
+  );
+});
+
+const hasUploadedProjects = computed(() => {
+  return uploadedProjects.value.size > 0;
 });
 
 function parsePaths(input: string): string[] {
@@ -198,41 +361,56 @@ function openFolderPicker() {
   folderInputRef.value?.click();
 }
 
-function handleFolderSelect(event: Event) {
+async function handleFolderSelect(event: Event) {
   const input = event.target as HTMLInputElement;
   const files = input.files;
   if (!files || files.length === 0) return;
 
-  const folderPaths = new Map<string, string>();
+  isReadingFiles.value = true;
 
+  const filesByFolder = new Map<string, File[]>();
   for (const file of files) {
     const pathParts = file.webkitRelativePath.split('/');
-    if (pathParts.length > 0) {
+    if (pathParts.length > 1) {
       const folderName = pathParts[0];
-      if (!folderPaths.has(folderName)) {
-        folderPaths.set(folderName, folderName);
+      if (!filesByFolder.has(folderName)) {
+        filesByFolder.set(folderName, []);
       }
+      filesByFolder.get(folderName)!.push(file);
     }
   }
 
-  const newFolders: SelectedFolder[] = [];
-  for (const [name] of folderPaths) {
-    if (!selectedFolders.value.some((f) => f.name === name)) {
-      newFolders.push({ path: name, name });
+  for (const [folderName, folderFiles] of filesByFolder) {
+    if (uploadedProjects.value.has(folderName)) {
+      continue;
     }
+
+    const uploadedFiles: UploadedFile[] = [];
+    for (const file of folderFiles) {
+      const relativePath = file.webkitRelativePath.split('/').slice(1).join('/');
+      if (shouldIgnoreFile(relativePath)) {
+        continue;
+      }
+
+      const uploadedFile = await readFileContent(file);
+      uploadedFiles.push(uploadedFile);
+    }
+
+    const validation = validateUploadedFiles(uploadedFiles);
+    const project: UploadedProject = {
+      folderName,
+      files: uploadedFiles,
+      isValid: validation.isValid,
+      error: validation.error,
+      suggestedName: toSlug(folderName),
+    };
+
+    uploadedProjects.value.set(folderName, project);
   }
 
-  selectedFolders.value = [...selectedFolders.value, ...newFolders];
-  updatePathFromSelectedFolders();
-
+  uploadedProjects.value = new Map(uploadedProjects.value);
+  isReadingFiles.value = false;
   input.value = '';
-}
-
-function updatePathFromSelectedFolders() {
-  const paths = selectedFolders.value.map((f) => f.path);
-  importProject.value.path = paths.join(', ');
-  touched.value.path = true;
-  triggerValidation(paths);
 }
 
 function handleDragOver(event: DragEvent) {
@@ -250,34 +428,50 @@ function handleDragLeave(event: DragEvent) {
   }
 }
 
-function handleDrop(event: DragEvent) {
+async function handleDrop(event: DragEvent) {
   event.preventDefault();
   isDraggingOver.value = false;
 
   const items = event.dataTransfer?.items;
   if (!items) return;
 
-  const newFolders: SelectedFolder[] = [];
+  const directoryEntries: FileSystemDirectoryEntry[] = [];
 
   for (const item of items) {
     if (item.kind === 'file') {
       const entry = item.webkitGetAsEntry?.();
       if (entry?.isDirectory) {
-        const name = entry.name;
-        if (
-          !selectedFolders.value.some((f) => f.name === name) &&
-          !newFolders.some((f) => f.name === name)
-        ) {
-          newFolders.push({ path: name, name });
-        }
+        directoryEntries.push(entry as FileSystemDirectoryEntry);
       }
     }
   }
 
-  if (newFolders.length > 0) {
-    selectedFolders.value = [...selectedFolders.value, ...newFolders];
-    updatePathFromSelectedFolders();
+  if (directoryEntries.length === 0) return;
+
+  isReadingFiles.value = true;
+
+  for (const entry of directoryEntries) {
+    const folderName = entry.name;
+    if (uploadedProjects.value.has(folderName)) {
+      continue;
+    }
+
+    const files = await readDirectoryEntry(entry);
+    const validation = validateUploadedFiles(files);
+
+    const project: UploadedProject = {
+      folderName,
+      files,
+      isValid: validation.isValid,
+      error: validation.error,
+      suggestedName: toSlug(folderName),
+    };
+
+    uploadedProjects.value.set(folderName, project);
   }
+
+  uploadedProjects.value = new Map(uploadedProjects.value);
+  isReadingFiles.value = false;
 }
 
 function resetForm() {
@@ -285,11 +479,12 @@ function resetForm() {
   nameError.value = '';
   isSubmitting.value = false;
   touched.value = { path: false, name: false };
-  selectedFolders.value = [];
   validationResults.value = [];
   isValidating.value = false;
   importProgress.value = null;
   importSummary.value = null;
+  uploadedProjects.value = new Map();
+  isReadingFiles.value = false;
   if (validationDebounceTimer) {
     clearTimeout(validationDebounceTimer);
     validationDebounceTimer = null;
@@ -304,10 +499,13 @@ function handleClose() {
 async function handleSubmit() {
   if (!isValid.value || isSubmitting.value) return;
 
-  const projectsToImport = validProjects.value;
-  if (projectsToImport.length === 0) return;
+  const pathProjects = validProjects.value;
+  const uploadProjects = validUploadedProjects.value;
+  const totalProjects = pathProjects.length + uploadProjects.length;
 
-  const isSingleProject = projectsToImport.length === 1;
+  if (totalProjects === 0) return;
+
+  const isSingleProject = totalProjects === 1;
 
   isSubmitting.value = true;
   importProject.value.status = 'importing';
@@ -315,14 +513,13 @@ async function handleSubmit() {
 
   const importedPresentations: Presentation[] = [];
   const errors: Array<{ path: string; error: string }> = [];
-  const total = projectsToImport.length;
+  let currentIndex = 0;
 
-  for (let i = 0; i < projectsToImport.length; i++) {
-    const project = projectsToImport[i];
-
+  for (const project of pathProjects) {
+    currentIndex++;
     importProgress.value = {
-      currentIndex: i + 1,
-      total,
+      currentIndex,
+      total: totalProjects,
       currentProjectName: project.suggestedName || project.path,
     };
 
@@ -346,6 +543,38 @@ async function handleSubmit() {
       importedPresentations.push(presentation);
     } catch {
       errors.push({ path: project.path, error: 'Failed to import' });
+    }
+  }
+
+  for (const project of uploadProjects) {
+    currentIndex++;
+    importProgress.value = {
+      currentIndex,
+      total: totalProjects,
+      currentProjectName: project.suggestedName || project.folderName,
+    };
+
+    try {
+      const response = await fetch('/api/presentations/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          files: project.files,
+          folderName: project.folderName,
+          name: isSingleProject ? importProject.value.name || undefined : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        errors.push({ path: project.folderName, error: error.message });
+        continue;
+      }
+
+      const presentation = await response.json();
+      importedPresentations.push(presentation);
+    } catch {
+      errors.push({ path: project.folderName, error: 'Failed to upload' });
     }
   }
 
@@ -405,14 +634,14 @@ async function handleSubmit() {
 
         <UFormField
           label="Source Path(s)"
-          required
+          :required="!hasUploadedProjects"
           :error="importProject.error"
-          hint="Relative paths to Slidev presentations (comma-separated for multiple)"
+          hint="Enter paths or use Browse/drag-drop to select folders"
         >
           <div class="flex gap-2">
             <UInput
               v-model="importProject.path"
-              placeholder="../project-a, ../project-b"
+              placeholder="/path/to/presentation"
               :color="importProject.error ? 'error' : undefined"
               :ui="{ base: 'font-mono' }"
               class="flex-1"
@@ -441,12 +670,16 @@ async function handleSubmit() {
         <div v-if="showPreviewList" class="flex flex-col gap-2">
           <div class="flex items-center justify-between">
             <label class="text-sm font-medium text-default">Projects to Import</label>
-            <span v-if="isValidating" class="text-xs text-muted flex items-center gap-1">
+            <span
+              v-if="isValidating || isReadingFiles"
+              class="text-xs text-muted flex items-center gap-1"
+            >
               <UIcon name="i-lucide-loader-2" class="w-3 h-3 animate-spin" />
-              Validating...
+              {{ isReadingFiles ? 'Reading files...' : 'Validating...' }}
             </span>
-            <span v-else-if="validationResults.length > 0" class="text-xs text-muted">
-              {{ validProjects.length }} of {{ validationResults.length }} valid
+            <span v-else class="text-xs text-muted">
+              {{ validProjects.length + validUploadedProjects.length }} of
+              {{ validationResults.length + uploadedProjects.size }} valid
             </span>
           </div>
           <div
@@ -472,6 +705,30 @@ async function handleSubmit() {
                   </span>
                 </div>
                 <p v-if="result.error" class="text-xs text-error mt-0.5">{{ result.error }}</p>
+              </div>
+            </div>
+            <div
+              v-for="[folderName, project] in uploadedProjects"
+              :key="folderName"
+              class="flex items-center gap-3 px-3 py-2"
+              :class="project.isValid ? 'bg-success/5' : 'bg-error/5'"
+            >
+              <UIcon
+                :name="project.isValid ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
+                class="w-4 h-4 shrink-0"
+                :class="project.isValid ? 'text-success' : 'text-error'"
+              />
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-folder" class="w-3 h-3 text-muted shrink-0" />
+                  <span class="font-mono text-xs truncate">{{ folderName }}</span>
+                  <UIcon name="i-lucide-arrow-right" class="w-3 h-3 text-muted shrink-0" />
+                  <span class="font-mono text-xs text-primary font-medium">
+                    {{ project.suggestedName }}
+                  </span>
+                  <span class="text-xs text-muted">({{ project.files.length }} files)</span>
+                </div>
+                <p v-if="project.error" class="text-xs text-error mt-0.5">{{ project.error }}</p>
               </div>
             </div>
           </div>

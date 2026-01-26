@@ -34,10 +34,120 @@ function resolvePresentationsDir() {
 const projectRoot = resolveProjectRoot();
 const presentationsDir = resolvePresentationsDir();
 const workspaceRoot = join(projectRoot, '..');
+const packageDir = join(__dirname, '..');
+const presentationsJsonPath = join(packageDir, 'src', 'data', 'presentations.json');
 
 const runningServers = new Map();
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function parseFrontmatter(content) {
+  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!frontmatterMatch) return {};
+
+  const frontmatter = frontmatterMatch[1];
+  const result = {};
+
+  let currentKey = null;
+  let currentValue = [];
+  let inMultiline = false;
+
+  const lines = frontmatter.split('\n');
+
+  for (const line of lines) {
+    if (inMultiline) {
+      if (line.match(/^[a-zA-Z]/)) {
+        result[currentKey] = currentValue.join('\n').trim();
+        inMultiline = false;
+        currentKey = null;
+        currentValue = [];
+      } else {
+        currentValue.push(line.replace(/^  /, ''));
+        continue;
+      }
+    }
+
+    const match = line.match(/^([a-zA-Z_-]+):\s*(.*)$/);
+    if (match) {
+      const [, key, value] = match;
+
+      if (value === '|' || value === '>') {
+        currentKey = key;
+        currentValue = [];
+        inMultiline = true;
+      } else if (value.startsWith('"') && value.endsWith('"')) {
+        result[key] = value.slice(1, -1);
+      } else if (value.startsWith("'") && value.endsWith("'")) {
+        result[key] = value.slice(1, -1);
+      } else {
+        result[key] = value;
+      }
+    }
+  }
+
+  if (inMultiline && currentKey) {
+    result[currentKey] = currentValue.join('\n').trim();
+  }
+
+  return result;
+}
+
+function extractDescription(info) {
+  if (!info) return '';
+  return info
+    .replace(/^##?\s+.*$/gm, '')
+    .replace(/\*\*/g, '')
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .join(' ');
+}
+
+function regeneratePresentationsJson() {
+  console.log(`[regenerate] presentationsDir: ${presentationsDir}`);
+  console.log(`[regenerate] presentationsJsonPath: ${presentationsJsonPath}`);
+
+  if (!existsSync(presentationsDir)) {
+    console.log(`[regenerate] presentationsDir does not exist!`);
+    return;
+  }
+
+  const allDirs = readdirSync(presentationsDir);
+  console.log(`[regenerate] All items in presentationsDir: ${allDirs.join(', ')}`);
+
+  const dirs = allDirs.filter((name) => {
+    const fullPath = join(presentationsDir, name);
+    const isDir = statSync(fullPath).isDirectory();
+    const hasSlides = existsSync(join(fullPath, 'slides.md'));
+    console.log(`[regenerate] ${name}: isDir=${isDir}, hasSlides=${hasSlides}`);
+    return isDir && hasSlides;
+  });
+
+  const presentations = dirs
+    .map((name) => {
+      const slidesPath = join(presentationsDir, name, 'slides.md');
+      const content = readFileSync(slidesPath, 'utf-8');
+      const frontmatter = parseFrontmatter(content);
+
+      return {
+        id: name,
+        title: frontmatter.title || name,
+        description: extractDescription(frontmatter.info) || '',
+        theme: frontmatter.theme || 'default',
+        background: frontmatter.background || '',
+        duration: frontmatter.duration || '',
+      };
+    })
+    .sort((a, b) => a.title.localeCompare(b.title));
+
+  const outputDir = dirname(presentationsJsonPath);
+  if (!existsSync(outputDir)) {
+    mkdirSync(outputDir, { recursive: true });
+  }
+
+  writeFileSync(presentationsJsonPath, JSON.stringify(presentations, null, 2));
+  console.log(`[regenerate] Updated presentations.json with ${presentations.length} presentations`);
+}
 
 function isValidPresentationId(id) {
   return typeof id === 'string' && id.length > 0 && id.length <= 100 && SLUG_REGEX.test(id);
@@ -457,26 +567,186 @@ function importPresentation({ source, name }) {
     );
 
     console.log('[import] Files copied successfully');
-
-    resolvePromise({
-      success: true,
-      presentation: {
-        id: presentationName,
-        title: presentationName,
-        description: '',
-        theme: 'default',
-        background: 'https://cover.sli.dev',
-        duration: '',
-      },
-    });
+    console.log('[import] Running pnpm install...');
 
     const install = spawn('pnpm', ['install'], {
       cwd: workspaceRoot,
       stdio: 'inherit',
       shell: true,
-      detached: true,
     });
-    install.unref();
+
+    install.on('close', (code) => {
+      if (code === 0) {
+        console.log('[import] pnpm install completed');
+        regeneratePresentationsJson();
+        resolvePromise({
+          success: true,
+          presentation: {
+            id: presentationName,
+            title: presentationName,
+            description: '',
+            theme: 'default',
+            background: 'https://cover.sli.dev',
+            duration: '',
+          },
+        });
+      } else {
+        console.error(`[import] pnpm install failed with code ${code}`);
+        resolvePromise({
+          success: false,
+          field: 'install',
+          message: `Failed to install dependencies (exit code ${code})`,
+        });
+      }
+    });
+
+    install.on('error', (err) => {
+      console.error('[import] pnpm install error:', err);
+      resolvePromise({
+        success: false,
+        field: 'install',
+        message: `Failed to install dependencies: ${err.message}`,
+      });
+    });
+  });
+}
+
+function uploadPresentation({ files, name, folderName }) {
+  return new Promise((resolvePromise) => {
+    if (!Array.isArray(files) || files.length === 0) {
+      resolvePromise({
+        success: false,
+        field: 'files',
+        message: 'No files provided',
+      });
+      return;
+    }
+
+    const hasSlides = files.some((f) => f.path === 'slides.md');
+    const hasPackageJson = files.some((f) => f.path === 'package.json');
+
+    if (!hasSlides) {
+      resolvePromise({
+        success: false,
+        field: 'files',
+        message: 'No slides.md found in uploaded files',
+      });
+      return;
+    }
+
+    if (!hasPackageJson) {
+      resolvePromise({
+        success: false,
+        field: 'files',
+        message: 'No package.json found in uploaded files',
+      });
+      return;
+    }
+
+    const presentationName =
+      name || (folderName || 'presentation').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+
+    if (!SLUG_REGEX.test(presentationName)) {
+      resolvePromise({
+        success: false,
+        field: 'name',
+        message: 'Name must be a valid slug (lowercase letters, numbers, hyphens only)',
+      });
+      return;
+    }
+
+    const destinationPath = join(presentationsDir, presentationName);
+
+    if (existsSync(destinationPath)) {
+      resolvePromise({
+        success: false,
+        field: 'name',
+        message: 'A presentation with this name already exists',
+      });
+      return;
+    }
+
+    console.log(`[upload] Creating presentation: ${presentationName}`);
+    console.log(`[upload] Destination: ${destinationPath}`);
+    console.log(`[upload] Files to write: ${files.length}`);
+
+    mkdirSync(destinationPath, { recursive: true });
+
+    for (const file of files) {
+      if (shouldIgnore(file.path.split('/')[0])) {
+        continue;
+      }
+
+      const filePath = join(destinationPath, file.path);
+      const fileDir = dirname(filePath);
+
+      if (!existsSync(fileDir)) {
+        mkdirSync(fileDir, { recursive: true });
+      }
+
+      if (file.encoding === 'base64') {
+        writeFileSync(filePath, Buffer.from(file.content, 'base64'));
+      } else {
+        writeFileSync(filePath, file.content, 'utf-8');
+      }
+    }
+
+    const packageJsonPath = join(destinationPath, 'package.json');
+    const packageJsonContent = readFileSync(packageJsonPath, 'utf-8');
+    const packageJson = JSON.parse(packageJsonContent);
+
+    packageJson.name = `@supaslidev/${presentationName}`;
+    packageJson.private = true;
+    packageJson.scripts = {
+      dev: 'slidev --open',
+      build: 'slidev build',
+      export: 'slidev export',
+    };
+
+    writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
+
+    console.log('[upload] Files written successfully');
+    console.log('[upload] Running pnpm install...');
+
+    const install = spawn('pnpm', ['install'], {
+      cwd: workspaceRoot,
+      stdio: 'inherit',
+      shell: true,
+    });
+
+    install.on('close', (code) => {
+      if (code === 0) {
+        console.log('[upload] pnpm install completed');
+        regeneratePresentationsJson();
+        resolvePromise({
+          success: true,
+          presentation: {
+            id: presentationName,
+            title: presentationName,
+            description: '',
+            theme: 'default',
+            background: 'https://cover.sli.dev',
+            duration: '',
+          },
+        });
+      } else {
+        console.error(`[upload] pnpm install failed with code ${code}`);
+        resolvePromise({
+          success: false,
+          field: 'install',
+          message: `Failed to install dependencies (exit code ${code})`,
+        });
+      }
+    });
+
+    install.on('error', (err) => {
+      console.error('[upload] pnpm install error:', err);
+      resolvePromise({
+        success: false,
+        field: 'install',
+        message: `Failed to install dependencies: ${err.message}`,
+      });
+    });
   });
 }
 
@@ -588,6 +858,30 @@ const server = createServer(async (req, res) => {
       try {
         const data = JSON.parse(body);
         const result = await importPresentation(data);
+        if (result.success) {
+          res.writeHead(201);
+          res.end(JSON.stringify(result.presentation));
+        } else {
+          res.writeHead(400);
+          res.end(JSON.stringify({ field: result.field, message: result.message }));
+        }
+      } catch {
+        res.writeHead(400);
+        res.end(JSON.stringify({ message: 'Invalid JSON' }));
+      }
+    });
+    return;
+  }
+
+  if (path === '/api/presentations/upload' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => {
+      body += chunk;
+    });
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body);
+        const result = await uploadPresentation(data);
         if (result.success) {
           res.writeHead(201);
           res.end(JSON.stringify(result.presentation));

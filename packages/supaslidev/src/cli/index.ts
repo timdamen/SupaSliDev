@@ -55,7 +55,7 @@ program
 
 program
   .command('import')
-  .description('Import an existing Slidev presentation')
+  .description('Import existing Sli.dev presentation(s)')
   .argument('<source>', 'Path to existing Slidev presentation directory')
   .option(
     '-n, --name <name>',
