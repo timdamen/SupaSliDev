@@ -42,6 +42,7 @@ const nameError = ref('');
 const touched = ref({ path: false, name: false });
 const folderInputRef = ref<HTMLInputElement | null>(null);
 const selectedFolders = ref<SelectedFolder[]>([]);
+const isDraggingOver = ref(false);
 
 const isValid = computed(() => {
   return importProject.value.isValid && !nameError.value;
@@ -168,6 +169,51 @@ function updatePathFromSelectedFolders() {
   }
 }
 
+function handleDragOver(event: DragEvent) {
+  event.preventDefault();
+  if (event.dataTransfer?.types.includes('Files')) {
+    isDraggingOver.value = true;
+  }
+}
+
+function handleDragLeave(event: DragEvent) {
+  const relatedTarget = event.relatedTarget as Node | null;
+  const currentTarget = event.currentTarget as HTMLElement;
+  if (!relatedTarget || !currentTarget.contains(relatedTarget)) {
+    isDraggingOver.value = false;
+  }
+}
+
+function handleDrop(event: DragEvent) {
+  event.preventDefault();
+  isDraggingOver.value = false;
+
+  const items = event.dataTransfer?.items;
+  if (!items) return;
+
+  const newFolders: SelectedFolder[] = [];
+
+  for (const item of items) {
+    if (item.kind === 'file') {
+      const entry = item.webkitGetAsEntry?.();
+      if (entry?.isDirectory) {
+        const name = entry.name;
+        if (
+          !selectedFolders.value.some((f) => f.name === name) &&
+          !newFolders.some((f) => f.name === name)
+        ) {
+          newFolders.push({ path: name, name });
+        }
+      }
+    }
+  }
+
+  if (newFolders.length > 0) {
+    selectedFolders.value = [...selectedFolders.value, ...newFolders];
+    updatePathFromSelectedFolders();
+  }
+}
+
 function resetForm() {
   importProject.value = createEmptyImportProject();
   nameError.value = '';
@@ -254,7 +300,23 @@ async function handleSubmit() {
     </template>
 
     <template #body>
-      <form class="flex flex-col gap-6" @submit.prevent="handleSubmit">
+      <form
+        class="flex flex-col gap-6 relative"
+        @submit.prevent="handleSubmit"
+        @dragover="handleDragOver"
+        @dragleave="handleDragLeave"
+        @drop="handleDrop"
+      >
+        <div
+          v-if="isDraggingOver"
+          class="absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed border-primary bg-primary/10"
+        >
+          <div class="flex flex-col items-center gap-2 text-primary">
+            <UIcon name="i-lucide-folder-down" class="w-8 h-8" />
+            <span class="font-medium">Drop folders here</span>
+          </div>
+        </div>
+
         <UFormField
           label="Source Path(s)"
           required
