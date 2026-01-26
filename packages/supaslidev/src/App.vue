@@ -152,6 +152,11 @@ function handleExecuteCommand(command: string) {
     return;
   }
 
+  if (action === 'import') {
+    handleImportCommand();
+    return;
+  }
+
   if (action === 'present') {
     if (!arg) {
       toast.add({
@@ -202,7 +207,7 @@ function handleExecuteCommand(command: string) {
 
   toast.add({
     title: 'Unknown command',
-    description: `"${action}" is not a recognized command. Try: new, present, export`,
+    description: `"${action}" is not a recognized command. Try: new, import, present, export`,
     color: 'warning',
     icon: 'i-lucide-alert-triangle',
   });
