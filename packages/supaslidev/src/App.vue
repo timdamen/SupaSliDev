@@ -74,8 +74,8 @@ function handlePresentationCreated(presentation: Presentation) {
   );
 }
 
-function handlePresentationImported(presentation: Presentation) {
-  presentations.value = [...presentations.value, presentation].sort((a, b) =>
+function handlePresentationImported(imported: Presentation[]) {
+  presentations.value = [...presentations.value, ...imported].sort((a, b) =>
     a.title.localeCompare(b.title),
   );
 }

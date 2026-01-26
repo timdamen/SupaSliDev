@@ -28,7 +28,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: [];
-  imported: [presentation: Presentation];
+  imported: [presentations: Presentation[]];
 }>();
 
 const importProject = ref<ImportProject>(createEmptyImportProject());
@@ -40,13 +40,25 @@ const isValid = computed(() => {
   return importProject.value.isValid && !nameError.value;
 });
 
+const hasMultiplePaths = computed(() => {
+  return parsePaths(importProject.value.path).length > 1;
+});
+
+function parsePaths(input: string): string[] {
+  return input
+    .split(',')
+    .map((path) => path.trim())
+    .filter((path) => path.length > 0);
+}
+
 function validatePath(value: string): { isValid: boolean; error: string } {
   if (!touched.value.path) {
     return { isValid: false, error: '' };
   }
 
-  if (!value.trim()) {
-    return { isValid: false, error: 'Source path is required' };
+  const paths = parsePaths(value);
+  if (paths.length === 0) {
+    return { isValid: false, error: 'At least one source path is required' };
   }
 
   return { isValid: true, error: '' };
@@ -120,45 +132,53 @@ async function handleSubmit() {
 
   if (!isValid.value || isSubmitting.value) return;
 
+  const paths = parsePaths(importProject.value.path);
+  const isSinglePath = paths.length === 1;
+
   isSubmitting.value = true;
   importProject.value.status = 'importing';
 
-  try {
-    const response = await fetch('/api/presentations/import', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        source: importProject.value.path,
-        name: importProject.value.name || undefined,
-      }),
-    });
+  const importedPresentations: Presentation[] = [];
+  const errors: string[] = [];
 
-    if (!response.ok) {
-      const error = await response.json();
-      importProject.value.status = 'error';
-      if (error.field === 'source') {
-        importProject.value.error = error.message;
-        importProject.value.isValid = false;
-      } else if (error.field === 'name') {
-        nameError.value = error.message;
-      } else {
-        importProject.value.error = error.message || 'Import failed';
-        importProject.value.isValid = false;
+  for (const path of paths) {
+    try {
+      const response = await fetch('/api/presentations/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source: path,
+          name: isSinglePath ? importProject.value.name || undefined : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        errors.push(`${path}: ${error.message}`);
+        continue;
       }
-      return;
-    }
 
-    importProject.value.status = 'success';
-    const presentation = await response.json();
-    emit('imported', presentation);
-    handleClose();
-  } catch {
-    importProject.value.status = 'error';
-    importProject.value.error = 'Failed to import presentation';
-    importProject.value.isValid = false;
-  } finally {
-    isSubmitting.value = false;
+      const presentation = await response.json();
+      importedPresentations.push(presentation);
+    } catch {
+      errors.push(`${path}: Failed to import`);
+    }
   }
+
+  if (importedPresentations.length > 0) {
+    emit('imported', importedPresentations);
+  }
+
+  if (errors.length > 0) {
+    importProject.value.status = 'error';
+    importProject.value.error = errors.join('\n');
+    importProject.value.isValid = false;
+    isSubmitting.value = false;
+    return;
+  }
+
+  importProject.value.status = 'success';
+  handleClose();
 }
 </script>
 
@@ -170,8 +190,8 @@ async function handleSubmit() {
           <UIcon name="i-lucide-import" class="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h2 class="text-lg font-semibold">Import Presentation</h2>
-          <p class="text-sm text-muted">Import an existing Slidev presentation</p>
+          <h2 class="text-lg font-semibold">Import Presentations</h2>
+          <p class="text-sm text-muted">Import existing Slidev presentations</p>
         </div>
       </div>
     </template>
@@ -179,14 +199,14 @@ async function handleSubmit() {
     <template #body>
       <form class="flex flex-col gap-6" @submit.prevent="handleSubmit">
         <UFormField
-          label="Source Path"
+          label="Source Path(s)"
           required
           :error="importProject.error"
-          hint="Path to an existing Slidev presentation folder"
+          hint="Relative paths to Slidev presentations (comma-separated for multiple)"
         >
           <UInput
             v-model="importProject.path"
-            placeholder="/path/to/slidev-presentation"
+            placeholder="../project-a, ../project-b"
             :color="importProject.error ? 'error' : undefined"
             :ui="{ base: 'font-mono' }"
             class="w-full"
@@ -196,6 +216,7 @@ async function handleSubmit() {
         </UFormField>
 
         <UFormField
+          v-if="!hasMultiplePaths"
           label="Name"
           :error="nameError"
           hint="Optional: Custom name for the imported presentation"
@@ -214,7 +235,8 @@ async function handleSubmit() {
         <div class="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
           <UIcon name="i-lucide-info" class="w-4 h-4 text-muted mt-0.5 shrink-0" />
           <p class="text-sm text-muted">
-            The presentation will be copied to your workspace. Files like
+            {{ hasMultiplePaths ? 'Presentations' : 'The presentation' }} will be copied to your
+            workspace. Files like
             <code class="font-mono text-xs px-1.5 py-0.5 rounded bg-muted">node_modules</code>
             and lock files will be ignored.
           </p>
@@ -233,7 +255,13 @@ async function handleSubmit() {
           icon="i-lucide-import"
           @click="handleSubmit"
         >
-          {{ isSubmitting ? 'Importing...' : 'Import Presentation' }}
+          {{
+            isSubmitting
+              ? 'Importing...'
+              : hasMultiplePaths
+                ? 'Import Presentations'
+                : 'Import Presentation'
+          }}
         </UButton>
       </div>
     </template>
