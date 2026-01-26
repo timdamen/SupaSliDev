@@ -7,7 +7,7 @@
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"],
+      "dependsOn": ["^build"],
       "inputs": ["**/*.ts", "**/*.tsx", "**/*.vue", "tsconfig.json"],
       "outputs": []
     },
