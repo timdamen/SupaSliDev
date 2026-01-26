@@ -24,6 +24,18 @@ interface ValidationResult {
   error: string | null;
 }
 
+interface ImportProgress {
+  currentIndex: number;
+  total: number;
+  currentProjectName: string;
+}
+
+interface ImportSummary {
+  successCount: number;
+  failureCount: number;
+  errors: Array<{ path: string; error: string }>;
+}
+
 function createEmptyImportProject(): ImportProject {
   return {
     path: '',
@@ -52,6 +64,8 @@ const selectedFolders = ref<SelectedFolder[]>([]);
 const isDraggingOver = ref(false);
 const validationResults = ref<ValidationResult[]>([]);
 const isValidating = ref(false);
+const importProgress = ref<ImportProgress | null>(null);
+const importSummary = ref<ImportSummary | null>(null);
 let validationDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 const validProjects = computed(() => {
@@ -274,6 +288,8 @@ function resetForm() {
   selectedFolders.value = [];
   validationResults.value = [];
   isValidating.value = false;
+  importProgress.value = null;
+  importSummary.value = null;
   if (validationDebounceTimer) {
     clearTimeout(validationDebounceTimer);
     validationDebounceTimer = null;
@@ -295,11 +311,21 @@ async function handleSubmit() {
 
   isSubmitting.value = true;
   importProject.value.status = 'importing';
+  importSummary.value = null;
 
   const importedPresentations: Presentation[] = [];
-  const errors: string[] = [];
+  const errors: Array<{ path: string; error: string }> = [];
+  const total = projectsToImport.length;
 
-  for (const project of projectsToImport) {
+  for (let i = 0; i < projectsToImport.length; i++) {
+    const project = projectsToImport[i];
+
+    importProgress.value = {
+      currentIndex: i + 1,
+      total,
+      currentProjectName: project.suggestedName || project.path,
+    };
+
     try {
       const response = await fetch('/api/presentations/import', {
         method: 'POST',
@@ -312,31 +338,36 @@ async function handleSubmit() {
 
       if (!response.ok) {
         const error = await response.json();
-        errors.push(`${project.path}: ${error.message}`);
+        errors.push({ path: project.path, error: error.message });
         continue;
       }
 
       const presentation = await response.json();
       importedPresentations.push(presentation);
     } catch {
-      errors.push(`${project.path}: Failed to import`);
+      errors.push({ path: project.path, error: 'Failed to import' });
     }
   }
+
+  importProgress.value = null;
 
   if (importedPresentations.length > 0) {
     emit('imported', importedPresentations);
   }
 
-  if (errors.length > 0) {
-    importProject.value.status = 'error';
-    importProject.value.error = errors.join('\n');
-    importProject.value.isValid = false;
-    isSubmitting.value = false;
-    return;
-  }
+  importSummary.value = {
+    successCount: importedPresentations.length,
+    failureCount: errors.length,
+    errors,
+  };
 
-  importProject.value.status = 'success';
-  handleClose();
+  if (errors.length === 0) {
+    importProject.value.status = 'success';
+    handleClose();
+  } else {
+    importProject.value.status = 'error';
+    isSubmitting.value = false;
+  }
 }
 </script>
 
@@ -463,7 +494,66 @@ async function handleSubmit() {
           />
         </UFormField>
 
-        <div class="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+        <div
+          v-if="importProgress"
+          class="flex flex-col gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20"
+        >
+          <div class="flex items-center gap-3">
+            <UIcon name="i-lucide-loader-2" class="w-5 h-5 text-primary animate-spin" />
+            <div class="flex-1">
+              <p class="text-sm font-medium text-default">
+                Importing {{ importProgress.currentIndex }}/{{ importProgress.total }}...
+              </p>
+              <p class="text-xs text-muted font-mono truncate">
+                {{ importProgress.currentProjectName }}
+              </p>
+            </div>
+          </div>
+          <div class="w-full h-1.5 bg-muted/30 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-primary rounded-full transition-all duration-300"
+              :style="{ width: `${(importProgress.currentIndex / importProgress.total) * 100}%` }"
+            />
+          </div>
+        </div>
+
+        <div
+          v-else-if="importSummary && importSummary.failureCount > 0"
+          class="flex flex-col gap-3"
+        >
+          <div
+            class="flex items-center gap-3 p-3 rounded-lg bg-warning/10 border border-warning/20"
+          >
+            <UIcon name="i-lucide-alert-triangle" class="w-5 h-5 text-warning shrink-0" />
+            <div class="flex-1">
+              <p class="text-sm font-medium text-default">Import Partially Completed</p>
+              <p class="text-xs text-muted">
+                {{ importSummary.successCount }} succeeded, {{ importSummary.failureCount }} failed
+              </p>
+            </div>
+          </div>
+          <div
+            v-if="importSummary.errors.length > 0"
+            class="border border-error/20 rounded-lg divide-y divide-error/10 max-h-32 overflow-y-auto"
+          >
+            <div
+              v-for="error in importSummary.errors"
+              :key="error.path"
+              class="flex items-start gap-2 px-3 py-2 bg-error/5"
+            >
+              <UIcon name="i-lucide-x-circle" class="w-4 h-4 text-error shrink-0 mt-0.5" />
+              <div class="flex-1 min-w-0">
+                <span class="font-mono text-xs text-default truncate block">{{ error.path }}</span>
+                <span class="text-xs text-error">{{ error.error }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-else-if="!importProgress && !importSummary"
+          class="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
+        >
           <UIcon name="i-lucide-info" class="w-4 h-4 text-muted mt-0.5 shrink-0" />
           <p class="text-sm text-muted">
             {{ hasMultiplePaths ? 'Presentations' : 'The presentation' }} will be copied to your
@@ -477,27 +567,37 @@ async function handleSubmit() {
 
     <template #footer>
       <div class="flex gap-3 justify-end">
-        <UButton color="neutral" variant="ghost" :disabled="isSubmitting" @click="handleClose">
-          Cancel
-        </UButton>
         <UButton
-          :disabled="!isValid || isSubmitting || isValidating"
-          :loading="isSubmitting || isValidating"
-          icon="i-lucide-import"
-          @click="handleSubmit"
+          v-if="importSummary && importSummary.failureCount > 0"
+          color="neutral"
+          variant="solid"
+          @click="handleClose"
         >
-          {{
-            isSubmitting
-              ? 'Importing...'
-              : isValidating
-                ? 'Validating...'
-                : validProjects.length > 1
-                  ? `Import ${validProjects.length} Presentations`
-                  : validProjects.length === 1
-                    ? 'Import Presentation'
-                    : 'Import'
-          }}
+          Close
         </UButton>
+        <template v-else>
+          <UButton color="neutral" variant="ghost" :disabled="isSubmitting" @click="handleClose">
+            Cancel
+          </UButton>
+          <UButton
+            :disabled="!isValid || isSubmitting || isValidating"
+            :loading="isSubmitting || isValidating"
+            icon="i-lucide-import"
+            @click="handleSubmit"
+          >
+            {{
+              isSubmitting
+                ? 'Importing...'
+                : isValidating
+                  ? 'Validating...'
+                  : validProjects.length > 1
+                    ? `Import ${validProjects.length} Presentations`
+                    : validProjects.length === 1
+                      ? 'Import Presentation'
+                      : 'Import'
+            }}
+          </UButton>
+        </template>
       </div>
     </template>
   </UModal>
