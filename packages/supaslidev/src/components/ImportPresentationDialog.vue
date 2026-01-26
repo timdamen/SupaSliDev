@@ -2,6 +2,26 @@
 import { ref, computed, watch } from 'vue';
 import type { Presentation } from '../types';
 
+type ImportStatus = 'idle' | 'validating' | 'importing' | 'success' | 'error';
+
+interface ImportProject {
+  path: string;
+  name: string;
+  isValid: boolean;
+  error: string;
+  status: ImportStatus;
+}
+
+function createEmptyImportProject(): ImportProject {
+  return {
+    path: '',
+    name: '',
+    isValid: false,
+    error: '',
+    status: 'idle',
+  };
+}
+
 const props = defineProps<{
   open: boolean;
 }>();
@@ -11,28 +31,25 @@ const emit = defineEmits<{
   imported: [presentation: Presentation];
 }>();
 
-const sourcePath = ref('');
-const name = ref('');
+const importProject = ref<ImportProject>(createEmptyImportProject());
 const isSubmitting = ref(false);
-const sourceError = ref('');
 const nameError = ref('');
-const touched = ref({ source: false, name: false });
+const touched = ref({ path: false, name: false });
 
 const isValid = computed(() => {
-  if (!sourcePath.value.trim()) return false;
-  if (sourceError.value || nameError.value) return false;
-  return true;
+  return importProject.value.isValid && !nameError.value;
 });
 
-function validateSourcePath(value: string) {
-  if (!touched.value.source) return;
-
-  if (!value.trim()) {
-    sourceError.value = 'Source path is required';
-    return;
+function validatePath(value: string): { isValid: boolean; error: string } {
+  if (!touched.value.path) {
+    return { isValid: false, error: '' };
   }
 
-  sourceError.value = '';
+  if (!value.trim()) {
+    return { isValid: false, error: 'Source path is required' };
+  }
+
+  return { isValid: true, error: '' };
 }
 
 function validateName(value: string) {
@@ -51,35 +68,43 @@ function validateName(value: string) {
   nameError.value = '';
 }
 
-watch(sourcePath, (value) => {
-  if (touched.value.source) {
-    validateSourcePath(value);
-  }
-});
+watch(
+  () => importProject.value.path,
+  (value) => {
+    if (touched.value.path) {
+      const validation = validatePath(value);
+      importProject.value.isValid = validation.isValid;
+      importProject.value.error = validation.error;
+    }
+  },
+);
 
-watch(name, (value) => {
-  if (touched.value.name) {
-    validateName(value);
-  }
-});
+watch(
+  () => importProject.value.name,
+  (value) => {
+    if (touched.value.name) {
+      validateName(value);
+    }
+  },
+);
 
-function handleSourceBlur() {
-  touched.value.source = true;
-  validateSourcePath(sourcePath.value);
+function handlePathBlur() {
+  touched.value.path = true;
+  const validation = validatePath(importProject.value.path);
+  importProject.value.isValid = validation.isValid;
+  importProject.value.error = validation.error;
 }
 
 function handleNameBlur() {
   touched.value.name = true;
-  validateName(name.value);
+  validateName(importProject.value.name);
 }
 
 function resetForm() {
-  sourcePath.value = '';
-  name.value = '';
-  sourceError.value = '';
+  importProject.value = createEmptyImportProject();
   nameError.value = '';
   isSubmitting.value = false;
-  touched.value = { source: false, name: false };
+  touched.value = { path: false, name: false };
 }
 
 function handleClose() {
@@ -88,39 +113,49 @@ function handleClose() {
 }
 
 async function handleSubmit() {
-  touched.value.source = true;
-  validateSourcePath(sourcePath.value);
+  touched.value.path = true;
+  const validation = validatePath(importProject.value.path);
+  importProject.value.isValid = validation.isValid;
+  importProject.value.error = validation.error;
+
   if (!isValid.value || isSubmitting.value) return;
 
   isSubmitting.value = true;
+  importProject.value.status = 'importing';
 
   try {
     const response = await fetch('/api/presentations/import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        source: sourcePath.value,
-        name: name.value || undefined,
+        source: importProject.value.path,
+        name: importProject.value.name || undefined,
       }),
     });
 
     if (!response.ok) {
       const error = await response.json();
+      importProject.value.status = 'error';
       if (error.field === 'source') {
-        sourceError.value = error.message;
+        importProject.value.error = error.message;
+        importProject.value.isValid = false;
       } else if (error.field === 'name') {
         nameError.value = error.message;
       } else {
-        sourceError.value = error.message || 'Import failed';
+        importProject.value.error = error.message || 'Import failed';
+        importProject.value.isValid = false;
       }
       return;
     }
 
+    importProject.value.status = 'success';
     const presentation = await response.json();
     emit('imported', presentation);
     handleClose();
   } catch {
-    sourceError.value = 'Failed to import presentation';
+    importProject.value.status = 'error';
+    importProject.value.error = 'Failed to import presentation';
+    importProject.value.isValid = false;
   } finally {
     isSubmitting.value = false;
   }
@@ -146,17 +181,17 @@ async function handleSubmit() {
         <UFormField
           label="Source Path"
           required
-          :error="sourceError"
+          :error="importProject.error"
           hint="Path to an existing Slidev presentation folder"
         >
           <UInput
-            v-model="sourcePath"
+            v-model="importProject.path"
             placeholder="/path/to/slidev-presentation"
-            :color="sourceError ? 'error' : undefined"
+            :color="importProject.error ? 'error' : undefined"
             :ui="{ base: 'font-mono' }"
             class="w-full"
             autocomplete="off"
-            @blur="handleSourceBlur"
+            @blur="handlePathBlur"
           />
         </UFormField>
 
@@ -166,7 +201,7 @@ async function handleSubmit() {
           hint="Optional: Custom name for the imported presentation"
         >
           <UInput
-            v-model="name"
+            v-model="importProject.name"
             placeholder="my-presentation (optional)"
             :color="nameError ? 'error' : undefined"
             :ui="{ base: 'font-mono' }"
