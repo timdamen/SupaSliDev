@@ -2,7 +2,16 @@ import { createServer } from 'http';
 import { spawn, execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import {
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+  readdirSync,
+  statSync,
+  cpSync,
+  readFileSync,
+} from 'fs';
+import { resolve, basename } from 'path';
 
 const IS_WINDOWS = process.platform === 'win32';
 
@@ -298,6 +307,156 @@ function createPresentation({ name }) {
   });
 }
 
+const IGNORE_PATTERNS = [
+  'node_modules',
+  '.git',
+  'dist',
+  '.nuxt',
+  '.output',
+  'pnpm-lock.yaml',
+  'package-lock.json',
+  'yarn.lock',
+  '.DS_Store',
+];
+
+function shouldIgnore(name) {
+  return IGNORE_PATTERNS.includes(name);
+}
+
+function copyDirectorySelective(source, destination) {
+  mkdirSync(destination, { recursive: true });
+  const entries = readdirSync(source);
+
+  for (const entry of entries) {
+    if (shouldIgnore(entry)) {
+      continue;
+    }
+
+    const sourcePath = join(source, entry);
+    const destPath = join(destination, entry);
+    const stat = statSync(sourcePath);
+
+    if (stat.isDirectory()) {
+      cpSync(sourcePath, destPath, { recursive: true });
+    } else {
+      cpSync(sourcePath, destPath);
+    }
+  }
+}
+
+function importPresentation({ source, name }) {
+  return new Promise((resolvePromise) => {
+    const sourcePath = resolve(source);
+
+    if (!existsSync(sourcePath)) {
+      resolvePromise({
+        success: false,
+        field: 'source',
+        message: 'Source directory does not exist',
+      });
+      return;
+    }
+
+    if (!statSync(sourcePath).isDirectory()) {
+      resolvePromise({
+        success: false,
+        field: 'source',
+        message: 'Source path is not a directory',
+      });
+      return;
+    }
+
+    const slidesPath = join(sourcePath, 'slides.md');
+    if (!existsSync(slidesPath)) {
+      resolvePromise({
+        success: false,
+        field: 'source',
+        message: 'No slides.md found in source directory',
+      });
+      return;
+    }
+
+    const sourcePackageJsonPath = join(sourcePath, 'package.json');
+    if (!existsSync(sourcePackageJsonPath)) {
+      resolvePromise({
+        success: false,
+        field: 'source',
+        message: 'No package.json found in source directory',
+      });
+      return;
+    }
+
+    const presentationName =
+      name ||
+      basename(sourcePath)
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-');
+
+    if (!SLUG_REGEX.test(presentationName)) {
+      resolvePromise({
+        success: false,
+        field: 'name',
+        message: 'Name must be a valid slug (lowercase letters, numbers, hyphens only)',
+      });
+      return;
+    }
+
+    const destinationPath = join(presentationsDir, presentationName);
+
+    if (existsSync(destinationPath)) {
+      resolvePromise({
+        success: false,
+        field: 'name',
+        message: 'A presentation with this name already exists',
+      });
+      return;
+    }
+
+    console.log(`[import] Importing from: ${sourcePath}`);
+    console.log(`[import] Destination: ${destinationPath}`);
+
+    copyDirectorySelective(sourcePath, destinationPath);
+
+    const packageJsonContent = readFileSync(sourcePackageJsonPath, 'utf-8');
+    const packageJson = JSON.parse(packageJsonContent);
+
+    packageJson.name = `@supaslidev/${presentationName}`;
+    packageJson.private = true;
+    packageJson.scripts = {
+      dev: 'slidev --open',
+      build: 'slidev build',
+      export: 'slidev export',
+    };
+
+    writeFileSync(
+      join(destinationPath, 'package.json'),
+      JSON.stringify(packageJson, null, 2) + '\n',
+    );
+
+    console.log('[import] Files copied successfully');
+
+    resolvePromise({
+      success: true,
+      presentation: {
+        id: presentationName,
+        title: presentationName,
+        description: '',
+        theme: 'default',
+        background: 'https://cover.sli.dev',
+        duration: '',
+      },
+    });
+
+    const install = spawn('pnpm', ['install'], {
+      cwd: workspaceRoot,
+      stdio: 'inherit',
+      shell: true,
+      detached: true,
+    });
+    install.unref();
+  });
+}
+
 const server = createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
@@ -358,6 +517,30 @@ const server = createServer(async (req, res) => {
       try {
         const data = JSON.parse(body);
         const result = await createPresentation(data);
+        if (result.success) {
+          res.writeHead(201);
+          res.end(JSON.stringify(result.presentation));
+        } else {
+          res.writeHead(400);
+          res.end(JSON.stringify({ field: result.field, message: result.message }));
+        }
+      } catch {
+        res.writeHead(400);
+        res.end(JSON.stringify({ message: 'Invalid JSON' }));
+      }
+    });
+    return;
+  }
+
+  if (path === '/api/presentations/import' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => {
+      body += chunk;
+    });
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body);
+        const result = await importPresentation(data);
         if (result.success) {
           res.writeHead(201);
           res.end(JSON.stringify(result.presentation));

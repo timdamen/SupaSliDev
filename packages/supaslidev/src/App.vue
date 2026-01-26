@@ -5,6 +5,7 @@ import type { CommandPaletteGroup, CommandPaletteItem } from '@nuxt/ui';
 import AppHeader from './components/AppHeader.vue';
 import PresentationCard from './components/PresentationCard.vue';
 import CreatePresentationDialog from './components/CreatePresentationDialog.vue';
+import ImportPresentationDialog from './components/ImportPresentationDialog.vue';
 import EmptyState from './components/EmptyState.vue';
 import type { Presentation } from './types';
 import presentationsData from './data/presentations.json';
@@ -25,6 +26,7 @@ function handleExportError(message: string) {
 }
 
 const isDialogOpen = ref(false);
+const isImportDialogOpen = ref(false);
 const isCommandPaletteOpen = ref(false);
 const initialSearchQuery = ref('');
 const appHeaderRef = ref<InstanceType<typeof AppHeader> | null>(null);
@@ -36,7 +38,7 @@ function handleKeydown(event: KeyboardEvent) {
     return;
   }
 
-  if (isCommandPaletteOpen.value || isDialogOpen.value) {
+  if (isCommandPaletteOpen.value || isDialogOpen.value || isImportDialogOpen.value) {
     return;
   }
 
@@ -67,6 +69,12 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 function handlePresentationCreated(presentation: Presentation) {
+  presentations.value = [...presentations.value, presentation].sort((a, b) =>
+    a.title.localeCompare(b.title),
+  );
+}
+
+function handlePresentationImported(presentation: Presentation) {
   presentations.value = [...presentations.value, presentation].sort((a, b) =>
     a.title.localeCompare(b.title),
   );
@@ -115,6 +123,11 @@ async function handleExportCommand(presentation: Presentation) {
 function handleCreateCommand() {
   isCommandPaletteOpen.value = false;
   isDialogOpen.value = true;
+}
+
+function handleImportCommand() {
+  isCommandPaletteOpen.value = false;
+  isImportDialogOpen.value = true;
 }
 
 function handleToggleThemeCommand() {
@@ -207,6 +220,12 @@ const commandPaletteGroups = computed<CommandPaletteGroup[]>(() => [
         onSelect: handleCreateCommand,
       },
       {
+        label: 'Import',
+        suffix: 'Import an existing presentation',
+        icon: 'i-lucide-import',
+        onSelect: handleImportCommand,
+      },
+      {
         label: 'Toggle theme',
         suffix: colorMode.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
         icon: colorMode.value === 'dark' ? 'i-lucide-sun' : 'i-lucide-moon',
@@ -251,6 +270,11 @@ const filteredPresentations = computed(() => {
 const commandOptions = computed(() => {
   const options: { label: string; description?: string; onSelect: () => void }[] = [
     { label: 'New', description: 'Create a new presentation', onSelect: handleCreateCommand },
+    {
+      label: 'Import',
+      description: 'Import an existing presentation',
+      onSelect: handleImportCommand,
+    },
     {
       label: 'Toggle theme',
       description: colorMode.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
@@ -359,6 +383,12 @@ const commandOptions = computed(() => {
           :open="isDialogOpen"
           @close="isDialogOpen = false"
           @created="handlePresentationCreated"
+        />
+
+        <ImportPresentationDialog
+          :open="isImportDialogOpen"
+          @close="isImportDialogOpen = false"
+          @imported="handlePresentationImported"
         />
 
         <UModal v-model:open="isCommandPaletteOpen" @after-leave="initialSearchQuery = ''">
