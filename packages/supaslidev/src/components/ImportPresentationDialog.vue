@@ -12,6 +12,11 @@ interface ImportProject {
   status: ImportStatus;
 }
 
+interface SelectedFolder {
+  path: string;
+  name: string;
+}
+
 function createEmptyImportProject(): ImportProject {
   return {
     path: '',
@@ -35,6 +40,8 @@ const importProject = ref<ImportProject>(createEmptyImportProject());
 const isSubmitting = ref(false);
 const nameError = ref('');
 const touched = ref({ path: false, name: false });
+const folderInputRef = ref<HTMLInputElement | null>(null);
+const selectedFolders = ref<SelectedFolder[]>([]);
 
 const isValid = computed(() => {
   return importProject.value.isValid && !nameError.value;
@@ -112,11 +119,61 @@ function handleNameBlur() {
   validateName(importProject.value.name);
 }
 
+function openFolderPicker() {
+  folderInputRef.value?.click();
+}
+
+function handleFolderSelect(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const files = input.files;
+  if (!files || files.length === 0) return;
+
+  const folderPaths = new Map<string, string>();
+
+  for (const file of files) {
+    const pathParts = file.webkitRelativePath.split('/');
+    if (pathParts.length > 0) {
+      const folderName = pathParts[0];
+      if (!folderPaths.has(folderName)) {
+        folderPaths.set(folderName, folderName);
+      }
+    }
+  }
+
+  const newFolders: SelectedFolder[] = [];
+  for (const [name] of folderPaths) {
+    if (!selectedFolders.value.some((f) => f.name === name)) {
+      newFolders.push({ path: name, name });
+    }
+  }
+
+  selectedFolders.value = [...selectedFolders.value, ...newFolders];
+  updatePathFromSelectedFolders();
+
+  input.value = '';
+}
+
+function removeSelectedFolder(index: number) {
+  selectedFolders.value = selectedFolders.value.filter((_, i) => i !== index);
+  updatePathFromSelectedFolders();
+}
+
+function updatePathFromSelectedFolders() {
+  if (selectedFolders.value.length > 0) {
+    importProject.value.path = selectedFolders.value.map((f) => f.path).join(', ');
+    touched.value.path = true;
+    const validation = validatePath(importProject.value.path);
+    importProject.value.isValid = validation.isValid;
+    importProject.value.error = validation.error;
+  }
+}
+
 function resetForm() {
   importProject.value = createEmptyImportProject();
   nameError.value = '';
   isSubmitting.value = false;
   touched.value = { path: false, name: false };
+  selectedFolders.value = [];
 }
 
 function handleClose() {
@@ -204,16 +261,57 @@ async function handleSubmit() {
           :error="importProject.error"
           hint="Relative paths to Slidev presentations (comma-separated for multiple)"
         >
-          <UInput
-            v-model="importProject.path"
-            placeholder="../project-a, ../project-b"
-            :color="importProject.error ? 'error' : undefined"
-            :ui="{ base: 'font-mono' }"
-            class="w-full"
-            autocomplete="off"
-            @blur="handlePathBlur"
-          />
+          <div class="flex gap-2">
+            <UInput
+              v-model="importProject.path"
+              placeholder="../project-a, ../project-b"
+              :color="importProject.error ? 'error' : undefined"
+              :ui="{ base: 'font-mono' }"
+              class="flex-1"
+              autocomplete="off"
+              @blur="handlePathBlur"
+            />
+            <UButton
+              color="neutral"
+              variant="outline"
+              icon="i-lucide-folder-open"
+              @click="openFolderPicker"
+            >
+              Browse
+            </UButton>
+            <input
+              ref="folderInputRef"
+              type="file"
+              webkitdirectory
+              multiple
+              class="hidden"
+              @change="handleFolderSelect"
+            />
+          </div>
         </UFormField>
+
+        <div v-if="selectedFolders.length > 0" class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-default">Selected Folders</label>
+          <div class="flex flex-wrap gap-2">
+            <UBadge
+              v-for="(folder, index) in selectedFolders"
+              :key="folder.name"
+              color="primary"
+              variant="subtle"
+              class="font-mono text-xs"
+            >
+              {{ folder.name }}
+              <UButton
+                color="neutral"
+                variant="link"
+                size="xs"
+                icon="i-lucide-x"
+                class="ml-1 -mr-1"
+                @click="removeSelectedFolder(index)"
+              />
+            </UBadge>
+          </div>
+        </div>
 
         <UFormField
           v-if="!hasMultiplePaths"
