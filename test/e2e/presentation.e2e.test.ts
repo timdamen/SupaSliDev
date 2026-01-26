@@ -333,18 +333,18 @@ describe('Presentation Viewing E2E', () => {
 
     it('slide content is visible after navigation', async () => {
       await presentationPage.keyboard.press('ArrowRight');
-      await presentationPage.waitForTimeout(500);
 
-      const slideContent = presentationPage.locator('.slidev-page');
-      expect(await slideContent.first().isVisible()).toBe(true);
+      const slideContent = presentationPage.locator('.slidev-page').first();
+      await slideContent.waitFor({ state: 'visible', timeout: 5000 });
+      expect(await slideContent.isVisible()).toBe(true);
     });
 
     it('slide content is visible on final navigated slide', async () => {
       await presentationPage.keyboard.press('ArrowRight');
-      await presentationPage.waitForTimeout(500);
 
-      const slideContent = presentationPage.locator('.slidev-page');
-      expect(await slideContent.first().isVisible()).toBe(true);
+      const slideContent = presentationPage.locator('.slidev-page').first();
+      await slideContent.waitFor({ state: 'visible', timeout: 5000 });
+      expect(await slideContent.isVisible()).toBe(true);
     });
   });
 
