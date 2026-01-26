@@ -1,9 +1,4 @@
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type { Migration, PresentationInfo } from './types.ts';
-import { readManifest, validateManifest, getMigrationOrder } from './manifest.ts';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import type { Migration, MigrationContext, PresentationInfo } from './types.ts';
 
 export interface LoadedMigrations {
   migrations: Migration[];
@@ -15,41 +10,29 @@ export interface LoadedInteractiveMigration {
   getAffectedPresentations?: (workspaceDir: string) => PresentationInfo[];
 }
 
+interface MigrationModule {
+  up: (context: MigrationContext) => Promise<void>;
+  down?: (context: MigrationContext) => Promise<void>;
+  getAffectedPresentations?: (workspaceDir: string) => PresentationInfo[];
+}
+
+interface MigrationEntry {
+  id: string;
+  description: string;
+  module: MigrationModule;
+}
+
+const MIGRATIONS: MigrationEntry[] = [];
+
 export async function loadMigrations(): Promise<LoadedMigrations> {
-  const migrationsDir = __dirname;
-  const manifest = readManifest(migrationsDir);
+  const migrations: Migration[] = MIGRATIONS.map((entry) => ({
+    id: entry.id,
+    description: entry.description,
+    up: entry.module.up,
+    down: entry.module.down,
+  }));
 
-  if (!manifest) {
-    return { migrations: [], order: [] };
-  }
-
-  const errors = validateManifest(manifest);
-  if (errors.length > 0) {
-    throw new Error(`Invalid migrations manifest:\n${errors.join('\n')}`);
-  }
-
-  const order = getMigrationOrder(manifest);
-  const migrations: Migration[] = [];
-
-  for (const entry of manifest.migrations) {
-    const modulePath = join(migrationsDir, `${entry.id}.js`);
-
-    try {
-      const module = await import(modulePath);
-      const migration: Migration = {
-        id: entry.id,
-        description: entry.description,
-        up: module.up,
-        down: module.down,
-      };
-      migrations.push(migration);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ERR_MODULE_NOT_FOUND') {
-        throw new Error(`Migration file not found for ${entry.id}: ${modulePath}`);
-      }
-      throw error;
-    }
-  }
+  const order = MIGRATIONS.map((entry) => entry.id);
 
   return { migrations, order };
 }
@@ -62,32 +45,18 @@ export async function getMigrationById(id: string): Promise<Migration | null> {
 export async function loadInteractiveMigration(
   id: string,
 ): Promise<LoadedInteractiveMigration | null> {
-  const migrationsDir = __dirname;
-  const manifest = readManifest(migrationsDir);
-
-  if (!manifest) {
-    return null;
-  }
-
-  const entry = manifest.migrations.find((m) => m.id === id);
+  const entry = MIGRATIONS.find((m) => m.id === id);
   if (!entry) {
     return null;
   }
 
-  const modulePath = join(migrationsDir, `${id}.js`);
-
-  try {
-    const module = await import(modulePath);
-    return {
-      migration: {
-        id: entry.id,
-        description: entry.description,
-        up: module.up,
-        down: module.down,
-      },
-      getAffectedPresentations: module.getAffectedPresentations,
-    };
-  } catch {
-    return null;
-  }
+  return {
+    migration: {
+      id: entry.id,
+      description: entry.description,
+      up: entry.module.up,
+      down: entry.module.down,
+    },
+    getAffectedPresentations: entry.module.getAffectedPresentations,
+  };
 }

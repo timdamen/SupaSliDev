@@ -31,9 +31,8 @@ program
   .command('present')
   .description('Start a presentation dev server')
   .argument('<name>', 'Name of the presentation to start')
-  .option('-q, --quiet', 'Suppress version divergence warnings')
-  .action(async (name: string, options: { quiet?: boolean }) => {
-    await present(name, options);
+  .action(async (name: string) => {
+    await present(name);
   });
 
 program
@@ -41,8 +40,7 @@ program
   .description('Export a presentation to PDF')
   .argument('<name>', 'Name of the presentation to export')
   .option('-o, --output <path>', 'Output path for the PDF')
-  .option('-q, --quiet', 'Suppress version divergence warnings')
-  .action(async (name: string, options: { output?: string; quiet?: boolean }) => {
+  .action(async (name: string, options: { output?: string }) => {
     await exportPdf(name, options);
   });
 
@@ -51,8 +49,7 @@ program
   .description('Build and prepare a presentation for deployment')
   .argument('<name>', 'Name of the presentation to deploy')
   .option('-o, --output <path>', 'Output directory for deployment files')
-  .option('-q, --quiet', 'Suppress version divergence warnings')
-  .action(async (name: string, options: { output?: string; quiet?: boolean }) => {
+  .action(async (name: string, options: { output?: string }) => {
     await deploy(name, options);
   });
 

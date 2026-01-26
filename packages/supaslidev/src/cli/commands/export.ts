@@ -1,20 +1,13 @@
 import { spawn } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { existsSync, mkdirSync } from 'node:fs';
-import {
-  findProjectRoot,
-  getPresentations,
-  printAvailablePresentations,
-  getVersionDivergences,
-  printVersionDivergenceWarning,
-} from '../utils.js';
+import { findProjectRoot, getPresentations, printAvailablePresentations } from '../utils.js';
 
 export interface ExportOptions {
   output?: string;
-  quiet?: boolean;
 }
 
-export async function exportPdf(name: string, options: ExportOptions): Promise<void> {
+export async function exportPdf(name: string, options: ExportOptions = {}): Promise<void> {
   const projectRoot = findProjectRoot();
 
   if (!projectRoot) {
@@ -38,11 +31,6 @@ export async function exportPdf(name: string, options: ExportOptions): Promise<v
 
   if (!existsSync(dirname(outputPath))) {
     mkdirSync(dirname(outputPath), { recursive: true });
-  }
-
-  if (!options.quiet) {
-    const divergences = getVersionDivergences(projectRoot, name);
-    printVersionDivergenceWarning(divergences);
   }
 
   console.log('\n' + '='.repeat(50));

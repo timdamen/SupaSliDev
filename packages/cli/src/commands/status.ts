@@ -141,19 +141,6 @@ export function formatStatus(status: StatusResult): string {
       lines.push(`  ${pc.bold(presentation.name)}`);
       lines.push(`    ${pc.dim('Source:')} ${presentation.sourcePath}`);
       lines.push(`    ${pc.dim('Imported:')} ${formatDate(presentation.importedAt)}`);
-
-      if (presentation.divergentDependencies.length > 0) {
-        lines.push(
-          `    ${pc.dim('Divergent deps:')} ${pc.yellow(String(presentation.divergentDependencies.length))}`,
-        );
-        for (const dep of presentation.divergentDependencies) {
-          lines.push(
-            `      ${dep.dependency}: ${dep.pinnedVersion} ${pc.dim('(catalog:')} ${dep.catalogVersion}${pc.dim(')')}`,
-          );
-        }
-      } else {
-        lines.push(`    ${pc.dim('Divergent deps:')} ${pc.green('None')}`);
-      }
     }
   }
 

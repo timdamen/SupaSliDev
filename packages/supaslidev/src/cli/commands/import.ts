@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { join, basename, resolve } from 'node:path';
+import { join, basename, resolve, dirname } from 'node:path';
 import {
   existsSync,
   readdirSync,
@@ -10,7 +10,18 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { addImportedPresentation, findWorkspaceRoot } from 'create-supaslidev';
-import { findProjectRoot, getPresentations, getVersionDivergences } from '../utils.js';
+import { findProjectRoot, getPresentations } from '../utils.js';
+
+function findPnpmWorkspaceRoot(startDir: string): string | null {
+  let currentDir = startDir;
+  while (currentDir !== dirname(currentDir)) {
+    if (existsSync(join(currentDir, 'pnpm-workspace.yaml'))) {
+      return currentDir;
+    }
+    currentDir = dirname(currentDir);
+  }
+  return null;
+}
 
 const IGNORE_PATTERNS = [
   'node_modules',
@@ -194,22 +205,21 @@ export async function importPresentation(
   console.log('\nFiles copied successfully!');
   console.log('Ignored: ' + IGNORE_PATTERNS.join(', '));
 
+  const workspaceRoot = findWorkspaceRoot(projectRoot);
+  const pnpmRoot = findPnpmWorkspaceRoot(projectRoot);
+
   if (install) {
-    await runPnpmInstall(projectRoot);
+    await runPnpmInstall(pnpmRoot ?? projectRoot);
   } else {
     console.log(
       '\nSkipped pnpm install. Run "pnpm install" manually before using the presentation.',
     );
   }
-
-  const workspaceRoot = findWorkspaceRoot(projectRoot);
   if (workspaceRoot) {
-    const divergences = getVersionDivergences(projectRoot, presentationName);
     addImportedPresentation(workspaceRoot, {
       name: presentationName,
       importedAt: new Date().toISOString(),
       sourcePath,
-      divergentDependencies: divergences,
     });
   }
 

@@ -1,8 +1,9 @@
-export { run } from './cli.ts';
+export { run as runCli } from './cli.ts';
 export * from './state.ts';
 export * from './migrations/types.ts';
 export * from './migrations/backup.ts';
 export * from './migrations/journal.ts';
+export * from './migrations/loader.ts';
 export * from './migrations/manifest.ts';
 export * from './migrations/runner.ts';
 export * from './transformers/json.ts';

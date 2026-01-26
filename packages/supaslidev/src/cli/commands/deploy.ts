@@ -8,16 +8,13 @@ import {
   createVercelConfig,
   createNetlifyConfig,
   createDeployPackageJson,
-  getVersionDivergences,
-  printVersionDivergenceWarning,
 } from '../utils.js';
 
 export interface DeployOptions {
   output?: string;
-  quiet?: boolean;
 }
 
-export async function deploy(name: string, options: DeployOptions): Promise<void> {
+export async function deploy(name: string, options: DeployOptions = {}): Promise<void> {
   const projectRoot = findProjectRoot();
 
   if (!projectRoot) {
@@ -40,11 +37,6 @@ export async function deploy(name: string, options: DeployOptions): Promise<void
   const presentationDistDir = join(presentationDir, 'dist');
   const outputDir = options.output ?? join(deployDir, name);
   const outputDistDir = join(outputDir, 'dist');
-
-  if (!options.quiet) {
-    const divergences = getVersionDivergences(projectRoot, name);
-    printVersionDivergenceWarning(divergences);
-  }
 
   console.log('\n' + '='.repeat(50));
   console.log(`  Preparing deployment: ${name}`);
