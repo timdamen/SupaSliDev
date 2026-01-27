@@ -176,7 +176,7 @@ describe('Dashboard Display E2E', () => {
 
       await waitForServer(dashboardUrl);
 
-      await page.goto(dashboardUrl, { waitUntil: 'networkidle' });
+      await page.goto(dashboardUrl, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('.card');
     }, 60000);
 
