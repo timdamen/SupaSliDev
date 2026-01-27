@@ -550,6 +550,7 @@ function importPresentation({ source, name }) {
 
     copyDirectorySelective(sourcePath, destinationPath);
 
+    const sourcePackageJsonPath = join(sourcePath, 'package.json');
     const packageJsonContent = readFileSync(sourcePackageJsonPath, 'utf-8');
     const packageJson = JSON.parse(packageJsonContent);
 

@@ -303,4 +303,133 @@ describe('Import E2E', () => {
       expect(await errorIcon.first().isVisible()).toBe(true);
     });
   });
+
+  describe('multi-project import', () => {
+    it('validates both projects when entering two comma-separated valid paths', async () => {
+      await openImportDialog(page, dashboardUrl);
+
+      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
+      const commaSeparatedPaths = `${standaloneProject1.path}, ${standaloneProject2.path}`;
+      await pathInput.fill(commaSeparatedPaths);
+      await pathInput.blur();
+
+      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
+      if (await validatingIndicator.isVisible()) {
+        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
+      }
+
+      await page.waitForTimeout(500);
+
+      const dialog = page.locator('[role="dialog"]');
+      const dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('external-deck-one');
+      expect(dialogContent).toContain('external-deck-two');
+
+      const validIndicator = page.locator('text=2 of 2 valid');
+      expect(await validIndicator.isVisible()).toBe(true);
+    });
+
+    it('imports both projects with progress indicator and shows them in dashboard', async () => {
+      await page.goto(dashboardUrl);
+      await page.waitForTimeout(500);
+
+      let dashboardContent = await page.content();
+      const alreadyImported =
+        dashboardContent.includes('external-deck-one') &&
+        dashboardContent.includes('external-deck-two');
+
+      if (alreadyImported) {
+        expect(dashboardContent).toContain('external-deck-one');
+        expect(dashboardContent).toContain('external-deck-two');
+        return;
+      }
+
+      await openImportDialog(page, dashboardUrl);
+
+      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
+      const commaSeparatedPaths = `${standaloneProject1.path}, ${standaloneProject2.path}`;
+      await pathInput.fill(commaSeparatedPaths);
+      await pathInput.blur();
+
+      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
+      if (await validatingIndicator.isVisible()) {
+        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
+      }
+
+      await page.waitForTimeout(500);
+
+      const validIndicator = page.locator('text=2 of 2 valid');
+      await validIndicator.waitFor({ state: 'visible', timeout: 5000 });
+
+      const importButton = page.locator('button:has-text("Import 2 Presentations")');
+      await importButton.click();
+
+      const dialog = page.locator('[role="dialog"]');
+      const progressIndicator = page.locator('p:has-text("Importing")');
+      const errorSummary = page.locator('text=/\\d+ succeeded, \\d+ failed/');
+
+      let sawProgress = false;
+      const startTime = Date.now();
+      const maxWaitTime = 120000;
+
+      while (Date.now() - startTime < maxWaitTime) {
+        const dialogVisible = await dialog.isVisible();
+
+        if (!dialogVisible) {
+          break;
+        }
+
+        if (!sawProgress && (await progressIndicator.isVisible())) {
+          sawProgress = true;
+          const progressText = await progressIndicator.textContent();
+          expect(progressText).toMatch(/Importing \d+\/2/);
+        }
+
+        if (await errorSummary.isVisible()) {
+          const dialogContent = await dialog.textContent();
+          throw new Error(`Import failed with partial success: ${dialogContent}`);
+        }
+
+        await page.waitForTimeout(500);
+      }
+
+      const dialogStillVisible = await dialog.isVisible();
+      if (dialogStillVisible) {
+        const dialogContent = await dialog.textContent();
+        throw new Error(`Dialog did not close within timeout: ${dialogContent}`);
+      }
+
+      await page.waitForTimeout(500);
+
+      dashboardContent = await page.content();
+      expect(dashboardContent).toContain('external-deck-one');
+      expect(dashboardContent).toContain('external-deck-two');
+    });
+
+    it('shows mixed results when importing one valid and one invalid path', async () => {
+      await openImportDialog(page, dashboardUrl);
+
+      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
+      const mixedPaths = `${standaloneProject1.path}, ${projectWithoutSlides.path}`;
+      await pathInput.fill(mixedPaths);
+      await pathInput.blur();
+
+      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
+      if (await validatingIndicator.isVisible()) {
+        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
+      }
+
+      await page.waitForTimeout(500);
+
+      const dialog = page.locator('[role="dialog"]');
+      const dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('1 of 2 valid');
+
+      const successIcon = page.locator('.text-success');
+      expect(await successIcon.first().isVisible()).toBe(true);
+
+      const errorIcon = page.locator('.text-error');
+      expect(await errorIcon.first().isVisible()).toBe(true);
+    });
+  });
 });
