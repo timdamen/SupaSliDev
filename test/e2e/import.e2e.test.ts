@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { Browser, Page } from 'playwright';
-import { existsSync, rmSync, mkdirSync } from 'node:fs';
+import { existsSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   startDashboard,
@@ -17,6 +17,40 @@ import {
 const IMPORT_TEST_PROJECT = 'import-e2e-test';
 const EXTERNAL_PROJECTS_DIR = 'external-slidev-projects';
 
+interface InvalidProject {
+  path: string;
+  name: string;
+}
+
+function createProjectWithoutSlides(baseDir: string, name: string): InvalidProject {
+  const projectPath = join(baseDir, name);
+  mkdirSync(projectPath, { recursive: true });
+
+  const packageJson = {
+    name,
+    version: '1.0.0',
+    private: true,
+    scripts: {
+      dev: 'slidev',
+    },
+  };
+  writeFileSync(join(projectPath, 'package.json'), JSON.stringify(packageJson, null, 2));
+
+  return { path: projectPath, name };
+}
+
+async function openImportDialog(page: Page, dashboardUrl: string): Promise<void> {
+  await page.goto(dashboardUrl);
+
+  const terminalInput = page.locator('.terminal-input');
+  await terminalInput.focus();
+  await terminalInput.fill('import');
+  await terminalInput.press('Enter');
+
+  const dialog = page.locator('[role="dialog"]');
+  await dialog.waitFor({ state: 'visible', timeout: 5000 });
+}
+
 describe('Import E2E', () => {
   let browser: Browser;
   let page: Page;
@@ -25,6 +59,7 @@ describe('Import E2E', () => {
   let externalProjectsPath: string;
   let standaloneProject1: StandaloneSlidevProject;
   let standaloneProject2: StandaloneSlidevProject;
+  let projectWithoutSlides: InvalidProject;
 
   beforeAll(async () => {
     const tmpDir = getTmpDir();
@@ -42,6 +77,7 @@ describe('Import E2E', () => {
 
     standaloneProject1 = createStandaloneSlidevProject(externalProjectsPath, 'external-deck-one');
     standaloneProject2 = createStandaloneSlidevProject(externalProjectsPath, 'external-deck-two');
+    projectWithoutSlides = createProjectWithoutSlides(externalProjectsPath, 'no-slides-project');
 
     scaffoldProject(IMPORT_TEST_PROJECT);
     installDependencies(projectPath);
@@ -173,6 +209,98 @@ describe('Import E2E', () => {
 
       const dialogContent = await importDialog.textContent();
       expect(dialogContent).toContain('Import');
+    });
+  });
+
+  describe('path validation', () => {
+    it('shows suggested name when entering a valid path', async () => {
+      await openImportDialog(page, dashboardUrl);
+
+      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
+      await pathInput.fill(standaloneProject1.path);
+      await pathInput.blur();
+
+      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
+      if (await validatingIndicator.isVisible()) {
+        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
+      }
+
+      await page.waitForTimeout(500);
+
+      const dialog = page.locator('[role="dialog"]');
+      const dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('external-deck-one');
+
+      const checkIcon = page.locator('.text-success');
+      expect(await checkIcon.first().isVisible()).toBe(true);
+    });
+
+    it('shows error message when entering an invalid path (file instead of directory)', async () => {
+      await openImportDialog(page, dashboardUrl);
+
+      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
+      const slidesFilePath = join(standaloneProject1.path, 'slides.md');
+      await pathInput.fill(slidesFilePath);
+      await pathInput.blur();
+
+      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
+      if (await validatingIndicator.isVisible()) {
+        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
+      }
+
+      await page.waitForTimeout(500);
+
+      const dialog = page.locator('[role="dialog"]');
+      const dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('Source path is not a directory');
+
+      const errorIcon = page.locator('.text-error');
+      expect(await errorIcon.first().isVisible()).toBe(true);
+    });
+
+    it('shows error message when entering a non-existent path', async () => {
+      await openImportDialog(page, dashboardUrl);
+
+      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
+      const nonExistentPath = '/path/that/does/not/exist/anywhere';
+      await pathInput.fill(nonExistentPath);
+      await pathInput.blur();
+
+      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
+      if (await validatingIndicator.isVisible()) {
+        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
+      }
+
+      await page.waitForTimeout(500);
+
+      const dialog = page.locator('[role="dialog"]');
+      const dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('Source directory does not exist');
+
+      const errorIcon = page.locator('.text-error');
+      expect(await errorIcon.first().isVisible()).toBe(true);
+    });
+
+    it('shows error message when entering path without slides.md', async () => {
+      await openImportDialog(page, dashboardUrl);
+
+      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
+      await pathInput.fill(projectWithoutSlides.path);
+      await pathInput.blur();
+
+      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
+      if (await validatingIndicator.isVisible()) {
+        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
+      }
+
+      await page.waitForTimeout(500);
+
+      const dialog = page.locator('[role="dialog"]');
+      const dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('No slides.md found');
+
+      const errorIcon = page.locator('.text-error');
+      expect(await errorIcon.first().isVisible()).toBe(true);
     });
   });
 });
