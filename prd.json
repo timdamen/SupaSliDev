@@ -90,9 +90,10 @@
         "List items should animate on enter, leave, and move"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "labels": [],
-      "dependsOn": []
+      "dependsOn": [],
+      "completionNotes": "Completed by agent"
     },
     {
       "id": "US-006",
@@ -114,6 +115,6 @@
     "createdAt": "2026-01-27T10:58:39.686Z",
     "version": "1.0.0",
     "sourcePrd": "tasks/prd-list-view-mode-for-supaslidev-dashboard.md",
-    "updatedAt": "2026-01-27T11:05:46.598Z"
+    "updatedAt": "2026-01-27T11:07:01.100Z"
   }
 }

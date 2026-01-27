@@ -71,6 +71,14 @@ function handleRowClick(event: Event) {
     window.open(`http://localhost:${port.value}`, '_blank');
   }
 }
+
+function handleOpen(event: Event) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (port.value) {
+    window.open(`http://localhost:${port.value}`, '_blank');
+  }
+}
 </script>
 
 <template>
@@ -111,16 +119,26 @@ function handleRowClick(event: Event) {
       {{ presentation.duration }}
     </UBadge>
 
-    <a
-      v-if="running && port"
-      :href="`http://localhost:${port}`"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="text-xs text-[var(--ui-success)] hover:underline shrink-0"
-      @click.stop
-    >
-      :{{ port }}
-    </a>
+    <div v-if="running && port" class="flex items-center gap-1 shrink-0">
+      <a
+        :href="`http://localhost:${port}`"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-xs text-[var(--ui-success)] hover:underline"
+        @click.stop
+      >
+        :{{ port }}
+      </a>
+      <UButton
+        color="success"
+        variant="ghost"
+        size="xs"
+        icon="i-lucide-external-link"
+        class="action-btn"
+        title="Open in browser"
+        @click="handleOpen"
+      />
+    </div>
 
     <div class="flex items-center gap-1 shrink-0">
       <UButton
