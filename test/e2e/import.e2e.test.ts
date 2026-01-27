@@ -399,11 +399,14 @@ describe('Import E2E', () => {
         throw new Error(`Dialog did not close within timeout: ${dialogContent}`);
       }
 
-      await page.waitForTimeout(500);
+      const deckOneCard = page.locator('.card:has-text("external-deck-one")');
+      const deckTwoCard = page.locator('.card:has-text("external-deck-two")');
 
-      dashboardContent = await page.content();
-      expect(dashboardContent).toContain('external-deck-one');
-      expect(dashboardContent).toContain('external-deck-two');
+      await deckOneCard.waitFor({ state: 'visible', timeout: 10000 });
+      await deckTwoCard.waitFor({ state: 'visible', timeout: 10000 });
+
+      expect(await deckOneCard.isVisible()).toBe(true);
+      expect(await deckTwoCard.isVisible()).toBe(true);
     });
 
     it('shows mixed results when importing one valid and one invalid path', async () => {
