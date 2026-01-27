@@ -99,6 +99,7 @@ onUnmounted(() => {
 
 const presentations = ref<Presentation[]>(presentationsData);
 const searchQuery = ref('');
+const viewMode = ref<'grid' | 'list'>('grid');
 
 async function handlePresentCommand(presentation: Presentation) {
   isCommandPaletteOpen.value = false;
@@ -337,12 +338,30 @@ const commandOptions = computed(() => {
                 filteredPresentations.length !== 1 ? 's' : ''
               }}
             </p>
-            <UButton class="btn-new font-mono" @click="isDialogOpen = true">
-              <template #leading>
-                <span class="opacity-70">$</span>
-              </template>
-              new
-            </UButton>
+            <div class="flex items-center gap-3">
+              <UButtonGroup>
+                <UButton
+                  :variant="viewMode === 'grid' ? 'solid' : 'ghost'"
+                  color="neutral"
+                  size="sm"
+                  icon="i-lucide-layout-grid"
+                  @click="viewMode = 'grid'"
+                />
+                <UButton
+                  :variant="viewMode === 'list' ? 'solid' : 'ghost'"
+                  color="neutral"
+                  size="sm"
+                  icon="i-lucide-list"
+                  @click="viewMode = 'list'"
+                />
+              </UButtonGroup>
+              <UButton class="btn-new font-mono" @click="isDialogOpen = true">
+                <template #leading>
+                  <span class="opacity-70">$</span>
+                </template>
+                new
+              </UButton>
+            </div>
           </div>
 
           <div class="mb-6 flex justify-center">
