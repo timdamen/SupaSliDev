@@ -207,7 +207,7 @@ describe('Import E2E', () => {
     it('opens command palette with Cmd+K', async () => {
       await page.goto(dashboardUrl);
 
-      await page.keyboard.press('ControlOrMeta+K');
+      await page.keyboard.press('ControlOrMeta+k');
 
       const modal = page.locator('[role="dialog"]');
       await modal.waitFor({ state: 'visible', timeout: 5000 });
@@ -221,7 +221,7 @@ describe('Import E2E', () => {
     it('shows Import option in command palette', async () => {
       await page.goto(dashboardUrl);
 
-      await page.keyboard.press('ControlOrMeta+K');
+      await page.keyboard.press('ControlOrMeta+k');
 
       const modal = page.locator('[role="dialog"]');
       await modal.waitFor({ state: 'visible', timeout: 5000 });
@@ -233,7 +233,7 @@ describe('Import E2E', () => {
     it('opens import dialog when selecting Import from command palette', async () => {
       await page.goto(dashboardUrl);
 
-      await page.keyboard.press('ControlOrMeta+K');
+      await page.keyboard.press('ControlOrMeta+k');
 
       const commandPaletteModal = page.locator('[role="dialog"]');
       await commandPaletteModal.waitFor({ state: 'visible', timeout: 5000 });
