@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useColorMode } from '#imports';
 import type { CommandPaletteGroup, CommandPaletteItem } from '@nuxt/ui';
 import AppHeader from './components/AppHeader.vue';
@@ -99,7 +99,19 @@ onUnmounted(() => {
 
 const presentations = ref<Presentation[]>(presentationsData);
 const searchQuery = ref('');
-const viewMode = ref<'grid' | 'list'>('grid');
+
+const VIEW_MODE_STORAGE_KEY = 'supaslidev-view-mode';
+
+function loadViewMode(): 'grid' | 'list' {
+  const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+  return saved === 'list' ? 'list' : 'grid';
+}
+
+const viewMode = ref<'grid' | 'list'>(loadViewMode());
+
+watch(viewMode, (newMode) => {
+  localStorage.setItem(VIEW_MODE_STORAGE_KEY, newMode);
+});
 
 async function handlePresentCommand(presentation: Presentation) {
   isCommandPaletteOpen.value = false;
