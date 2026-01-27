@@ -4,6 +4,7 @@ import { useColorMode } from '#imports';
 import type { CommandPaletteGroup, CommandPaletteItem } from '@nuxt/ui';
 import AppHeader from './components/AppHeader.vue';
 import PresentationCard from './components/PresentationCard.vue';
+import PresentationListItem from './components/PresentationListItem.vue';
 import CreatePresentationDialog from './components/CreatePresentationDialog.vue';
 import ImportPresentationDialog from './components/ImportPresentationDialog.vue';
 import EmptyState from './components/EmptyState.vue';
@@ -388,11 +389,23 @@ const commandOptions = computed(() => {
 
           <TransitionGroup
             v-if="filteredPresentations.length > 0"
-            name="card"
+            :name="viewMode === 'grid' ? 'card' : 'list'"
             tag="div"
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+            :class="
+              viewMode === 'grid'
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'
+                : 'flex flex-col gap-2'
+            "
           >
             <PresentationCard
+              v-if="viewMode === 'grid'"
+              v-for="presentation in filteredPresentations"
+              :key="presentation.id"
+              :presentation="presentation"
+              @export-error="handleExportError"
+            />
+            <PresentationListItem
+              v-else
               v-for="presentation in filteredPresentations"
               :key="presentation.id"
               :presentation="presentation"
