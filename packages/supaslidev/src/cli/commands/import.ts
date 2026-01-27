@@ -12,7 +12,7 @@ import {
 import { addImportedPresentation, findWorkspaceRoot } from 'create-supaslidev';
 import { findProjectRoot, getPresentations } from '../utils.js';
 
-function findPnpmWorkspaceRoot(startDir: string): string | null {
+export function findPnpmWorkspaceRoot(startDir: string): string | null {
   let currentDir = startDir;
   while (currentDir !== dirname(currentDir)) {
     if (existsSync(join(currentDir, 'pnpm-workspace.yaml'))) {
@@ -23,7 +23,7 @@ function findPnpmWorkspaceRoot(startDir: string): string | null {
   return null;
 }
 
-const IGNORE_PATTERNS = [
+export const IGNORE_PATTERNS = [
   'node_modules',
   '.git',
   'dist',
@@ -44,7 +44,7 @@ interface PackageJson {
   [key: string]: unknown;
 }
 
-function validateName(name: string): void {
+export function validateName(name: string): void {
   if (!/^[a-z0-9-]+$/.test(name)) {
     throw new Error('Name must be lowercase alphanumeric with hyphens only');
   }
@@ -53,7 +53,7 @@ function validateName(name: string): void {
   }
 }
 
-function validateSourceDirectory(sourcePath: string): void {
+export function validateSourceDirectory(sourcePath: string): void {
   if (!existsSync(sourcePath)) {
     throw new Error(`Source directory does not exist: ${sourcePath}`);
   }
@@ -73,11 +73,11 @@ function validateSourceDirectory(sourcePath: string): void {
   }
 }
 
-function shouldIgnore(name: string): boolean {
+export function shouldIgnore(name: string): boolean {
   return IGNORE_PATTERNS.includes(name);
 }
 
-function copyDirectorySelective(source: string, destination: string): void {
+export function copyDirectorySelective(source: string, destination: string): void {
   mkdirSync(destination, { recursive: true });
 
   const entries = readdirSync(source);
@@ -99,7 +99,7 @@ function copyDirectorySelective(source: string, destination: string): void {
   }
 }
 
-function transformPackageJson(sourcePath: string, name: string): string {
+export function transformPackageJson(sourcePath: string, name: string): string {
   const packageJsonPath = join(sourcePath, 'package.json');
   const content = readFileSync(packageJsonPath, 'utf-8');
   const packageJson = JSON.parse(content) as PackageJson;
