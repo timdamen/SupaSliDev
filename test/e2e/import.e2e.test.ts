@@ -92,4 +92,87 @@ describe('Import E2E', () => {
       expect(pageTitle).toBe('Supaslidev');
     });
   });
+
+  describe('import dialog access via terminal bar', () => {
+    it('opens import dialog when typing "import" and pressing Enter', async () => {
+      await page.goto(dashboardUrl);
+
+      const terminalInput = page.locator('.terminal-input');
+      await terminalInput.focus();
+      await terminalInput.fill('import');
+      await terminalInput.press('Enter');
+
+      const dialog = page.locator('[role="dialog"]');
+      await dialog.waitFor({ state: 'visible', timeout: 5000 });
+
+      expect(await dialog.isVisible()).toBe(true);
+
+      const dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('Import');
+    });
+
+    it('shows "port" ghost text when typing "Im"', async () => {
+      await page.goto(dashboardUrl);
+
+      const terminalInput = page.locator('.terminal-input');
+      await terminalInput.focus();
+      await terminalInput.fill('Im');
+
+      await page.waitForTimeout(100);
+
+      const ghostText = page.locator('.ghost-suffix');
+      expect(await ghostText.isVisible()).toBe(true);
+      expect(await ghostText.textContent()).toBe('port');
+    });
+  });
+
+  describe('import dialog access via command palette', () => {
+    it('opens command palette with Cmd+K', async () => {
+      await page.goto(dashboardUrl);
+
+      await page.keyboard.press('Meta+k');
+
+      const modal = page.locator('[role="dialog"]');
+      await modal.waitFor({ state: 'visible', timeout: 5000 });
+
+      expect(await modal.isVisible()).toBe(true);
+
+      const paletteContent = await modal.textContent();
+      expect(paletteContent).toContain('Actions');
+    });
+
+    it('shows Import option in command palette', async () => {
+      await page.goto(dashboardUrl);
+
+      await page.keyboard.press('Meta+k');
+
+      const modal = page.locator('[role="dialog"]');
+      await modal.waitFor({ state: 'visible', timeout: 5000 });
+
+      const importOption = page.getByText('Import', { exact: true });
+      expect(await importOption.isVisible()).toBe(true);
+    });
+
+    it('opens import dialog when selecting Import from command palette', async () => {
+      await page.goto(dashboardUrl);
+
+      await page.keyboard.press('Meta+k');
+
+      const commandPaletteModal = page.locator('[role="dialog"]');
+      await commandPaletteModal.waitFor({ state: 'visible', timeout: 5000 });
+
+      const importOption = commandPaletteModal.getByText('Import', { exact: true });
+      await importOption.click();
+
+      await page.waitForTimeout(300);
+
+      const importDialog = page.locator('[role="dialog"]');
+      await importDialog.waitFor({ state: 'visible', timeout: 5000 });
+
+      expect(await importDialog.isVisible()).toBe(true);
+
+      const dialogContent = await importDialog.textContent();
+      expect(dialogContent).toContain('Import');
+    });
+  });
 });
