@@ -24,7 +24,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
-      include: ['packages/supaslidev/src/**/*.ts'],
+      include: ['packages/*/src/**/*.ts'],
       exclude: ['**/*.test.ts', '**/*.d.ts', '**/node_modules/**'],
       thresholds: {
         'packages/supaslidev/src/cli/commands/import.ts': {

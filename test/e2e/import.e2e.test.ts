@@ -51,6 +51,47 @@ async function openImportDialog(page: Page, dashboardUrl: string): Promise<void>
   await dialog.waitFor({ state: 'visible', timeout: 5000 });
 }
 
+interface ValidationWaitOptions {
+  expectedText?: string;
+  expectSuccess?: boolean;
+  expectError?: boolean;
+  timeout?: number;
+}
+
+async function waitForValidationComplete(
+  page: Page,
+  options: ValidationWaitOptions = {},
+): Promise<void> {
+  const { expectedText, expectSuccess, expectError, timeout = 5000 } = options;
+  const dialog = page.locator('[role="dialog"]');
+  const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
+
+  await dialog.waitFor({ state: 'visible', timeout });
+
+  const successIcon = page.locator('.text-success').first();
+  const errorIcon = page.locator('.text-error').first();
+
+  await Promise.race([
+    validatingIndicator.waitFor({ state: 'hidden', timeout }).catch(() => {}),
+    expectSuccess ? successIcon.waitFor({ state: 'visible', timeout }) : Promise.resolve(),
+    expectError ? errorIcon.waitFor({ state: 'visible', timeout }) : Promise.resolve(),
+  ]);
+
+  if (expectedText) {
+    await page
+      .locator(`[role="dialog"]:has-text("${expectedText}")`)
+      .waitFor({ state: 'visible', timeout });
+  }
+
+  if (expectSuccess) {
+    await successIcon.waitFor({ state: 'visible', timeout });
+  }
+
+  if (expectError) {
+    await errorIcon.waitFor({ state: 'visible', timeout });
+  }
+}
+
 describe('Import E2E', () => {
   let browser: Browser;
   let page: Page;
@@ -166,7 +207,7 @@ describe('Import E2E', () => {
     it('opens command palette with Cmd+K', async () => {
       await page.goto(dashboardUrl);
 
-      await page.keyboard.press('Meta+k');
+      await page.keyboard.press('ControlOrMeta+K');
 
       const modal = page.locator('[role="dialog"]');
       await modal.waitFor({ state: 'visible', timeout: 5000 });
@@ -180,7 +221,7 @@ describe('Import E2E', () => {
     it('shows Import option in command palette', async () => {
       await page.goto(dashboardUrl);
 
-      await page.keyboard.press('Meta+k');
+      await page.keyboard.press('ControlOrMeta+K');
 
       const modal = page.locator('[role="dialog"]');
       await modal.waitFor({ state: 'visible', timeout: 5000 });
@@ -192,7 +233,7 @@ describe('Import E2E', () => {
     it('opens import dialog when selecting Import from command palette', async () => {
       await page.goto(dashboardUrl);
 
-      await page.keyboard.press('Meta+k');
+      await page.keyboard.press('ControlOrMeta+K');
 
       const commandPaletteModal = page.locator('[role="dialog"]');
       await commandPaletteModal.waitFor({ state: 'visible', timeout: 5000 });
@@ -220,12 +261,10 @@ describe('Import E2E', () => {
       await pathInput.fill(standaloneProject1.path);
       await pathInput.blur();
 
-      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
-      if (await validatingIndicator.isVisible()) {
-        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
-      }
-
-      await page.waitForTimeout(500);
+      await waitForValidationComplete(page, {
+        expectedText: 'external-deck-one',
+        expectSuccess: true,
+      });
 
       const dialog = page.locator('[role="dialog"]');
       const dialogContent = await dialog.textContent();

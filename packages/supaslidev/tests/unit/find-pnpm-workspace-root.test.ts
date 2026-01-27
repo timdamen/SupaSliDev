@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, parse } from 'node:path';
 import { tmpdir } from 'node:os';
 import { findPnpmWorkspaceRoot } from '../../src/cli/commands/import.js';
 
@@ -62,7 +62,8 @@ describe('findPnpmWorkspaceRoot', () => {
   });
 
   it('stops searching at filesystem root', () => {
-    const result = findPnpmWorkspaceRoot('/');
+    const filesystemRoot = parse(process.cwd()).root;
+    const result = findPnpmWorkspaceRoot(filesystemRoot);
 
     expect(result).toBeNull();
   });
