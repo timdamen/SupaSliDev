@@ -5,112 +5,46 @@
 <h1 align="center">Supaslidev</h1>
 
 <p align="center">
-A monorepo toolkit for managing multiple <a href="https://sli.dev">Slidev</a> presentations with shared resources, components, and themes using pnpm workspaces.
+  <strong>Manage all your Slidev presentations from one place.</strong>
 </p>
+
+## Why Supaslidev?
+
+If you've ever juggled multiple [Slidev](https://sli.dev/) presentations, you know the pain: version drift between decks, repetitive setup for each new talk, and the hassle of navigating folder-to-folder just to export a few PDFs before a conference.
+
+Supaslidev brings all your presentations into a single pnpm workspace with shared dependencies and an interactive dashboard. Update Slidev once, and every deck stays in sync.
 
 ## Features
 
-- **Monorepo Structure**: Manage multiple presentations in a single workspace using pnpm workspaces
-- **Interactive Dashboard**: Visual UI for managing and running presentations
-- **Native Slidev CLI**: Uses the official Slidev wizard with automatic version management via pnpm catalog
-- **Migration System**: Built-in migrations to keep workspaces up-to-date
-- **Independent Development**: Run and build presentations individually or all at once
+- **One Workspace, Many Presentations** — Keep all your decks organized under one roof with shared configuration
+- **Interactive Dashboard** — Browse, run, and manage presentations from a visual UI
+- **Centralized Dependencies** — pnpm catalog ensures every presentation uses the same Slidev version
+- **One-Command Exports** — Generate PDFs or build for deployment without switching directories
+- **Built-in Migrations** — Stay up to date as Supaslidev evolves
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js >= 18.0.0
-- pnpm >= 9.0.0
-
-### Create a New Workspace
-
-Use the scaffolding CLI to create a new Supaslidev workspace:
+## Quick Start
 
 ```bash
+# Create a new workspace
 pnpm create supaslidev
-```
 
-This will guide you through creating a new workspace with your first presentation.
+# Navigate to your workspace
+cd my-workspace
 
-### Managing Presentations
-
-Once inside a Supaslidev workspace, use the dashboard CLI:
-
-```bash
-# Start interactive dashboard UI
+# Open the interactive dashboard
 pnpm dev
 
-# Create a new presentation
-pnpm new my-presentation
-
-# Start dev server for a presentation
-pnpm present my-presentation
-
-# Export to PDF
-pnpm export my-presentation
-
-# Build for deployment
-pnpm deploy my-presentation
+# Or create a presentation directly
+pnpm new my-talk
 ```
 
-## Commands Reference
+## Documentation
 
-### Dashboard CLI (within a workspace)
-
-| Command               | Description                         |
-| --------------------- | ----------------------------------- |
-| `pnpm dev`            | Start interactive dashboard UI      |
-| `pnpm new <name>`     | Create a new presentation           |
-| `pnpm present <name>` | Start dev server for a presentation |
-| `pnpm export <name>`  | Export presentation to PDF          |
-| `pnpm deploy <name>`  | Build and prepare for deployment    |
-
-### Workspace Commands
-
-| Command          | Description                                         |
-| ---------------- | --------------------------------------------------- |
-| `pnpm install`   | Install all dependencies                            |
-| `pnpm dev:all`   | Start dev servers for all presentations in parallel |
-| `pnpm build:all` | Build all presentations                             |
-| `pnpm lint`      | Run linting                                         |
-| `pnpm typecheck` | Run TypeScript type checking                        |
-| `pnpm test`      | Run tests                                           |
-
-### Scaffolding CLI
-
-| Command                     | Description                            |
-| --------------------------- | -------------------------------------- |
-| `pnpm create supaslidev`    | Create a new Supaslidev workspace      |
-| `create-supaslidev status`  | Show workspace status and version info |
-| `create-supaslidev migrate` | Run migrations to update workspace     |
-| `create-supaslidev update`  | Check for CLI updates                  |
-
-## Project Structure
-
-A Supaslidev workspace has this structure:
-
-```
-my-workspace/
-├── presentations/           # Your presentations live here
-│   ├── my-first-deck/
-│   │   ├── package.json    # Uses catalog: versions
-│   │   └── slides.md       # Slidev markdown slides
-│   └── another-deck/
-├── packages/                # Shared packages (components, utils)
-├── package.json
-├── pnpm-workspace.yaml      # Workspace config with catalog
-└── .supaslidev/             # Workspace state
-    └── state.json
-```
-
-## Roadmap
-
-- Share utils, components, and styles between presentations via shared packages
+For detailed guides, configuration options, and CLI reference, visit the [documentation](docs/).
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
+Contributions are welcome! Check out [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ## License
 
