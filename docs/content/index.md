@@ -1,26 +1,24 @@
 ---
 title: Supaslidev
-description: A monorepo toolkit for managing multiple Slidev presentations with ease.
+description: Manage multiple Slidev presentations with ease.
 navigation: false
 ---
 
-## ::block-hero
-
+::block-hero
+---
 cta:
-
-- Get Started
-- /getting-started/introduction
-  secondary:
-- View on GitHub →
-- https://github.com/timdamen/supaSliDev
-
+  - Quick Start Guide
+  - /getting-started/introduction
+secondary:
+  - View on GitHub →
+  - https://github.com/timdamen/supaSliDev
 ---
 
 #title
-Manage Multiple Slidev Presentations
+Manage multiple Slidev presentations with ease
 
 #description
-Supaslidev is a monorepo toolkit that brings centralized dependency management, an interactive dashboard, and streamlined workflows to your Slidev presentations.
+Juggling multiple Slidev presentations across different projects? Supaslidev gives you a unified workspace with a visual dashboard, powerful command palette, and seamless export and deploy workflows—so you can focus on your content, not configuration.
 ::
 
 ::card-grid
@@ -28,31 +26,31 @@ Supaslidev is a monorepo toolkit that brings centralized dependency management, 
 Key Features
 
 #default
-::card{icon="i-heroicons-cube"}
-#title
-Centralized Dependencies
-#description
-Keep all your presentations on the same Slidev version with pnpm catalog. Update once, apply everywhere.
-::
-
 ::card{icon="i-heroicons-squares-2x2"}
 #title
 Interactive Dashboard
 #description
-Browse, start, and manage all your presentations from a single visual interface.
+Browse, preview, and manage all your presentations from a single visual interface. See your entire collection at a glance.
 ::
 
 ::card{icon="i-heroicons-command-line"}
 #title
-One-Command Operations
+Command Palette
 #description
-Create presentations, start dev servers, export to PDF, and build for deployment with simple CLI commands.
+Quick keyboard-driven access to all operations. Create, run, export, and deploy presentations without leaving the dashboard.
 ::
 
-::card{icon="i-heroicons-arrow-path"}
+::card{icon="i-heroicons-arrow-down-tray"}
 #title
-Migration System
+Import Presentations
 #description
-Upgrade your workspace seamlessly when new Supaslidev versions are released.
+Bring existing Slidev presentations into your workspace. Automatic dependency alignment with your monorepo setup.
+::
+
+::card{icon="i-heroicons-arrow-up-on-square"}
+#title
+Export & Deploy
+#description
+Export to PDF with a single command or build static sites ready for deployment to any hosting platform.
 ::
 ::
