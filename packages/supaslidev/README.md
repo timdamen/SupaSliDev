@@ -38,6 +38,8 @@ supaslidev dev
 
 The dashboard displays all presentations in your workspace. From here you can start dev servers, open presentations in your browser, and see which processes are running.
 
+<!-- Screenshot: Dashboard UI showing presentation cards and status indicators -->
+
 ### new
 
 Creates a new presentation using Slidev's setup wizard.
@@ -57,6 +59,8 @@ supaslidev present my-talk
 ```
 
 Opens the presentation in your browser with hot reload enabled. You can run multiple presentations simultaneously.
+
+<!-- Screenshot: Slidev dev server running with hot reload -->
 
 ### export
 
