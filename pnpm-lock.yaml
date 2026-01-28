@@ -92,6 +92,9 @@ importers:
       docus:
         specifier: ^5.4.4
         version: 5.4.4(3a243bbf387f1614a12239b1cd605773)
+      mermaid:
+        specifier: ^11.12.2
+        version: 11.12.2
       nuxt:
         specifier: ^4.0.0
         version: 4.3.0(@parcel/watcher@2.5.6)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(better-sqlite3@12.6.2)(cac@6.7.14)(commander@13.1.0)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@9.39.2(jiti@2.6.1))(ioredis@5.9.2)(lightningcss@1.31.1)(magicast@0.5.1)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.41.0)(rolldown@1.0.0-rc.1)(rollup@4.55.1)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@2.2.12(typescript@5.9.3))(yaml@2.8.2)
@@ -14523,7 +14526,7 @@ snapshots:
     dependencies:
       '@volar/language-core': 2.4.27
       path-browserify: 1.0.1
-      vscode-uri: 3.0.8
+      vscode-uri: 3.1.0
 
   '@vue-macros/common@3.1.2(vue@3.5.27(typescript@5.9.3))':
     dependencies:
@@ -14790,7 +14793,7 @@ snapshots:
       '@vueuse/shared': 14.1.0(vue@3.5.27(typescript@5.9.3))
       vue: 3.5.27(typescript@5.9.3)
     optionalDependencies:
-      axios: 1.13.3(debug@4.4.3)
+      axios: 1.13.3
       drauu: 0.4.3
       fuse.js: 7.1.0
 
@@ -15065,6 +15068,15 @@ snapshots:
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.1.0
+
+  axios@1.13.3:
+    dependencies:
+      follow-redirects: 1.15.11
+      form-data: 4.0.5
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
+    optional: true
 
   axios@1.13.3(debug@4.4.3):
     dependencies:
@@ -16660,6 +16672,9 @@ snapshots:
       vue-resize: 2.0.0-alpha.1(vue@3.5.27(typescript@5.9.3))
     optionalDependencies:
       '@nuxt/kit': 3.20.2(magicast@0.5.1)
+
+  follow-redirects@1.15.11:
+    optional: true
 
   follow-redirects@1.15.11(debug@4.4.3):
     optionalDependencies:
