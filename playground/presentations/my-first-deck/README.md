@@ -1,11 +1,17 @@
-# Welcome to [Slidev](https://github.com/slidevjs/slidev)!
+# my-first-deck
 
-To start the slide show:
+Example presentation managed by Supaslidev.
 
-- `pnpm install`
-- `pnpm dev`
-- visit <http://localhost:3030>
+## Usage
 
-Edit the [slides.md](./slides.md) to see the changes.
+Run the presentation:
 
-Learn more about Slidev at the [documentation](https://sli.dev/).
+```bash
+pnpm present my-first-deck
+```
+
+Export to PDF:
+
+```bash
+pnpm export my-first-deck
+```
