@@ -1,6 +1,12 @@
-# Supaslidev
+<p align="center">
+  <img src="assets/ssl-logo.png" alt="Supaslidev Logo" width="150" />
+</p>
 
-A monorepo toolkit for managing multiple [Slidev](https://sli.dev) presentations with shared resources, components, and themes using pnpm workspaces.
+<h1 align="center">Supaslidev</h1>
+
+<p align="center">
+A monorepo toolkit for managing multiple <a href="https://sli.dev">Slidev</a> presentations with shared resources, components, and themes using pnpm workspaces.
+</p>
 
 ## Features
 

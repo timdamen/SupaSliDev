@@ -124,6 +124,7 @@ defineExpose({ focusInput, inputRef });
       <div class="header-content" @click="handleHeaderClick">
         <div class="header-left">
           <div class="logo">
+            <img src="/ssl-logo.png" alt="Supaslidev" class="logo-image" />
             <h1 class="logo-title">Supaslidev</h1>
             <span class="logo-version">{{ version }}</span>
             <span class="logo-symbol">%</span>
@@ -266,6 +267,12 @@ defineExpose({ focusInput, inputRef });
   align-items: center;
   gap: 0.5rem;
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.logo-image {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .logo-title {

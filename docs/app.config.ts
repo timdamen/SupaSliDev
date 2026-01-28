@@ -9,6 +9,11 @@ export default defineAppConfig({
   },
   header: {
     title: 'Supaslidev',
+    logo: {
+      light: '/ssl-logo.png',
+      dark: '/ssl-logo.png',
+      alt: 'Supaslidev Logo',
+    },
   },
   socials: {
     github: 'https://github.com/timdamen/supaSliDev',
