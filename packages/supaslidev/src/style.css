@@ -63,3 +63,16 @@
 .list-move {
   transition: transform 0.3s ease;
 }
+
+.view-fade-enter-active {
+  transition: opacity 0.25s ease-out;
+}
+
+.view-fade-leave-active {
+  transition: opacity 0.2s ease-in;
+}
+
+.view-fade-enter-from,
+.view-fade-leave-to {
+  opacity: 0;
+}

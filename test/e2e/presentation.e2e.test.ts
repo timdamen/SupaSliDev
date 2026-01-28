@@ -160,11 +160,11 @@ describe('Presentation Viewing E2E', () => {
     beforeAll(async () => {
       presentationPage = await browser.newPage();
       await presentationPage.goto(presentationUrl);
-      await presentationPage.waitForSelector('.slidev-page', { timeout: 30000 });
+      await presentationPage.waitForSelector('.slidev-layout', { timeout: 30000 });
     }, 35000);
 
     it('presentation slide content is visible', async () => {
-      const slideContent = presentationPage.locator('.slidev-page');
+      const slideContent = presentationPage.locator('.slidev-layout');
       const count = await slideContent.count();
       expect(count).toBeGreaterThan(0);
     });
@@ -185,7 +185,7 @@ describe('Presentation Viewing E2E', () => {
         presentationPage = await browser.newPage();
       }
       await presentationPage.goto(presentationUrl);
-      await presentationPage.waitForSelector('.slidev-page', { timeout: 30000 });
+      await presentationPage.waitForSelector('.slidev-layout', { timeout: 30000 });
     }, 35000);
 
     it('navigating to next slide changes URL', async () => {
@@ -200,7 +200,7 @@ describe('Presentation Viewing E2E', () => {
     });
 
     it('slide content updates after navigation', async () => {
-      const slideContent = presentationPage.locator('.slidev-page');
+      const slideContent = presentationPage.locator('.slidev-layout');
       const count = await slideContent.count();
       expect(count).toBeGreaterThan(0);
     });
@@ -219,7 +219,7 @@ describe('Presentation Viewing E2E', () => {
   describe('keyboard arrow navigation', () => {
     beforeAll(async () => {
       await presentationPage.goto(presentationUrl);
-      await presentationPage.waitForSelector('.slidev-page', { timeout: 10000 });
+      await presentationPage.waitForSelector('.slidev-layout', { timeout: 10000 });
     });
 
     it('right arrow key navigates to next slide', async () => {
@@ -276,7 +276,7 @@ describe('Presentation Viewing E2E', () => {
   describe('slide counter display', () => {
     beforeAll(async () => {
       await presentationPage.goto(presentationUrl);
-      await presentationPage.waitForSelector('.slidev-page', { timeout: 10000 });
+      await presentationPage.waitForSelector('.slidev-layout', { timeout: 10000 });
     });
 
     it('slide counter shows current position', async () => {
@@ -323,18 +323,18 @@ describe('Presentation Viewing E2E', () => {
   describe('slide content verification', () => {
     beforeAll(async () => {
       await presentationPage.goto(presentationUrl);
-      await presentationPage.waitForSelector('.slidev-page', { timeout: 10000 });
+      await presentationPage.waitForSelector('.slidev-layout', { timeout: 10000 });
     });
 
     it('slide content is visible on first slide', async () => {
-      const slideContent = presentationPage.locator('.slidev-page');
+      const slideContent = presentationPage.locator('.slidev-layout');
       expect(await slideContent.first().isVisible()).toBe(true);
     });
 
     it('slide content is visible after navigation', async () => {
       await presentationPage.keyboard.press('ArrowRight');
 
-      const slideContent = presentationPage.locator('.slidev-page').first();
+      const slideContent = presentationPage.locator('.slidev-layout').first();
       await slideContent.waitFor({ state: 'visible', timeout: 5000 });
       expect(await slideContent.isVisible()).toBe(true);
     });
@@ -342,7 +342,7 @@ describe('Presentation Viewing E2E', () => {
     it('slide content is visible on final navigated slide', async () => {
       await presentationPage.keyboard.press('ArrowRight');
 
-      const slideContent = presentationPage.locator('.slidev-page').first();
+      const slideContent = presentationPage.locator('.slidev-layout').first();
       await slideContent.waitFor({ state: 'visible', timeout: 5000 });
       expect(await slideContent.isVisible()).toBe(true);
     });

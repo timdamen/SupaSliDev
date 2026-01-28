@@ -149,6 +149,11 @@ function handleToggleThemeCommand() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark';
 }
 
+function handleToggleViewModeCommand() {
+  isCommandPaletteOpen.value = false;
+  viewMode.value = viewMode.value === 'grid' ? 'list' : 'grid';
+}
+
 function findPresentationByName(name: string): Presentation | undefined {
   const normalizedName = name.toLowerCase().trim();
   return presentations.value.find(
@@ -250,6 +255,12 @@ const commandPaletteGroups = computed<CommandPaletteGroup[]>(() => [
         icon: colorMode.value === 'dark' ? 'i-lucide-sun' : 'i-lucide-moon',
         onSelect: handleToggleThemeCommand,
       },
+      {
+        label: 'Toggle view',
+        suffix: viewMode.value === 'grid' ? 'Switch to list layout' : 'Switch to grid layout',
+        icon: viewMode.value === 'grid' ? 'i-lucide-list' : 'i-lucide-layout-grid',
+        onSelect: handleToggleViewModeCommand,
+      },
     ],
   },
   {
@@ -298,6 +309,11 @@ const commandOptions = computed(() => {
       label: 'Toggle theme',
       description: colorMode.value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
       onSelect: handleToggleThemeCommand,
+    },
+    {
+      label: 'Toggle view',
+      description: viewMode.value === 'grid' ? 'Switch to list layout' : 'Switch to grid layout',
+      onSelect: handleToggleViewModeCommand,
     },
   ];
 
@@ -352,22 +368,6 @@ const commandOptions = computed(() => {
               }}
             </p>
             <div class="flex items-center gap-3">
-              <UButtonGroup>
-                <UButton
-                  :variant="viewMode === 'grid' ? 'solid' : 'ghost'"
-                  color="neutral"
-                  size="sm"
-                  icon="i-lucide-layout-grid"
-                  @click="viewMode = 'grid'"
-                />
-                <UButton
-                  :variant="viewMode === 'list' ? 'solid' : 'ghost'"
-                  color="neutral"
-                  size="sm"
-                  icon="i-lucide-list"
-                  @click="viewMode = 'list'"
-                />
-              </UButtonGroup>
               <UButton class="btn-new font-mono" @click="isDialogOpen = true">
                 <template #leading>
                   <span class="opacity-70">$</span>
@@ -387,31 +387,34 @@ const commandOptions = computed(() => {
             />
           </div>
 
-          <TransitionGroup
-            v-if="filteredPresentations.length > 0"
-            :name="viewMode === 'grid' ? 'card' : 'list'"
-            tag="div"
-            :class="
-              viewMode === 'grid'
-                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'
-                : 'flex flex-col gap-2'
-            "
-          >
-            <PresentationCard
-              v-if="viewMode === 'grid'"
-              v-for="presentation in filteredPresentations"
-              :key="presentation.id"
-              :presentation="presentation"
-              @export-error="handleExportError"
-            />
-            <PresentationListItem
-              v-else
-              v-for="presentation in filteredPresentations"
-              :key="presentation.id"
-              :presentation="presentation"
-              @export-error="handleExportError"
-            />
-          </TransitionGroup>
+          <div v-if="filteredPresentations.length > 0" class="view-container">
+            <Transition name="view-fade" mode="out-in">
+              <div
+                v-if="viewMode === 'grid'"
+                key="grid"
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+              >
+                <TransitionGroup name="card" appear>
+                  <PresentationCard
+                    v-for="presentation in filteredPresentations"
+                    :key="presentation.id"
+                    :presentation="presentation"
+                    @export-error="handleExportError"
+                  />
+                </TransitionGroup>
+              </div>
+              <div v-else key="list" class="flex flex-col gap-2">
+                <TransitionGroup name="list" appear>
+                  <PresentationListItem
+                    v-for="presentation in filteredPresentations"
+                    :key="presentation.id"
+                    :presentation="presentation"
+                    @export-error="handleExportError"
+                  />
+                </TransitionGroup>
+              </div>
+            </Transition>
+          </div>
 
           <EmptyState
             v-else

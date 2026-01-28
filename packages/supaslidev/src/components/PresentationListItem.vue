@@ -84,7 +84,7 @@ function handleOpen(event: Event) {
 <template>
   <div
     :class="[
-      'list-item font-mono flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
+      'list-item-v font-mono flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
       { 'list-item--running': running, 'cursor-pointer': running && port },
     ]"
     @click="handleRowClick"
@@ -169,23 +169,23 @@ function handleOpen(event: Event) {
 </template>
 
 <style scoped>
-.list-item {
+.list-item-v {
   --terminal-glow-color: rgba(39, 201, 63, 0.2);
   background: var(--ui-bg);
   border: 1px solid var(--ui-border);
 }
 
-.list-item:hover {
+.list-item-v:hover {
   background: var(--ui-bg-elevated);
   border-color: var(--ui-border-accented);
 }
 
-.list-item--running {
+.list-item-v--running {
   border-color: rgba(39, 201, 63, 0.3);
   box-shadow: 0 0 20px var(--terminal-glow-color);
 }
 
-.list-item--running:hover {
+.list-item-v--running:hover {
   box-shadow: 0 0 30px rgba(39, 201, 63, 0.3);
 }
 
@@ -194,7 +194,7 @@ function handleOpen(event: Event) {
   transition: opacity 0.2s ease;
 }
 
-.list-item:hover .action-btn {
+.list-item-v:hover .action-btn {
   opacity: 1;
 }
 </style>
