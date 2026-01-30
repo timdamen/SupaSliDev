@@ -52,8 +52,7 @@
       "oxfmt --write",
       "vitest related --run"
     ],
-    "*.json": "oxfmt --write",
-    "*.md !docs/content/**/*.md": "oxfmt --write"
+    "*.json": "oxfmt --write"
   },
   "engines": {
     "node": ">=18.0.0"

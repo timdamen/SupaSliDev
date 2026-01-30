@@ -9,6 +9,7 @@
     ".turbo",
     "**/.turbo",
     "pnpm-lock.yaml",
-    "presentations"
+    "presentations",
+    "docs/content/**/*.md"
   ]
 }
