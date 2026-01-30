@@ -175,9 +175,6 @@ describe('Dashboard Display E2E', () => {
       dashboardUrl = dashboardInfo.url;
 
       await waitForServer(dashboardUrl);
-
-      await page.goto(dashboardUrl, { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('.card');
     }, 60000);
 
     it('shows 2 presentation cards after creating second presentation', async () => {
