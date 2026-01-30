@@ -7,6 +7,7 @@ const props = defineProps<{
   filename?: string;
   highlights?: number[];
   meta?: string;
+  class?: string;
 }>();
 
 const isMermaid = computed(() => props.language === 'mermaid');
@@ -53,9 +54,9 @@ onMounted(async () => {
     <div v-if="error" class="text-red-500 font-mono text-sm">{{ error }}</div>
     <div v-else v-html="svg" class="mermaid-diagram" />
   </div>
-  <UProsePre v-else v-bind="props">
+  <ProsePre v-else v-bind="props">
     <slot />
-  </UProsePre>
+  </ProsePre>
 </template>
 
 <style>
