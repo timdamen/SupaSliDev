@@ -4,14 +4,16 @@ description: Manage multiple Slidev presentations with ease.
 navigation: false
 ---
 
-::block-hero
----
+## ::block-hero
+
 cta:
-  - Quick Start Guide
-  - /getting-started/introduction
-secondary:
-  - View on GitHub →
-  - https://github.com/timdamen/supaSliDev
+
+- Quick Start Guide
+- /getting-started/introduction
+  secondary:
+- View on GitHub →
+- https://github.com/timdamen/supaSliDev
+
 ---
 
 #title

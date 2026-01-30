@@ -34,13 +34,13 @@ pnpm create supaslidev --name my-slides --presentation intro-deck
 
 **Options:**
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-n, --name <name>` | Workspace directory name | Prompts interactively |
-| `-p, --presentation <name>` | First presentation name | `my-first-deck` |
-| `-t, --template <template>` | Template to use | `default` |
-| `--git` / `--no-git` | Initialize git repository | `true` |
-| `--install` / `--no-install` | Run pnpm install | `true` |
+| Option                       | Description               | Default               |
+| ---------------------------- | ------------------------- | --------------------- |
+| `-n, --name <name>`          | Workspace directory name  | Prompts interactively |
+| `-p, --presentation <name>`  | First presentation name   | `my-first-deck`       |
+| `-t, --template <template>`  | Template to use           | `default`             |
+| `--git` / `--no-git`         | Initialize git repository | `true`                |
+| `--install` / `--no-install` | Run pnpm install          | `true`                |
 
 The wizard creates a pnpm workspace with a `presentations/` directory for your decks, shared dependency management via catalog, and scripts for common tasks.
 
