@@ -40,6 +40,8 @@ const emit = defineEmits<{
 }>();
 
 const name = ref('');
+const title = ref('');
+const description = ref('');
 const selectedTemplate = ref('default');
 const isSubmitting = ref(false);
 const nameError = ref('');
@@ -81,6 +83,8 @@ function handleBlur() {
 
 function resetForm() {
   name.value = '';
+  title.value = '';
+  description.value = '';
   selectedTemplate.value = 'default';
   nameError.value = '';
   isSubmitting.value = false;
@@ -103,7 +107,12 @@ async function handleSubmit() {
     const response = await fetch('/api/presentations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name.value, template: selectedTemplate.value }),
+      body: JSON.stringify({
+        name: name.value,
+        title: title.value || undefined,
+        description: description.value || undefined,
+        template: selectedTemplate.value,
+      }),
     });
 
     if (!response.ok) {
@@ -155,6 +164,25 @@ async function handleSubmit() {
             class="w-full"
             autocomplete="off"
             @blur="handleBlur"
+          />
+        </UFormField>
+
+        <UFormField label="Title" hint="Display title for the presentation">
+          <UInput
+            v-model="title"
+            placeholder="Welcome to My Presentation"
+            class="w-full"
+            autocomplete="off"
+          />
+        </UFormField>
+
+        <UFormField label="Description" hint="Brief description of the presentation">
+          <UTextarea
+            v-model="description"
+            placeholder="A presentation about..."
+            class="w-full"
+            :rows="2"
+            autoresize
           />
         </UFormField>
 

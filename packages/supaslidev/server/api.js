@@ -304,7 +304,7 @@ function exportPresentation(presentationId) {
   });
 }
 
-function createPresentation({ name, template = 'default' }) {
+function createPresentation({ name, title, description, template = 'default' }) {
   return new Promise((resolve) => {
     const presentationPath = join(presentationsDir, name);
 
@@ -373,12 +373,27 @@ function createPresentation({ name, template = 'default' }) {
         return;
       }
 
-      const slidesContent = readFileSync(slidesPath, 'utf-8');
-      const updatedContent = slidesContent.replace(
+      let slidesContent = readFileSync(slidesPath, 'utf-8');
+
+      slidesContent = slidesContent.replace(
         /^(---\n[\s\S]*?)theme:\s*\S+/m,
         `$1theme: ${template}`,
       );
-      writeFileSync(slidesPath, updatedContent);
+
+      if (title) {
+        slidesContent = slidesContent.replace(/^(---\n[\s\S]*?)title:\s*.+$/m, `$1title: ${title}`);
+      }
+
+      if (description) {
+        slidesContent = slidesContent.replace(
+          /^(---\n[\s\S]*?)info:\s*\|[\s\S]*?(?=\n[a-zA-Z]|\n---)/m,
+          `$1info: |\n  ${description}\n`,
+        );
+      }
+
+      writeFileSync(slidesPath, slidesContent);
+
+      const frontmatter = parseFrontmatter(slidesContent);
 
       const packageJsonPath = join(presentationPath, 'package.json');
       const catalogPackageJson = {
@@ -406,11 +421,11 @@ function createPresentation({ name, template = 'default' }) {
         success: true,
         presentation: {
           id: name,
-          title: name,
-          description: '',
+          title: frontmatter.title || name,
+          description: extractDescription(frontmatter.info) || '',
           theme: template || 'default',
-          background: 'https://cover.sli.dev',
-          duration: '',
+          background: frontmatter.background || 'https://cover.sli.dev',
+          duration: frontmatter.duration || '',
         },
       });
 

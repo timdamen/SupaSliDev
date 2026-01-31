@@ -122,7 +122,7 @@ function handleCardClick(event: Event) {
     <template #header>
       <div class="terminal-header flex items-center px-4 py-3 gap-1.5 border-b border-default">
         <UIcon name="i-lucide-folder" class="chevron-icon" />
-        <span class="font-mono text-xs text-muted opacity-70">~/{{ presentation.id }}</span>
+        <span class="font-mono text-xs opacity-70">~/{{ presentation.id }}</span>
         <div class="flex-1" />
         <UBadge
           v-if="running"
