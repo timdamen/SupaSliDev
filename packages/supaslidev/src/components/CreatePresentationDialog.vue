@@ -144,7 +144,7 @@ async function handleSubmit() {
         <UFormField
           label="Presentation Name"
           required
-          :error="nameError"
+          :error="nameError || undefined"
           hint="This will be used as the folder name"
         >
           <UInput

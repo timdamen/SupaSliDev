@@ -635,8 +635,8 @@ async function handleSubmit() {
         <UFormField
           label="Source Path(s)"
           :required="!hasUploadedProjects"
-          :error="importProject.error"
-          hint="Enter paths or use Browse/drag-drop to select folders"
+          :error="importProject.error || undefined"
+          hint="Enter paths, browse multiple times, or drag-drop folders"
         >
           <div class="flex gap-2">
             <UInput
@@ -737,7 +737,7 @@ async function handleSubmit() {
         <UFormField
           v-if="!hasMultiplePaths"
           label="Name"
-          :error="nameError"
+          :error="nameError || undefined"
           hint="Optional: Custom name for the imported presentation"
         >
           <UInput
