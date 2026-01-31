@@ -13,13 +13,12 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         browser: [chromium, firefox, webkit]
-        shard: [1, 2, 3]
         exclude:
           - os: windows-latest
             browser: webkit
 
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -59,7 +58,7 @@ jobs:
         run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run E2E tests
-        run: pnpm test:e2e --shard=${{ matrix.shard }}/3
+        run: pnpm test:e2e
         env:
           BROWSER: ${{ matrix.browser }}
 
@@ -67,7 +66,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-artifacts-${{ matrix.os }}-${{ matrix.browser }}-shard${{ matrix.shard }}
+          name: e2e-artifacts-${{ matrix.os }}-${{ matrix.browser }}
           path: |
             .tmp/
             test/__snapshots__/
