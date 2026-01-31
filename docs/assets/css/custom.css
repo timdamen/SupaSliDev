@@ -5,12 +5,12 @@ header img.h-6 {
 
 /* Show "Supaslidev" title next to logo on tablet and desktop */
 @media (min-width: 768px) {
-  header a[href="/"] {
+  header a[href='/'] {
     display: flex;
     align-items: center;
   }
 
-  header a[href="/"]::after {
+  header a[href='/']::after {
     content: 'Supaslidev';
     margin-left: 0.2rem;
     font-weight: 600;

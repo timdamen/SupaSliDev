@@ -24,8 +24,15 @@ export default defineNuxtConfig({
     },
   },
 
+  llms: {
+    domain: 'https://supaslidev-docs.vercel.app',
+    title: 'Supaslidev',
+    description: 'A monorepo toolkit for managing multiple Slidev presentations with ease.',
+  },
+
   $production: {
     mcp: { enabled: false },
+    ogImage: { enabled: false },
   },
 
   mcp: {
