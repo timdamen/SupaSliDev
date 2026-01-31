@@ -7,8 +7,15 @@ const props = defineProps<{
   presentation: Presentation;
 }>();
 
-const { isRunning, getPort, startServer, stopServer, exportPresentation, openInEditor } =
-  useServers();
+const {
+  isRunning,
+  getPort,
+  startServer,
+  stopServer,
+  exportPresentation,
+  openInEditor,
+  waitForServerReady,
+} = useServers();
 
 const emit = defineEmits<{
   exportError: [message: string];
@@ -37,9 +44,10 @@ async function handleDev(event: Event) {
     } else {
       const result = await startServer(props.presentation.id);
       if (result.success && result.port) {
-        setTimeout(() => {
+        const isReady = await waitForServerReady(result.port);
+        if (isReady) {
           window.open(`http://localhost:${result.port}`, '_blank');
-        }, 1500);
+        }
       }
     }
   } finally {
@@ -167,9 +175,10 @@ function handleOpen(event: Event) {
         :color="running ? 'error' : 'success'"
         variant="ghost"
         size="xs"
-        :icon="running ? 'i-lucide-square' : 'i-lucide-play'"
+        :icon="loading.dev ? '' : running ? 'i-lucide-square' : 'i-lucide-play'"
         :loading="loading.dev"
         :disabled="loading.dev"
+        loading-icon="i-lucide-loader-circle"
         class="action-btn"
         :title="running ? 'Stop server' : 'Start dev server'"
         @click="handleDev"
@@ -179,9 +188,10 @@ function handleOpen(event: Event) {
         color="primary"
         variant="ghost"
         size="xs"
-        icon="i-lucide-download"
+        :icon="loading.export ? '' : 'i-lucide-download'"
         :loading="loading.export"
         :disabled="loading.export"
+        loading-icon="i-lucide-loader-circle"
         class="action-btn"
         title="Export to PDF"
         @click="handleExport"

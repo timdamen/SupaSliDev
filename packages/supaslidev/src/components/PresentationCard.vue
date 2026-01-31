@@ -7,8 +7,15 @@ const props = defineProps<{
   presentation: Presentation;
 }>();
 
-const { isRunning, getPort, startServer, stopServer, exportPresentation, openInEditor } =
-  useServers();
+const {
+  isRunning,
+  getPort,
+  startServer,
+  stopServer,
+  exportPresentation,
+  openInEditor,
+  waitForServerReady,
+} = useServers();
 
 const emit = defineEmits<{
   exportError: [message: string];
@@ -37,9 +44,10 @@ async function handleDev(event: Event) {
     } else {
       const result = await startServer(props.presentation.id);
       if (result.success && result.port) {
-        setTimeout(() => {
+        const isReady = await waitForServerReady(result.port);
+        if (isReady) {
           window.open(`http://localhost:${result.port}`, '_blank');
-        }, 1500);
+        }
       }
     }
   } finally {
@@ -181,9 +189,10 @@ function handleCardClick(event: Event) {
           class="present-button flex-1 terminal-btn font-mono"
           :loading="loading.dev"
           :disabled="loading.dev"
+          loading-icon="i-lucide-loader-circle"
           @click="handleDev"
         >
-          <template #leading>
+          <template v-if="!loading.dev" #leading>
             <span class="terminal-prompt-symbol">$</span>
           </template>
           {{ running ? 'stop' : 'dev' }}
@@ -196,9 +205,10 @@ function handleCardClick(event: Event) {
           class="flex-1 terminal-btn font-mono"
           :loading="loading.export"
           :disabled="loading.export"
+          loading-icon="i-lucide-loader-circle"
           @click="handleExport"
         >
-          <template #leading>
+          <template v-if="!loading.export" #leading>
             <span class="terminal-prompt-symbol">$</span>
           </template>
           export

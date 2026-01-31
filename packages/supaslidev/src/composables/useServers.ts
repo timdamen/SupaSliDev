@@ -90,6 +90,28 @@ function getPort(presentationId: string): number | undefined {
   return servers.value[presentationId]?.port;
 }
 
+async function waitForServerReady(
+  port: number,
+  options: { timeout?: number; interval?: number } = {},
+): Promise<boolean> {
+  const { timeout = 30000, interval = 300 } = options;
+  const startTime = Date.now();
+  const url = `http://localhost:${port}`;
+
+  while (Date.now() - startTime < timeout) {
+    try {
+      const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+      if (response.ok || response.type === 'opaque') {
+        return true;
+      }
+    } catch {
+      // Server not ready yet
+    }
+    await new Promise((resolve) => setTimeout(resolve, interval));
+  }
+  return false;
+}
+
 let pollingInterval: ReturnType<typeof setInterval> | null = null;
 
 function startPolling() {
@@ -118,5 +140,6 @@ export function useServers() {
     stopPolling,
     exportPresentation,
     openInEditor,
+    waitForServerReady,
   };
 }

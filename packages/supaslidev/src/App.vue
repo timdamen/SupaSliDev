@@ -13,8 +13,15 @@ import presentationsData from './data/presentations.json';
 import { useServers } from './composables/useServers';
 import { useToast } from '@nuxt/ui/composables';
 
-const { startPolling, stopPolling, stopAllServers, startServer, exportPresentation, openInEditor } =
-  useServers();
+const {
+  startPolling,
+  stopPolling,
+  stopAllServers,
+  startServer,
+  exportPresentation,
+  openInEditor,
+  waitForServerReady,
+} = useServers();
 const toast = useToast();
 const colorMode = useColorMode();
 
@@ -119,9 +126,10 @@ async function handlePresentCommand(presentation: Presentation) {
   isCommandPaletteOpen.value = false;
   const result = await startServer(presentation.id);
   if (result.success && result.port) {
-    setTimeout(() => {
+    const isReady = await waitForServerReady(result.port);
+    if (isReady) {
       window.open(`http://localhost:${result.port}`, '_blank');
-    }, 1500);
+    }
   }
 }
 
