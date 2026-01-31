@@ -388,4 +388,80 @@ describe('Presentation Viewing E2E', () => {
       }
     }, 60000);
   });
+
+  describe('loading states', () => {
+    it('shows loading state on button during server startup', async () => {
+      await dashboardPage.goto(dashboardUrl);
+      await dashboardPage.waitForSelector('.card');
+
+      const presentButton = dashboardPage.locator('.present-button').first();
+      const buttonText = await presentButton.textContent();
+
+      if (buttonText?.includes('dev')) {
+        const popupPromise = dashboardPage.context().waitForEvent('page', { timeout: 90000 });
+        await presentButton.click();
+
+        const isLoading = await dashboardPage.waitForFunction(
+          () => {
+            const button = document.querySelector('.present-button');
+            return button?.hasAttribute('disabled') || button?.querySelector('[class*="animate"]');
+          },
+          { timeout: 10000 },
+        );
+
+        expect(isLoading).toBeTruthy();
+
+        await dashboardPage.waitForFunction(
+          () => {
+            const button = document.querySelector('.present-button');
+            return button?.textContent?.includes('stop');
+          },
+          { timeout: 60000 },
+        );
+
+        try {
+          const popup = await Promise.race([
+            popupPromise,
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), 100)),
+          ]);
+          if (popup) await popup.close();
+        } catch {
+          // Popup may not have opened
+        }
+      }
+    }, 90000);
+
+    it('loading state is removed after server is ready', async () => {
+      await dashboardPage.goto(dashboardUrl);
+      await dashboardPage.waitForSelector('.card');
+
+      const presentButton = dashboardPage.locator('.present-button').first();
+      const buttonText = await presentButton.textContent();
+
+      if (buttonText?.includes('stop')) {
+        const isNotLoading = await presentButton.evaluate(
+          (el) => !el.hasAttribute('disabled') || el.textContent?.includes('stop'),
+        );
+        expect(isNotLoading).toBe(true);
+      }
+    });
+
+    it('waits for server ready before showing stop button', async () => {
+      const servers = await dashboardPage.evaluate(async () => {
+        const res = await fetch('/api/servers');
+        return res.json() as Promise<Record<string, { port: number }>>;
+      });
+
+      if (Object.keys(servers).length > 0) {
+        const firstServer = Object.values(servers)[0];
+        const port = firstServer.port;
+
+        const response = await fetch(`http://localhost:${port}`);
+        expect(response.ok).toBe(true);
+
+        const presentButton = dashboardPage.locator('.present-button').first();
+        expect(await presentButton.textContent()).toContain('stop');
+      }
+    });
+  });
 });

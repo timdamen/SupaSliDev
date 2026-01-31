@@ -431,6 +431,12 @@ const commandOptions = computed(() => {
               }}
             </p>
             <div class="flex items-center gap-3">
+              <UButton variant="outline" class="font-mono" @click="isImportDialogOpen = true">
+                <template #leading>
+                  <span class="opacity-70">$</span>
+                </template>
+                import
+              </UButton>
               <UButton class="btn-new font-mono" @click="isDialogOpen = true">
                 <template #leading>
                   <span class="opacity-70">$</span>

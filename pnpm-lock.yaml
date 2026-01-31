@@ -9,9 +9,6 @@ catalogs:
     '@slidev/cli':
       specifier: ^52.11.3
       version: 52.11.3
-    '@slidev/theme-apple-basic':
-      specifier: latest
-      version: 0.25.1
     '@slidev/theme-default':
       specifier: latest
       version: 0.25.0
@@ -212,24 +209,6 @@ importers:
       '@slidev/cli':
         specifier: 'catalog:'
         version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2(magicast@0.5.1))(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(lightningcss@1.31.1)(magicast@0.5.1)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)(terser@5.46.0)(tsx@4.21.0)
-      '@slidev/theme-default':
-        specifier: 'catalog:'
-        version: 0.25.0
-      '@slidev/theme-seriph':
-        specifier: 'catalog:'
-        version: 0.25.0
-      vue:
-        specifier: 'catalog:'
-        version: 3.5.27(typescript@5.9.3)
-
-  playground/presentations/test-te:
-    dependencies:
-      '@slidev/cli':
-        specifier: 'catalog:'
-        version: 52.11.3(@babel/parser@7.28.6)(@nuxt/kit@3.20.2(magicast@0.5.1))(@types/markdown-it@14.1.2)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(lightningcss@1.31.1)(magicast@0.5.1)(markdown-it-async@2.2.0)(playwright-chromium@1.57.0)(postcss@8.5.6)(terser@5.46.0)(tsx@4.21.0)
-      '@slidev/theme-apple-basic':
-        specifier: 'catalog:'
-        version: 0.25.1
       '@slidev/theme-default':
         specifier: 'catalog:'
         version: 0.25.0
@@ -2687,10 +2666,6 @@ packages:
 
   '@slidev/rough-notation@0.1.0':
     resolution: {integrity: sha512-a/CbVmjuoO3E4JbUr2HOTsXndbcrdLWOM+ajbSQIY3gmLFzhjeXHGksGcp1NZ08pJjLZyTCxfz1C7v/ltJqycA==}
-
-  '@slidev/theme-apple-basic@0.25.1':
-    resolution: {integrity: sha512-saA5yYui+jTT13tP+QJKnWeM8sK0IA1iln2E3sWAJsfKdQHUD3fw8+AlUHLUH6yc8NPq3ewtZcwWx49a/iF8Tg==}
-    engines: {node: '>=14.0.0', slidev: '>=v0.47.0'}
 
   '@slidev/theme-default@0.25.0':
     resolution: {integrity: sha512-iWvthH1Ny+i6gTwRnEeeU+EiqsHC56UdEO45bqLSNmymRAOWkKUJ/M0o7iahLzHSXsiPu71B7C715WxqjXk2hw==}
@@ -12470,12 +12445,6 @@ snapshots:
   '@slidev/rough-notation@0.1.0':
     dependencies:
       roughjs: 4.6.6
-
-  '@slidev/theme-apple-basic@0.25.1':
-    dependencies:
-      '@slidev/types': 0.47.5
-      codemirror-theme-vars: 0.1.2
-      prism-theme-vars: 0.2.5
 
   '@slidev/theme-default@0.25.0':
     dependencies:
