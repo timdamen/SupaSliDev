@@ -41,6 +41,27 @@ const runningServers = new Map();
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+const CATALOG_DEPENDENCIES = [
+  '@slidev/cli',
+  '@slidev/theme-default',
+  '@slidev/theme-seriph',
+  '@slidev/theme-apple-basic',
+  'vue',
+];
+
+function convertToCatalogDependencies(dependencies) {
+  if (!dependencies || typeof dependencies !== 'object') {
+    return {};
+  }
+  const converted = { ...dependencies };
+  for (const dep of CATALOG_DEPENDENCIES) {
+    if (dep in converted) {
+      converted[dep] = 'catalog:';
+    }
+  }
+  return converted;
+}
+
 function parseFrontmatter(content) {
   const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
   if (!frontmatterMatch) return {};
@@ -417,6 +438,8 @@ function createPresentation({ name, title, description, template = 'default' }) 
 
       writeFileSync(packageJsonPath, JSON.stringify(catalogPackageJson, null, 2) + '\n');
 
+      regeneratePresentationsJson();
+
       resolve({
         success: true,
         presentation: {
@@ -585,6 +608,13 @@ function importPresentation({ source, name }) {
       export: 'slidev export',
     };
 
+    if (packageJson.dependencies) {
+      packageJson.dependencies = convertToCatalogDependencies(packageJson.dependencies);
+    }
+    if (packageJson.devDependencies) {
+      packageJson.devDependencies = convertToCatalogDependencies(packageJson.devDependencies);
+    }
+
     writeFileSync(
       join(destinationPath, 'package.json'),
       JSON.stringify(packageJson, null, 2) + '\n',
@@ -726,6 +756,13 @@ function uploadPresentation({ files, name, folderName }) {
       build: 'slidev build',
       export: 'slidev export',
     };
+
+    if (packageJson.dependencies) {
+      packageJson.dependencies = convertToCatalogDependencies(packageJson.dependencies);
+    }
+    if (packageJson.devDependencies) {
+      packageJson.devDependencies = convertToCatalogDependencies(packageJson.devDependencies);
+    }
 
     writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
 

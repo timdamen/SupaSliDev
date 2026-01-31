@@ -2,7 +2,7 @@ import { spawn, ChildProcess, execSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium, firefox, webkit, Browser, BrowserType } from 'playwright';
+import { chromium, firefox, webkit, Browser, BrowserType, BrowserContext } from 'playwright';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '../../..');
@@ -10,7 +10,8 @@ const TMP_DIR = join(ROOT_DIR, '.tmp');
 const CLI_PATH = join(ROOT_DIR, 'packages/cli/src/cli.ts');
 const IS_WINDOWS = process.platform === 'win32';
 
-let dashboardProcess: ChildProcess | null = null;
+const dashboardProcesses: Set<ChildProcess> = new Set();
+let currentDashboardProcess: ChildProcess | null = null;
 
 export function getTmpDir(): string {
   return TMP_DIR;
@@ -71,7 +72,8 @@ export async function startDashboard(projectPath: string): Promise<DashboardInfo
       detached: !IS_WINDOWS,
     });
 
-    dashboardProcess = proc;
+    currentDashboardProcess = proc;
+    dashboardProcesses.add(proc);
 
     let output = '';
     let resolved = false;
@@ -139,55 +141,73 @@ function killProcessTree(pid: number): void {
 }
 
 export function stopDashboard(): void {
-  if (dashboardProcess && dashboardProcess.pid) {
-    killProcessTree(dashboardProcess.pid);
-    dashboardProcess = null;
+  if (currentDashboardProcess?.pid) {
+    killProcessTree(currentDashboardProcess.pid);
+    dashboardProcesses.delete(currentDashboardProcess);
+    currentDashboardProcess = null;
+  }
+}
+
+async function stopProcess(proc: ChildProcess): Promise<void> {
+  if (!proc.pid) return;
+
+  const pid = proc.pid;
+  killProcessTree(pid);
+
+  await new Promise<void>((resolve) => {
+    const timeout = setTimeout(() => resolve(), 5000);
+    proc.on('exit', () => {
+      clearTimeout(timeout);
+      resolve();
+    });
+    proc.on('close', () => {
+      clearTimeout(timeout);
+      resolve();
+    });
+  });
+
+  if (IS_WINDOWS) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 
 export async function stopDashboardAsync(): Promise<void> {
-  if (dashboardProcess && dashboardProcess.pid) {
-    const proc = dashboardProcess;
-    const pid = dashboardProcess.pid!;
-    dashboardProcess = null;
-
-    killProcessTree(pid);
-
-    await new Promise<void>((resolve) => {
-      const timeout = setTimeout(() => resolve(), 5000);
-      proc.on('exit', () => {
-        clearTimeout(timeout);
-        resolve();
-      });
-      proc.on('close', () => {
-        clearTimeout(timeout);
-        resolve();
-      });
-    });
-
-    if (IS_WINDOWS) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
+  if (currentDashboardProcess) {
+    const proc = currentDashboardProcess;
+    currentDashboardProcess = null;
+    dashboardProcesses.delete(proc);
+    await stopProcess(proc);
   }
+}
+
+export async function stopAllDashboards(): Promise<void> {
+  const processes = Array.from(dashboardProcesses);
+  dashboardProcesses.clear();
+  currentDashboardProcess = null;
+
+  await Promise.all(processes.map((proc) => stopProcess(proc)));
 }
 
 export async function waitForServer(
   url: string,
   options: { timeout?: number; interval?: number } = {},
 ): Promise<void> {
-  const { timeout = 30000, interval = 500 } = options;
+  const { timeout = 30000, interval = 100 } = options;
   const startTime = Date.now();
 
   while (Date.now() - startTime < timeout) {
     try {
-      const response = await fetch(url);
-      if (response.ok) {
-        return;
-      }
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(2000),
+      });
+      if (response.ok) return;
     } catch {
       // Server not ready yet
     }
-    await new Promise((resolve) => setTimeout(resolve, interval));
+
+    const elapsed = Date.now() - startTime;
+    const delay = elapsed < 5000 ? interval : interval * 2;
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
 
   throw new Error(`Server at ${url} did not respond within ${timeout}ms`);
@@ -271,7 +291,29 @@ export function getBrowserType(): BrowserType {
 
 export async function launchBrowser(): Promise<Browser> {
   const browserType = getBrowserType();
-  return browserType.launch();
+  return browserType.launch({ headless: true });
+}
+
+let sharedBrowser: Browser | null = null;
+
+export async function getSharedBrowser(): Promise<Browser> {
+  if (!sharedBrowser) {
+    const browserType = getBrowserType();
+    sharedBrowser = await browserType.launch({ headless: true });
+  }
+  return sharedBrowser;
+}
+
+export async function createBrowserContext(): Promise<BrowserContext> {
+  const browser = await getSharedBrowser();
+  return browser.newContext();
+}
+
+export async function closeSharedBrowser(): Promise<void> {
+  if (sharedBrowser) {
+    await sharedBrowser.close();
+    sharedBrowser = null;
+  }
 }
 
 export interface StandaloneSlidevProject {

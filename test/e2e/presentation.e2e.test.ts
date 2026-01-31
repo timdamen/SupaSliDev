@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { Browser, Page } from 'playwright';
+import { BrowserContext, Page } from 'playwright';
 import { cpSync } from 'node:fs';
 import { join } from 'node:path';
 import {
@@ -9,7 +9,7 @@ import {
   getBaseProjectPath,
   getTmpDir,
   cleanupProject,
-  launchBrowser,
+  createBrowserContext,
   installDependencies,
 } from './setup/test-utils.js';
 
@@ -19,7 +19,7 @@ async function waitForPresentationServer(port: number, timeout = 30000): Promise
 
 describe('Presentation Viewing E2E', () => {
   const PRESENTATION_TEST_PROJECT = 'presentation-viewing-test';
-  let browser: Browser;
+  let context: BrowserContext;
   let dashboardPage: Page;
   let presentationPage: Page;
   let dashboardUrl: string;
@@ -35,8 +35,7 @@ describe('Presentation Viewing E2E', () => {
     cpSync(baseProjectPath, projectPath, { recursive: true });
     installDependencies(projectPath);
 
-    browser = await launchBrowser();
-    const context = await browser.newContext();
+    context = await createBrowserContext();
     const browserName = (process.env.BROWSER || 'chromium').toLowerCase();
     if (browserName === 'chromium') {
       await context.grantPermissions(['clipboard-read', 'clipboard-write']);
@@ -51,7 +50,7 @@ describe('Presentation Viewing E2E', () => {
   }, 120000);
 
   afterAll(async () => {
-    await browser?.close();
+    await context?.close();
     await stopDashboardAsync();
     cleanupProject(PRESENTATION_TEST_PROJECT);
   });
@@ -140,7 +139,7 @@ describe('Presentation Viewing E2E', () => {
 
   describe('presentation renders correctly', () => {
     it('presentation page loads and displays content', async () => {
-      presentationPage = await browser.newPage();
+      presentationPage = await context.newPage();
       await presentationPage.goto(presentationUrl);
       await presentationPage.waitForLoadState('domcontentloaded');
 

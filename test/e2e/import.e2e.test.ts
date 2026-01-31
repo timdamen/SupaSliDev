@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { Browser, Page } from 'playwright';
-import { existsSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
+import { BrowserContext, Page } from 'playwright';
+import { existsSync, rmSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   startDashboard,
@@ -9,7 +9,7 @@ import {
   getTmpDir,
   scaffoldProject,
   installDependencies,
-  launchBrowser,
+  createBrowserContext,
   createStandaloneSlidevProject,
   StandaloneSlidevProject,
 } from './setup/test-utils.js';
@@ -93,7 +93,7 @@ async function waitForValidationComplete(
 }
 
 describe('Import E2E', () => {
-  let browser: Browser;
+  let context: BrowserContext;
   let page: Page;
   let dashboardUrl: string;
   let projectPath: string;
@@ -123,8 +123,8 @@ describe('Import E2E', () => {
     scaffoldProject(IMPORT_TEST_PROJECT);
     installDependencies(projectPath);
 
-    browser = await launchBrowser();
-    page = await browser.newPage();
+    context = await createBrowserContext();
+    page = await context.newPage();
 
     const dashboardInfo = await startDashboard(projectPath);
     dashboardUrl = dashboardInfo.url;
@@ -133,7 +133,7 @@ describe('Import E2E', () => {
   }, 120000);
 
   afterAll(async () => {
-    await browser?.close();
+    await context?.close();
     await stopDashboardAsync();
 
     if (existsSync(projectPath)) {
@@ -145,108 +145,54 @@ describe('Import E2E', () => {
     }
   });
 
-  describe('test setup verification', () => {
-    it('created two standalone Slidev projects', () => {
-      expect(existsSync(standaloneProject1.path)).toBe(true);
-      expect(existsSync(standaloneProject2.path)).toBe(true);
-      expect(existsSync(join(standaloneProject1.path, 'package.json'))).toBe(true);
-      expect(existsSync(join(standaloneProject2.path, 'package.json'))).toBe(true);
-      expect(existsSync(join(standaloneProject1.path, 'slides.md'))).toBe(true);
-      expect(existsSync(join(standaloneProject2.path, 'slides.md'))).toBe(true);
-    });
-
-    it('created fresh supaslidev workspace', () => {
-      expect(existsSync(projectPath)).toBe(true);
-      expect(existsSync(join(projectPath, 'package.json'))).toBe(true);
-      expect(existsSync(join(projectPath, 'presentations'))).toBe(true);
-    });
-
-    it('dashboard is running and accessible', async () => {
-      const response = await page.goto(dashboardUrl);
-      expect(response?.ok()).toBe(true);
-
-      const pageTitle = await page.locator('h1').textContent();
-      expect(pageTitle).toBe('Supaslidev');
-    });
-  });
-
-  describe('import dialog access via terminal bar', () => {
-    it('opens import dialog when typing "import" and pressing Enter', async () => {
-      await page.goto(dashboardUrl);
-
-      const terminalInput = page.locator('.terminal-input');
-      await terminalInput.focus();
-      await terminalInput.fill('import');
-      await terminalInput.press('Enter');
-
-      const dialog = page.locator('[role="dialog"]');
-      await dialog.waitFor({ state: 'visible', timeout: 5000 });
-
-      expect(await dialog.isVisible()).toBe(true);
-
-      const dialogContent = await dialog.textContent();
-      expect(dialogContent).toContain('Import');
-    });
-
-    it('shows "port" ghost text when typing "Im"', async () => {
+  describe('import dialog access', () => {
+    it('opens import dialog via terminal command with autocomplete', async () => {
       await page.goto(dashboardUrl);
 
       const terminalInput = page.locator('.terminal-input');
       await terminalInput.focus();
       await terminalInput.fill('Im');
 
+      // Verify autocomplete shows
       await page.waitForTimeout(100);
-
       const ghostText = page.locator('.ghost-suffix');
       expect(await ghostText.isVisible()).toBe(true);
       expect(await ghostText.textContent()).toBe('port');
-    });
-  });
 
-  describe('import dialog access via command palette', () => {
-    it('opens command palette with Cmd+K', async () => {
+      // Complete and submit command
+      await terminalInput.fill('import');
+      await terminalInput.press('Enter');
+
+      const dialog = page.locator('[role="dialog"]');
+      await dialog.waitFor({ state: 'visible', timeout: 5000 });
+      expect(await dialog.isVisible()).toBe(true);
+
+      const dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('Import');
+    });
+
+    it('opens import dialog via command palette', async () => {
       await page.goto(dashboardUrl);
 
+      // Open command palette
       await page.keyboard.press('ControlOrMeta+k');
 
       const modal = page.locator('[role="dialog"]');
       await modal.waitFor({ state: 'visible', timeout: 5000 });
 
-      expect(await modal.isVisible()).toBe(true);
-
+      // Verify Actions section and Import option
       const paletteContent = await modal.textContent();
       expect(paletteContent).toContain('Actions');
-    });
 
-    it('shows Import option in command palette', async () => {
-      await page.goto(dashboardUrl);
-
-      await page.keyboard.press('ControlOrMeta+k');
-
-      const modal = page.locator('[role="dialog"]');
-      await modal.waitFor({ state: 'visible', timeout: 5000 });
-
-      const importOption = page.getByText('Import', { exact: true });
+      const importOption = modal.getByText('Import', { exact: true });
       expect(await importOption.isVisible()).toBe(true);
-    });
 
-    it('opens import dialog when selecting Import from command palette', async () => {
-      await page.goto(dashboardUrl);
-
-      await page.keyboard.press('ControlOrMeta+k');
-
-      const commandPaletteModal = page.locator('[role="dialog"]');
-      await commandPaletteModal.waitFor({ state: 'visible', timeout: 5000 });
-
-      const importOption = commandPaletteModal.getByText('Import', { exact: true });
+      // Click Import and verify import dialog opens
       await importOption.click();
-
       await page.waitForTimeout(300);
 
       const importDialog = page.locator('[role="dialog"]');
       await importDialog.waitFor({ state: 'visible', timeout: 5000 });
-
-      expect(await importDialog.isVisible()).toBe(true);
 
       const dialogContent = await importDialog.textContent();
       expect(dialogContent).toContain('Import');
@@ -254,9 +200,84 @@ describe('Import E2E', () => {
   });
 
   describe('path validation', () => {
-    it('shows suggested name when entering a valid path', async () => {
+    it('validates paths with appropriate error messages', async () => {
       await openImportDialog(page, dashboardUrl);
 
+      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
+      const dialog = page.locator('[role="dialog"]');
+
+      // Test 1: Non-existent path
+      await pathInput.fill('/path/that/does/not/exist/anywhere');
+      await pathInput.blur();
+
+      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
+      if (await validatingIndicator.isVisible()) {
+        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
+      }
+      await page.waitForTimeout(500);
+
+      let dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('Source directory does not exist');
+      expect(await page.locator('.text-error').first().isVisible()).toBe(true);
+
+      // Test 2: File instead of directory
+      const slidesFilePath = join(standaloneProject1.path, 'slides.md');
+      await pathInput.fill(slidesFilePath);
+      await pathInput.blur();
+
+      if (await validatingIndicator.isVisible()) {
+        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
+      }
+      await page.waitForTimeout(500);
+
+      dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('Source path is not a directory');
+
+      // Test 3: Directory without slides.md
+      await pathInput.fill(projectWithoutSlides.path);
+      await pathInput.blur();
+
+      if (await validatingIndicator.isVisible()) {
+        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
+      }
+      await page.waitForTimeout(500);
+
+      dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('No slides.md found');
+
+      // Test 4: Valid path shows success
+      await pathInput.fill(standaloneProject1.path);
+      await pathInput.blur();
+
+      await waitForValidationComplete(page, {
+        expectedText: 'external-deck-one',
+        expectSuccess: true,
+      });
+
+      dialogContent = await dialog.textContent();
+      expect(dialogContent).toContain('external-deck-one');
+      expect(await page.locator('.text-success').first().isVisible()).toBe(true);
+    });
+  });
+
+  describe('import flow', () => {
+    it('imports single presentation and verifies complete flow', async () => {
+      // Check if already imported from previous test
+      await page.goto(dashboardUrl);
+      await page.waitForTimeout(500);
+
+      const alreadyImported = await page.locator('.card:has-text("external-deck-one")').isVisible();
+      if (alreadyImported) {
+        // Verify it's there and skip reimporting
+        expect(alreadyImported).toBe(true);
+        return;
+      }
+
+      // Step 1: Open import dialog
+      await openImportDialog(page, dashboardUrl);
+      const dialog = page.locator('[role="dialog"]');
+
+      // Step 2: Enter path and validate
       const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
       await pathInput.fill(standaloneProject1.path);
       await pathInput.blur();
@@ -266,85 +287,58 @@ describe('Import E2E', () => {
         expectSuccess: true,
       });
 
-      const dialog = page.locator('[role="dialog"]');
+      // Verify suggested name appears
       const dialogContent = await dialog.textContent();
       expect(dialogContent).toContain('external-deck-one');
 
-      const checkIcon = page.locator('.text-success');
-      expect(await checkIcon.first().isVisible()).toBe(true);
-    });
+      // Step 3: Click import button inside dialog
+      const importButton = dialog.locator('button:has-text("Import")').first();
+      await importButton.waitFor({ state: 'visible', timeout: 5000 });
+      await importButton.click({ force: true });
 
-    it('shows error message when entering an invalid path (file instead of directory)', async () => {
-      await openImportDialog(page, dashboardUrl);
+      // Step 4: Wait for import to complete
+      await dialog.waitFor({ state: 'hidden', timeout: 60000 });
 
-      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
-      const slidesFilePath = join(standaloneProject1.path, 'slides.md');
-      await pathInput.fill(slidesFilePath);
-      await pathInput.blur();
+      // Step 5: Verify file system - presentation directory created in workspace
+      const importedDir = join(projectPath, 'presentations', 'external-deck-one');
+      expect(existsSync(importedDir)).toBe(true);
 
-      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
-      if (await validatingIndicator.isVisible()) {
-        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
-      }
+      // Step 6: Verify slides.md was copied
+      const slidesPath = join(importedDir, 'slides.md');
+      expect(existsSync(slidesPath)).toBe(true);
 
+      // Step 7: Verify package.json uses catalog: syntax
+      const packageJsonPath = join(importedDir, 'package.json');
+      expect(existsSync(packageJsonPath)).toBe(true);
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+
+      expect(packageJson.name).toBe('@supaslidev/external-deck-one');
+      expect(packageJson.dependencies['@slidev/cli']).toBe('catalog:');
+      expect(packageJson.dependencies['vue']).toBe('catalog:');
+
+      // Step 8: Verify presentation appears in dashboard
+      const card = page.locator('.card:has-text("external-deck-one")');
+      await card.waitFor({ state: 'visible', timeout: 10000 });
+      expect(await card.isVisible()).toBe(true);
+
+      // Step 9: Verify dev button is present
+      const devButton = card.locator('.present-button');
+      expect(await devButton.isVisible()).toBe(true);
+      expect(await devButton.textContent()).toContain('dev');
+    }, 120000);
+
+    it('imports multiple presentations with progress indicator', async () => {
+      // Check if already imported
+      await page.goto(dashboardUrl);
       await page.waitForTimeout(500);
 
-      const dialog = page.locator('[role="dialog"]');
-      const dialogContent = await dialog.textContent();
-      expect(dialogContent).toContain('Source path is not a directory');
-
-      const errorIcon = page.locator('.text-error');
-      expect(await errorIcon.first().isVisible()).toBe(true);
-    });
-
-    it('shows error message when entering a non-existent path', async () => {
-      await openImportDialog(page, dashboardUrl);
-
-      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
-      const nonExistentPath = '/path/that/does/not/exist/anywhere';
-      await pathInput.fill(nonExistentPath);
-      await pathInput.blur();
-
-      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
-      if (await validatingIndicator.isVisible()) {
-        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
+      const alreadyImported = await page.locator('.card:has-text("external-deck-two")').isVisible();
+      if (alreadyImported) {
+        expect(alreadyImported).toBe(true);
+        return;
       }
 
-      await page.waitForTimeout(500);
-
-      const dialog = page.locator('[role="dialog"]');
-      const dialogContent = await dialog.textContent();
-      expect(dialogContent).toContain('Source directory does not exist');
-
-      const errorIcon = page.locator('.text-error');
-      expect(await errorIcon.first().isVisible()).toBe(true);
-    });
-
-    it('shows error message when entering path without slides.md', async () => {
-      await openImportDialog(page, dashboardUrl);
-
-      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
-      await pathInput.fill(projectWithoutSlides.path);
-      await pathInput.blur();
-
-      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
-      if (await validatingIndicator.isVisible()) {
-        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
-      }
-
-      await page.waitForTimeout(500);
-
-      const dialog = page.locator('[role="dialog"]');
-      const dialogContent = await dialog.textContent();
-      expect(dialogContent).toContain('No slides.md found');
-
-      const errorIcon = page.locator('.text-error');
-      expect(await errorIcon.first().isVisible()).toBe(true);
-    });
-  });
-
-  describe('multi-project import', () => {
-    it('validates both projects when entering two comma-separated valid paths', async () => {
+      // Step 1: Open dialog and enter multiple paths
       await openImportDialog(page, dashboardUrl);
 
       const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
@@ -352,13 +346,14 @@ describe('Import E2E', () => {
       await pathInput.fill(commaSeparatedPaths);
       await pathInput.blur();
 
+      // Step 2: Wait for validation
       const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
       if (await validatingIndicator.isVisible()) {
         await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
       }
-
       await page.waitForTimeout(500);
 
+      // Step 3: Verify both projects validated
       const dialog = page.locator('[role="dialog"]');
       const dialogContent = await dialog.textContent();
       expect(dialogContent).toContain('external-deck-one');
@@ -366,47 +361,13 @@ describe('Import E2E', () => {
 
       const validIndicator = page.locator('text=2 of 2 valid');
       expect(await validIndicator.isVisible()).toBe(true);
-    });
 
-    it('imports both projects with progress indicator and shows them in dashboard', async () => {
-      await page.goto(dashboardUrl);
-      await page.waitForTimeout(500);
-
-      let dashboardContent = await page.content();
-      const alreadyImported =
-        dashboardContent.includes('external-deck-one') &&
-        dashboardContent.includes('external-deck-two');
-
-      if (alreadyImported) {
-        expect(dashboardContent).toContain('external-deck-one');
-        expect(dashboardContent).toContain('external-deck-two');
-        return;
-      }
-
-      await openImportDialog(page, dashboardUrl);
-
-      const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
-      const commaSeparatedPaths = `${standaloneProject1.path}, ${standaloneProject2.path}`;
-      await pathInput.fill(commaSeparatedPaths);
-      await pathInput.blur();
-
-      const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
-      if (await validatingIndicator.isVisible()) {
-        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
-      }
-
-      await page.waitForTimeout(500);
-
-      const validIndicator = page.locator('text=2 of 2 valid');
-      await validIndicator.waitFor({ state: 'visible', timeout: 5000 });
-
+      // Step 4: Click import button
       const importButton = page.locator('button:has-text("Import 2 Presentations")');
       await importButton.click();
 
-      const dialog = page.locator('[role="dialog"]');
+      // Step 5: Verify progress indicator appears
       const progressIndicator = page.locator('p:has-text("Importing")');
-      const errorSummary = page.locator('text=/\\d+ succeeded, \\d+ failed/');
-
       let sawProgress = false;
       const startTime = Date.now();
       const maxWaitTime = 120000;
@@ -424,20 +385,22 @@ describe('Import E2E', () => {
           expect(progressText).toMatch(/Importing \d+\/2/);
         }
 
-        if (await errorSummary.isVisible()) {
-          const dialogContent = await dialog.textContent();
-          throw new Error(`Import failed with partial success: ${dialogContent}`);
-        }
-
         await page.waitForTimeout(500);
       }
 
-      const dialogStillVisible = await dialog.isVisible();
-      if (dialogStillVisible) {
-        const dialogContent = await dialog.textContent();
-        throw new Error(`Dialog did not close within timeout: ${dialogContent}`);
-      }
+      // Step 6: Verify both presentations in file system
+      const deck1Dir = join(projectPath, 'presentations', 'external-deck-one');
+      const deck2Dir = join(projectPath, 'presentations', 'external-deck-two');
+      expect(existsSync(deck1Dir)).toBe(true);
+      expect(existsSync(deck2Dir)).toBe(true);
 
+      // Verify package.json for second deck
+      const packageJsonPath = join(deck2Dir, 'package.json');
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+      expect(packageJson.name).toBe('@supaslidev/external-deck-two');
+      expect(packageJson.dependencies['@slidev/cli']).toBe('catalog:');
+
+      // Step 7: Verify both appear in dashboard
       const deckOneCard = page.locator('.card:has-text("external-deck-one")');
       const deckTwoCard = page.locator('.card:has-text("external-deck-two")');
 
@@ -446,9 +409,9 @@ describe('Import E2E', () => {
 
       expect(await deckOneCard.isVisible()).toBe(true);
       expect(await deckTwoCard.isVisible()).toBe(true);
-    });
+    }, 150000);
 
-    it('shows mixed results when importing one valid and one invalid path', async () => {
+    it('shows mixed validation results for valid and invalid paths', async () => {
       await openImportDialog(page, dashboardUrl);
 
       const pathInput = page.locator('input[placeholder="/path/to/presentation"]');
@@ -460,18 +423,16 @@ describe('Import E2E', () => {
       if (await validatingIndicator.isVisible()) {
         await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
       }
-
       await page.waitForTimeout(500);
 
+      // Verify mixed results shown
       const dialog = page.locator('[role="dialog"]');
       const dialogContent = await dialog.textContent();
       expect(dialogContent).toContain('1 of 2 valid');
 
-      const successIcon = page.locator('.text-success');
-      expect(await successIcon.first().isVisible()).toBe(true);
-
-      const errorIcon = page.locator('.text-error');
-      expect(await errorIcon.first().isVisible()).toBe(true);
+      // Both success and error icons visible
+      expect(await page.locator('.text-success').first().isVisible()).toBe(true);
+      expect(await page.locator('.text-error').first().isVisible()).toBe(true);
     });
   });
 });

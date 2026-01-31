@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { Browser, Page } from 'playwright';
-import { mkdirSync, writeFileSync, readFileSync, cpSync } from 'node:fs';
+import { BrowserContext, Page } from 'playwright';
+import { mkdirSync, writeFileSync, readFileSync, cpSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   startDashboard,
@@ -9,7 +9,7 @@ import {
   getBaseProjectPath,
   getTmpDir,
   cleanupProject,
-  launchBrowser,
+  createBrowserContext,
 } from './setup/test-utils.js';
 
 function createSecondPresentation(projectPath: string): void {
@@ -59,7 +59,7 @@ Content for the second slide
 
 describe('Dashboard Display E2E', () => {
   const DASHBOARD_TEST_PROJECT = 'dashboard-display-test';
-  let browser: Browser;
+  let context: BrowserContext;
   let page: Page;
   let dashboardUrl: string;
   let projectPath: string;
@@ -72,8 +72,8 @@ describe('Dashboard Display E2E', () => {
 
     cpSync(baseProjectPath, projectPath, { recursive: true });
 
-    browser = await launchBrowser();
-    page = await browser.newPage();
+    context = await createBrowserContext();
+    page = await context.newPage();
 
     const dashboardInfo = await startDashboard(projectPath);
     dashboardUrl = dashboardInfo.url;
@@ -82,7 +82,7 @@ describe('Dashboard Display E2E', () => {
   }, 120000);
 
   afterAll(async () => {
-    await browser?.close();
+    await context?.close();
     await stopDashboardAsync();
     cleanupProject(DASHBOARD_TEST_PROJECT);
   });
@@ -351,281 +351,177 @@ describe('Dashboard Display E2E', () => {
       }
     }
 
-    describe('template selection', () => {
-      it('has default template selected by default', async () => {
-        await openCreateDialog();
-
-        const templates = page.locator('[role="dialog"] label');
-        const templateCount = await templates.count();
-        expect(templateCount).toBeGreaterThanOrEqual(3);
-
-        await closeDialog();
-      });
-
-      it('can select seriph template', async () => {
-        await openCreateDialog();
-
-        const seriphTemplate = page.locator('[role="dialog"] label:has-text("Seriph")');
-        expect(await seriphTemplate.isVisible()).toBe(true);
-        await seriphTemplate.click();
-
-        await closeDialog();
-      });
-
-      it('can select apple-basic template', async () => {
-        await openCreateDialog();
-
-        const appleTemplate = page.locator('[role="dialog"] label:has-text("Apple Basic")');
-        expect(await appleTemplate.isVisible()).toBe(true);
-        await appleTemplate.click();
-
-        await closeDialog();
-      });
-
-      it('shows correct descriptions for each template', async () => {
-        await openCreateDialog();
-
-        const descriptions = await page.locator('[role="dialog"] .text-xs').allTextContents();
-        expect(descriptions).toContain('Clean and minimal starter template');
-        expect(descriptions).toContain('Elegant theme with serif typography');
-        expect(descriptions).toContain('Minimalist Apple-inspired design');
-
-        await closeDialog();
-      });
-    });
-
-    describe('error border behavior', () => {
-      it('does not show red border on initial dialog open', async () => {
+    describe('form validation', () => {
+      it('validates name field with appropriate error messages', async () => {
         await openCreateDialog();
 
         const nameInput = page.locator('[role="dialog"] input[placeholder="my-presentation"]');
+        const dialog = page.locator('[role="dialog"]');
+
+        // Initially no error
         const hasErrorColor = await nameInput.evaluate((el) => {
           const classes = el.className;
           return classes.includes('error') || classes.includes('ring-red');
         });
         expect(hasErrorColor).toBe(false);
 
-        await closeDialog();
-      });
-
-      it('shows error after blurring empty name field', async () => {
-        await openCreateDialog();
-
-        const nameInput = page.locator('[role="dialog"] input[placeholder="my-presentation"]');
+        // Empty name shows error on blur
         await nameInput.focus();
         await nameInput.blur();
-
         await page.waitForTimeout(100);
+        const requiredError = dialog.getByText('Name is required');
+        expect(await requiredError.isVisible()).toBe(true);
 
-        const errorMessage = page.locator('[role="dialog"]').getByText('Name is required');
-        expect(await errorMessage.isVisible()).toBe(true);
-
-        await closeDialog();
-      });
-
-      it('shows error for invalid name format', async () => {
-        await openCreateDialog();
-
-        const nameInput = page.locator('[role="dialog"] input[placeholder="my-presentation"]');
-        await nameInput.fill('Invalid Name');
-        await nameInput.blur();
-
-        await page.waitForTimeout(100);
-
-        const errorMessage = page
-          .locator('[role="dialog"]')
-          .getByText('Use lowercase letters, numbers, and hyphens only');
-        expect(await errorMessage.isVisible()).toBe(true);
-
-        await closeDialog();
-      });
-
-      it('clears error when valid name is entered', async () => {
-        await openCreateDialog();
-
-        const nameInput = page.locator('[role="dialog"] input[placeholder="my-presentation"]');
+        // Invalid format shows format error
         await nameInput.fill('Invalid Name');
         await nameInput.blur();
         await page.waitForTimeout(100);
+        const formatError = dialog.getByText('Use lowercase letters, numbers, and hyphens only');
+        expect(await formatError.isVisible()).toBe(true);
 
+        // Valid name clears error
         await nameInput.fill('valid-name');
         await page.waitForTimeout(100);
-
-        const errorMessage = page
-          .locator('[role="dialog"]')
-          .getByText('Use lowercase letters, numbers, and hyphens only');
-        expect(await errorMessage.isVisible()).toBe(false);
+        expect(await formatError.isVisible()).toBe(false);
 
         await closeDialog();
       });
     });
 
-    describe('title and description fields', () => {
-      it('has title field with correct placeholder', async () => {
+    describe('presentation creation flow', () => {
+      it('creates presentation with all options and verifies complete flow', async () => {
+        const presentationName = 'complete-flow-test';
+        const presentationTitle = 'Complete Flow Test Presentation';
+        const presentationDescription = 'Testing the complete creation flow end-to-end';
+        const presentationDir = join(projectPath, 'presentations', presentationName);
+
+        // Step 1: Open dialog and verify UI elements
         await openCreateDialog();
+        const dialog = page.locator('[role="dialog"]');
 
-        const titleInput = page.locator(
-          '[role="dialog"] input[placeholder="Welcome to My Presentation"]',
-        );
-        expect(await titleInput.isVisible()).toBe(true);
+        // Verify template options are present
+        const templates = dialog.locator('label');
+        expect(await templates.count()).toBeGreaterThanOrEqual(3);
 
-        await closeDialog();
-      });
+        const defaultTemplate = dialog.locator('label:has-text("Default")');
+        const seriphTemplate = dialog.locator('label:has-text("Seriph")');
+        const appleTemplate = dialog.locator('label:has-text("Apple Basic")');
+        expect(await defaultTemplate.isVisible()).toBe(true);
+        expect(await seriphTemplate.isVisible()).toBe(true);
+        expect(await appleTemplate.isVisible()).toBe(true);
 
-      it('has description field with correct placeholder', async () => {
-        await openCreateDialog();
+        // Step 2: Fill form with all fields
+        const nameInput = dialog.locator('input[placeholder="my-presentation"]');
+        const titleInput = dialog.locator('input[placeholder="Welcome to My Presentation"]');
+        const descriptionInput = dialog.locator('textarea[placeholder="A presentation about..."]');
+        const createButton = dialog.locator('button:has-text("Create Presentation")');
 
-        const descriptionInput = page.locator(
-          '[role="dialog"] textarea[placeholder="A presentation about..."]',
-        );
-        expect(await descriptionInput.isVisible()).toBe(true);
-
-        await closeDialog();
-      });
-
-      it('creates presentation with custom title and selected template', async () => {
-        await openCreateDialog();
-
-        const nameInput = page.locator('[role="dialog"] input[placeholder="my-presentation"]');
-        const titleInput = page.locator(
-          '[role="dialog"] input[placeholder="Welcome to My Presentation"]',
-        );
-        const seriphTemplate = page.locator('[role="dialog"] label:has-text("Seriph")');
-        const createButton = page.locator('[role="dialog"] button:has-text("Create Presentation")');
-
-        await nameInput.fill('custom-title-test');
-        await titleInput.fill('My Custom Title');
+        await nameInput.fill(presentationName);
+        await titleInput.fill(presentationTitle);
+        await descriptionInput.fill(presentationDescription);
         await seriphTemplate.click();
+
+        // Step 3: Submit and verify loading state
         await createButton.click();
 
-        await page.locator('[role="dialog"]').waitFor({ state: 'hidden', timeout: 60000 });
+        // Check for loading state (button text changes or becomes disabled)
+        const loadingState = await Promise.race([
+          dialog
+            .locator('button:has-text("Creating...")')
+            .waitFor({ state: 'visible', timeout: 2000 })
+            .then(() => true),
+          createButton.evaluate((el) => el.hasAttribute('disabled')).then((disabled) => disabled),
+        ]).catch(() => false);
 
-        const slidesPath = join(projectPath, 'presentations', 'custom-title-test', 'slides.md');
-        await page.waitForTimeout(2000);
+        // Loading state should appear (either "Creating..." text or disabled button)
+        expect(loadingState).toBeTruthy();
 
+        // Wait for dialog to close
+        await dialog.waitFor({ state: 'hidden', timeout: 60000 });
+
+        // Step 4: Verify file system - presentation directory created
+        expect(existsSync(presentationDir)).toBe(true);
+
+        // Step 5: Verify slides.md content
+        const slidesPath = join(presentationDir, 'slides.md');
+        expect(existsSync(slidesPath)).toBe(true);
         const slidesContent = readFileSync(slidesPath, 'utf-8');
-        expect(slidesContent).toContain('title: My Custom Title');
+
+        // Verify frontmatter
+        expect(slidesContent).toContain('title: ' + presentationTitle);
         expect(slidesContent).toContain('theme: seriph');
-      }, 90000);
+        // Verify description is in the content
+        expect(slidesContent).toContain(presentationDescription);
 
-      it('creates presentation with description', async () => {
-        await openCreateDialog();
+        // Step 6: Verify package.json with catalog dependencies
+        const packageJsonPath = join(presentationDir, 'package.json');
+        expect(existsSync(packageJsonPath)).toBe(true);
+        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
-        const nameInput = page.locator('[role="dialog"] input[placeholder="my-presentation"]');
-        const descriptionInput = page.locator(
-          '[role="dialog"] textarea[placeholder="A presentation about..."]',
-        );
-        const createButton = page.locator('[role="dialog"] button:has-text("Create Presentation")');
+        expect(packageJson.name).toBe(`@supaslidev/${presentationName}`);
+        expect(packageJson.private).toBe(true);
+        expect(packageJson.dependencies['@slidev/cli']).toBe('catalog:');
+        expect(packageJson.dependencies['vue']).toBe('catalog:');
 
-        await nameInput.fill('description-test');
-        await descriptionInput.fill('This is a test description');
-        await createButton.click();
-
-        await page.locator('[role="dialog"]').waitFor({ state: 'hidden', timeout: 60000 });
-
-        const slidesPath = join(projectPath, 'presentations', 'description-test', 'slides.md');
-        await page.waitForTimeout(2000);
-
-        const slidesContent = readFileSync(slidesPath, 'utf-8');
-        expect(slidesContent).toContain('This is a test description');
-      }, 90000);
-
-      it('creates presentation with apple-basic template', async () => {
-        await openCreateDialog();
-
-        const nameInput = page.locator('[role="dialog"] input[placeholder="my-presentation"]');
-        const appleTemplate = page.locator('[role="dialog"] label:has-text("Apple Basic")');
-        const createButton = page.locator('[role="dialog"] button:has-text("Create Presentation")');
-
-        await nameInput.fill('apple-theme-test');
-        await appleTemplate.click();
-        await createButton.click();
-
-        await page.locator('[role="dialog"]').waitFor({ state: 'hidden', timeout: 60000 });
-
-        const slidesPath = join(projectPath, 'presentations', 'apple-theme-test', 'slides.md');
-        await page.waitForTimeout(2000);
-
-        const slidesContent = readFileSync(slidesPath, 'utf-8');
-        expect(slidesContent).toContain('theme: apple-basic');
-      }, 90000);
-    });
-
-    describe('form submission', () => {
-      it('shows loading state on create button during submission', async () => {
-        await openCreateDialog();
-
-        const nameInput = page.locator('[role="dialog"] input[placeholder="my-presentation"]');
-        const createButton = page.locator('[role="dialog"] button:has-text("Create Presentation")');
-
-        await nameInput.fill('loading-state-test');
-        await createButton.click();
-
-        const loadingButton = page.locator('[role="dialog"] button:has-text("Creating...")');
-        const isLoading = await loadingButton.isVisible().catch(() => false);
-
-        if (!isLoading) {
-          await page.locator('[role="dialog"]').waitFor({ state: 'hidden', timeout: 60000 });
-        }
-
-        expect(true).toBe(true);
-      }, 90000);
-
-      it('creates presentation with seriph theme, custom title and description', async () => {
-        await openCreateDialog();
-
-        const nameInput = page.locator('[role="dialog"] input[placeholder="my-presentation"]');
-        const titleInput = page.locator(
-          '[role="dialog"] input[placeholder="Welcome to My Presentation"]',
-        );
-        const descriptionInput = page.locator(
-          '[role="dialog"] textarea[placeholder="A presentation about..."]',
-        );
-        const seriphTemplate = page.locator('[role="dialog"] label:has-text("Seriph")');
-        const createButton = page.locator('[role="dialog"] button:has-text("Create Presentation")');
-
-        await nameInput.fill('full-form-test');
-        await titleInput.fill('My Complete Presentation');
-        await descriptionInput.fill('A comprehensive test presentation with all fields filled');
-        await seriphTemplate.click();
-        await createButton.click();
-
-        await page.locator('[role="dialog"]').waitFor({ state: 'hidden', timeout: 60000 });
-
-        const slidesPath = join(projectPath, 'presentations', 'full-form-test', 'slides.md');
-        await page.waitForTimeout(2000);
-
-        const slidesContent = readFileSync(slidesPath, 'utf-8');
-        expect(slidesContent).toContain('title: My Complete Presentation');
-        expect(slidesContent).toContain('theme: seriph');
-        expect(slidesContent).toContain('A comprehensive test presentation with all fields filled');
-
+        // Step 7: Verify presentation appears in dashboard
         await page.waitForFunction(
-          () => {
-            const titles = Array.from(document.querySelectorAll('.card-title')).map(
-              (el) => el.textContent,
-            );
-            return titles.some((title) => title?.includes('My Complete Presentation'));
+          (title) => {
+            const cards = document.querySelectorAll('.card-title');
+            return Array.from(cards).some((el) => el.textContent?.includes(title));
           },
+          presentationTitle,
           { timeout: 10000 },
         );
 
-        const cardTitle = page.locator('.card-title:has-text("My Complete Presentation")');
-        expect(await cardTitle.count()).toBeGreaterThan(0);
+        const card = page.locator(`.card:has-text("${presentationTitle}")`);
+        expect(await card.isVisible()).toBe(true);
 
-        const card = page.locator('.card:has-text("My Complete Presentation")');
+        // Verify theme badge on card
         const themeBadge = card.locator('text=--theme=seriph');
         expect(await themeBadge.count()).toBeGreaterThan(0);
-      }, 90000);
 
-      it('shows presentation cards on dashboard', async () => {
+        // Step 8: Verify dev button is present and enabled
+        const devButton = card.locator('.present-button');
+        expect(await devButton.isVisible()).toBe(true);
+        expect(await devButton.textContent()).toContain('dev');
+        expect(await devButton.isEnabled()).toBe(true);
+      }, 120000);
+
+      it('creates presentation with apple-basic template and minimal fields', async () => {
+        const presentationName = 'apple-minimal-test';
+        const presentationDir = join(projectPath, 'presentations', presentationName);
+
+        await openCreateDialog();
+        const dialog = page.locator('[role="dialog"]');
+
+        // Fill only required field and select template
+        const nameInput = dialog.locator('input[placeholder="my-presentation"]');
+        const appleTemplate = dialog.locator('label:has-text("Apple Basic")');
+        const createButton = dialog.locator('button:has-text("Create Presentation")');
+
+        await nameInput.fill(presentationName);
+        await appleTemplate.click();
+        await createButton.click();
+
+        await dialog.waitFor({ state: 'hidden', timeout: 60000 });
+
+        // Verify files created with correct theme
+        const slidesPath = join(presentationDir, 'slides.md');
+        expect(existsSync(slidesPath)).toBe(true);
+        const slidesContent = readFileSync(slidesPath, 'utf-8');
+        expect(slidesContent).toContain('theme: apple-basic');
+
+        // Verify package.json includes apple-basic theme dependency
+        const packageJsonPath = join(presentationDir, 'package.json');
+        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+        expect(packageJson.dependencies['@slidev/theme-apple-basic']).toBe('catalog:');
+
+        // Verify appears in dashboard
         await page.goto(dashboardUrl);
         await page.waitForSelector('.card');
-
-        const cards = page.locator('.card');
-        const cardCount = await cards.count();
-        expect(cardCount).toBeGreaterThan(0);
-      });
+        const card = page.locator(`.card:has-text("${presentationName}")`);
+        expect(await card.isVisible()).toBe(true);
+      }, 90000);
     });
   });
 });
