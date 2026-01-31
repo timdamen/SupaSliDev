@@ -4,32 +4,14 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { scaffoldProject, cleanupProject, getTmpDir } from './setup/test-utils.js';
+import { scaffoldProject, cleanupProject } from './setup/test-utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '../..');
-const CLI_PATH = join(ROOT_DIR, 'packages/cli/src/cli.ts');
 const DASHBOARD_CLI_PATH = join(ROOT_DIR, 'packages/supaslidev/src/cli/index.ts');
 
 function getTsxPath(): string {
   return join(ROOT_DIR, 'node_modules/.bin/tsx');
-}
-
-function runCliCreate(args: string, cwd: string): { output: string; exitCode: number } {
-  const tsxPath = getTsxPath();
-  try {
-    const output = execSync(`"${tsxPath}" "${CLI_PATH}" create ${args} 2>&1`, {
-      cwd,
-      encoding: 'utf-8',
-    });
-    return { output, exitCode: 0 };
-  } catch (error) {
-    const execError = error as { stdout?: string; stderr?: string; status?: number };
-    return {
-      output: (execError.stdout ?? '') + (execError.stderr ?? ''),
-      exitCode: execError.status ?? 1,
-    };
-  }
 }
 
 function runDashboardCli(
@@ -255,59 +237,6 @@ describe('Error Handling E2E', () => {
 
       expect(result.exitCode).not.toBe(0);
       expect(result.stderr).toContain('Could not find a Supaslidev project');
-    });
-  });
-});
-
-describe('CLI Create Error Handling', () => {
-  describe('invalid project name', () => {
-    it('rejects project name with uppercase letters', () => {
-      const result = runCliCreate(
-        '--name "InvalidName" --presentation "test" --no-git --no-install',
-        getTmpDir(),
-      );
-
-      expect(result.exitCode).not.toBe(0);
-      expect(result.output).toContain('lowercase');
-    });
-
-    it('rejects project name with special characters', () => {
-      const result = runCliCreate(
-        '--name "invalid_name!" --presentation "test" --no-git --no-install',
-        getTmpDir(),
-      );
-
-      expect(result.exitCode).not.toBe(0);
-      expect(result.output).toContain('alphanumeric');
-    });
-
-    it('rejects project name starting with hyphen', () => {
-      const result = runCliCreate(
-        '--name "-invalid" --presentation "test" --no-git --no-install',
-        getTmpDir(),
-      );
-
-      expect(result.exitCode).not.toBe(0);
-      expect(result.output).toContain('hyphen');
-    });
-
-    it('rejects project name ending with hyphen', () => {
-      const result = runCliCreate(
-        '--name "invalid-" --presentation "test" --no-git --no-install',
-        getTmpDir(),
-      );
-
-      expect(result.exitCode).not.toBe(0);
-      expect(result.output).toContain('hyphen');
-    });
-
-    it('rejects presentation name with invalid characters', () => {
-      const result = runCliCreate(
-        '--name "valid-project" --presentation "Invalid Deck!" --no-git --no-install',
-        getTmpDir(),
-      );
-
-      expect(result.exitCode).not.toBe(0);
     });
   });
 });

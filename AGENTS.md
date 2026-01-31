@@ -41,5 +41,6 @@ pnpm typecheck             # Type checking
 ## Testing
 
 - E2E tests in `packages/*/tests/e2e/`
+- Run with `pnpm test:e2e`
+- Unit tests in `packages/*/tests/unit/`
 - Run with `pnpm test`
-- Playground used for integration testing

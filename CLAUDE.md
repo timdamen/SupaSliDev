@@ -65,3 +65,10 @@ supaSliDev/
 1. **Testing locally**: Use `playground/` as a test workspace
 2. **New presentations**: Always use `pnpm new` to ensure correct catalog dependencies
 3. **CLI changes**: Build with `pnpm --filter create-supaslidev build` or `pnpm --filter @supaslidev/dashboard build`
+
+## Testing
+
+- E2E tests in `packages/*/tests/e2e/`
+- Run with `pnpm test:e2e`
+- Unit tests in `packages/*/tests/unit/`
+- Run with `pnpm test`

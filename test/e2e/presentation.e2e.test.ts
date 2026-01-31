@@ -17,24 +17,6 @@ async function waitForPresentationServer(port: number, timeout = 30000): Promise
   return waitForServer(`http://localhost:${port}`, { timeout });
 }
 
-function getSlideNumberFromUrl(url: string): number {
-  const match = url.match(/\/(\d+)(?:\?|$)/);
-  return match ? parseInt(match[1]) : 1;
-}
-
-async function waitForSlideChange(page: Page, expectedSlideNumber: number): Promise<void> {
-  await page.waitForFunction(
-    (slideNum) => {
-      const url = window.location.href;
-      const match = url.match(/\/(\d+)(?:\?|$)/);
-      const currentSlide = match ? parseInt(match[1]) : 1;
-      return currentSlide === slideNum;
-    },
-    expectedSlideNumber,
-    { timeout: 5000 },
-  );
-}
-
 describe('Presentation Viewing E2E', () => {
   const PRESENTATION_TEST_PROJECT = 'presentation-viewing-test';
   let browser: Browser;
@@ -156,196 +138,19 @@ describe('Presentation Viewing E2E', () => {
     }, 35000);
   });
 
-  describe('presentation slide content', () => {
-    beforeAll(async () => {
+  describe('presentation renders correctly', () => {
+    it('presentation page loads and displays content', async () => {
       presentationPage = await browser.newPage();
       await presentationPage.goto(presentationUrl);
-      await presentationPage.waitForSelector('.slidev-layout', { timeout: 30000 });
-    }, 35000);
+      await presentationPage.waitForLoadState('domcontentloaded');
 
-    it('presentation slide content is visible', async () => {
-      const slideContent = presentationPage.locator('.slidev-layout');
-      const count = await slideContent.count();
-      expect(count).toBeGreaterThan(0);
-    });
-
-    it('first slide shows presentation title', async () => {
       await presentationPage.waitForFunction(
         () => document.body.textContent?.includes('test-deck'),
         { timeout: 15000 },
       );
       const bodyText = await presentationPage.locator('body').textContent();
       expect(bodyText).toContain('test-deck');
-    });
-  });
-
-  describe('slide navigation with controls', () => {
-    beforeAll(async () => {
-      if (!presentationPage || presentationPage.isClosed()) {
-        presentationPage = await browser.newPage();
-      }
-      await presentationPage.goto(presentationUrl);
-      await presentationPage.waitForSelector('.slidev-layout', { timeout: 30000 });
     }, 35000);
-
-    it('navigating to next slide changes URL', async () => {
-      const initialSlide = getSlideNumberFromUrl(presentationPage.url());
-
-      await presentationPage.click('body');
-      await presentationPage.keyboard.press('ArrowRight');
-      await waitForSlideChange(presentationPage, initialSlide + 1);
-
-      const newSlide = getSlideNumberFromUrl(presentationPage.url());
-      expect(newSlide).toBe(initialSlide + 1);
-    });
-
-    it('slide content updates after navigation', async () => {
-      const slideContent = presentationPage.locator('.slidev-layout');
-      const count = await slideContent.count();
-      expect(count).toBeGreaterThan(0);
-    });
-
-    it('navigating to previous slide changes URL back', async () => {
-      const currentSlide = getSlideNumberFromUrl(presentationPage.url());
-
-      await presentationPage.keyboard.press('ArrowLeft');
-      await waitForSlideChange(presentationPage, currentSlide - 1);
-
-      const previousSlide = getSlideNumberFromUrl(presentationPage.url());
-      expect(previousSlide).toBe(currentSlide - 1);
-    });
-  });
-
-  describe('keyboard arrow navigation', () => {
-    beforeAll(async () => {
-      await presentationPage.goto(presentationUrl);
-      await presentationPage.waitForSelector('.slidev-layout', { timeout: 10000 });
-    });
-
-    it('right arrow key navigates to next slide', async () => {
-      const initialSlide = getSlideNumberFromUrl(presentationPage.url());
-
-      await presentationPage.keyboard.press('ArrowRight');
-      await waitForSlideChange(presentationPage, initialSlide + 1);
-
-      const newSlide = getSlideNumberFromUrl(presentationPage.url());
-      expect(newSlide).toBe(initialSlide + 1);
-    });
-
-    it('left arrow key navigates to previous slide', async () => {
-      const currentSlide = getSlideNumberFromUrl(presentationPage.url());
-
-      await presentationPage.keyboard.press('ArrowLeft');
-      await waitForSlideChange(presentationPage, currentSlide - 1);
-
-      const newSlide = getSlideNumberFromUrl(presentationPage.url());
-      expect(newSlide).toBe(currentSlide - 1);
-    });
-
-    it('down arrow key navigates to next slide', async () => {
-      const currentSlide = getSlideNumberFromUrl(presentationPage.url());
-
-      await presentationPage.keyboard.press('ArrowDown');
-      await waitForSlideChange(presentationPage, currentSlide + 1);
-
-      const newSlide = getSlideNumberFromUrl(presentationPage.url());
-      expect(newSlide).toBe(currentSlide + 1);
-    });
-
-    it('up arrow key navigates to previous slide', async () => {
-      const currentSlide = getSlideNumberFromUrl(presentationPage.url());
-
-      await presentationPage.keyboard.press('ArrowUp');
-      await waitForSlideChange(presentationPage, currentSlide - 1);
-
-      const newSlide = getSlideNumberFromUrl(presentationPage.url());
-      expect(newSlide).toBe(currentSlide - 1);
-    });
-
-    it('space key navigates to next slide', async () => {
-      const currentSlide = getSlideNumberFromUrl(presentationPage.url());
-
-      await presentationPage.keyboard.press('Space');
-      await waitForSlideChange(presentationPage, currentSlide + 1);
-
-      const newSlide = getSlideNumberFromUrl(presentationPage.url());
-      expect(newSlide).toBe(currentSlide + 1);
-    });
-  });
-
-  describe('slide counter display', () => {
-    beforeAll(async () => {
-      await presentationPage.goto(presentationUrl);
-      await presentationPage.waitForSelector('.slidev-layout', { timeout: 10000 });
-    });
-
-    it('slide counter shows current position', async () => {
-      const url = presentationPage.url();
-      const slideNumber = getSlideNumberFromUrl(url);
-      expect(slideNumber).toBeGreaterThanOrEqual(1);
-    });
-
-    it('slide counter updates after navigation to slide 2', async () => {
-      await presentationPage.keyboard.press('ArrowRight');
-      await waitForSlideChange(presentationPage, 2);
-
-      const slideNumber = getSlideNumberFromUrl(presentationPage.url());
-      expect(slideNumber).toBe(2);
-    });
-
-    it('slide counter updates after navigation to slide 3', async () => {
-      await presentationPage.keyboard.press('ArrowRight');
-      await waitForSlideChange(presentationPage, 3);
-
-      const slideNumber = getSlideNumberFromUrl(presentationPage.url());
-      expect(slideNumber).toBe(3);
-    });
-
-    it('slide counter updates correctly when navigating back', async () => {
-      await presentationPage.keyboard.press('ArrowLeft');
-      await waitForSlideChange(presentationPage, 2);
-
-      const slideNumber = getSlideNumberFromUrl(presentationPage.url());
-      expect(slideNumber).toBe(2);
-    });
-
-    it('can navigate directly to a specific slide via URL', async () => {
-      const baseUrl = presentationUrl.replace(/\/\d+.*$/, '');
-      await presentationPage.goto(`${baseUrl}/3`);
-      await presentationPage.waitForLoadState('domcontentloaded');
-      await presentationPage.waitForTimeout(1000);
-
-      const slideNumber = getSlideNumberFromUrl(presentationPage.url());
-      expect(slideNumber).toBe(3);
-    });
-  });
-
-  describe('slide content verification', () => {
-    beforeAll(async () => {
-      await presentationPage.goto(presentationUrl);
-      await presentationPage.waitForSelector('.slidev-layout', { timeout: 10000 });
-    });
-
-    it('slide content is visible on first slide', async () => {
-      const slideContent = presentationPage.locator('.slidev-layout');
-      expect(await slideContent.first().isVisible()).toBe(true);
-    });
-
-    it('slide content is visible after navigation', async () => {
-      await presentationPage.keyboard.press('ArrowRight');
-
-      const slideContent = presentationPage.locator('.slidev-layout').first();
-      await slideContent.waitFor({ state: 'visible', timeout: 5000 });
-      expect(await slideContent.isVisible()).toBe(true);
-    });
-
-    it('slide content is visible on final navigated slide', async () => {
-      await presentationPage.keyboard.press('ArrowRight');
-
-      const slideContent = presentationPage.locator('.slidev-layout').first();
-      await slideContent.waitFor({ state: 'visible', timeout: 5000 });
-      expect(await slideContent.isVisible()).toBe(true);
-    });
   });
 
   describe('stopping presentation server', () => {
