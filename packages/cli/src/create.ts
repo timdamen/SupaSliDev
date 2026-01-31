@@ -141,6 +141,7 @@ async function createPresentation(targetDir: string, presentationName: string): 
       '@slidev/cli': 'catalog:',
       '@slidev/theme-default': 'catalog:',
       '@slidev/theme-seriph': 'catalog:',
+      '@slidev/theme-apple-basic': 'catalog:',
       vue: 'catalog:',
     },
     devDependencies: {},

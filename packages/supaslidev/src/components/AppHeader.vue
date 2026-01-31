@@ -279,7 +279,7 @@ defineExpose({ focusInput, inputRef });
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  background: linear-gradient(90deg, #00dc82, #36e4da, #00dc82, #36e4da);
+  background: linear-gradient(90deg, #31a3a5, #f5ca35, #2ba4a9, #239d9f);
   background-size: 300% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

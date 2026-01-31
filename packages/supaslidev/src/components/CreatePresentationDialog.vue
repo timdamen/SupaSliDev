@@ -13,20 +13,20 @@ const templates: Template[] = [
   {
     value: 'default',
     label: 'Default',
-    description: 'Clean starter template with basic slides',
+    description: 'Clean and minimal starter template',
     icon: 'i-lucide-layout-template',
   },
   {
-    value: 'minimal',
-    label: 'Minimal',
-    description: 'Simple and distraction-free design',
-    icon: 'i-lucide-minimize-2',
+    value: 'seriph',
+    label: 'Seriph',
+    description: 'Elegant theme with serif typography',
+    icon: 'i-lucide-type',
   },
   {
-    value: 'dark',
-    label: 'Dark Theme',
-    description: 'Modern dark aesthetic for presentations',
-    icon: 'i-lucide-moon',
+    value: 'apple-basic',
+    label: 'Apple Basic',
+    description: 'Minimalist Apple-inspired design',
+    icon: 'i-lucide-apple',
   },
 ];
 
@@ -103,7 +103,7 @@ async function handleSubmit() {
     const response = await fetch('/api/presentations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name.value }),
+      body: JSON.stringify({ name: name.value, template: selectedTemplate.value }),
     });
 
     if (!response.ok) {
@@ -126,7 +126,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <UModal :open="props.open" @close="handleClose">
+  <UModal :open="props.open" :ui="{ content: 'sm:max-w-xl' }" @close="handleClose">
     <template #header>
       <div class="flex items-center gap-3">
         <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
@@ -165,7 +165,7 @@ async function handleSubmit() {
             variant="card"
             orientation="horizontal"
             indicator="hidden"
-            class="template-grid"
+            :ui="{ item: 'flex-1 items-start', wrapper: 'text-left' }"
           >
             <template #label="{ item }">
               <div class="flex items-center gap-2">

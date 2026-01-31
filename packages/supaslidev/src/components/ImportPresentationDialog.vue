@@ -601,7 +601,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <UModal :open="props.open" @close="handleClose">
+  <UModal :open="props.open" :ui="{ content: 'sm:max-w-xl' }" @close="handleClose">
     <template #header>
       <div class="flex items-center gap-3">
         <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">

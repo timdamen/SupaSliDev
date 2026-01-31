@@ -304,7 +304,7 @@ function exportPresentation(presentationId) {
   });
 }
 
-function createPresentation({ name }) {
+function createPresentation({ name, template = 'default' }) {
   return new Promise((resolve) => {
     const presentationPath = join(presentationsDir, name);
 
@@ -373,6 +373,13 @@ function createPresentation({ name }) {
         return;
       }
 
+      const slidesContent = readFileSync(slidesPath, 'utf-8');
+      const updatedContent = slidesContent.replace(
+        /^(---\n[\s\S]*?)theme:\s*\S+/m,
+        `$1theme: ${template}`,
+      );
+      writeFileSync(slidesPath, updatedContent);
+
       const packageJsonPath = join(presentationPath, 'package.json');
       const catalogPackageJson = {
         name: `@supaslidev/${name}`,
@@ -387,6 +394,7 @@ function createPresentation({ name }) {
           '@slidev/cli': 'catalog:',
           '@slidev/theme-default': 'catalog:',
           '@slidev/theme-seriph': 'catalog:',
+          '@slidev/theme-apple-basic': 'catalog:',
           vue: 'catalog:',
         },
         devDependencies: {},
@@ -400,7 +408,7 @@ function createPresentation({ name }) {
           id: name,
           title: name,
           description: '',
-          theme: 'default',
+          theme: template || 'default',
           background: 'https://cover.sli.dev',
           duration: '',
         },
