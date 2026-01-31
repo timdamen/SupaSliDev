@@ -3,6 +3,8 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2025-01-23',
 
+  css: ['~/assets/css/custom.css'],
+
   mdc: {
     components: {
       map: {

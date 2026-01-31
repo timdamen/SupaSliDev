@@ -13,7 +13,8 @@ import presentationsData from './data/presentations.json';
 import { useServers } from './composables/useServers';
 import { useToast } from '@nuxt/ui/composables';
 
-const { startPolling, stopPolling, stopAllServers, startServer, exportPresentation } = useServers();
+const { startPolling, stopPolling, stopAllServers, startServer, exportPresentation, openInEditor } =
+  useServers();
 const toast = useToast();
 const colorMode = useColorMode();
 
@@ -134,6 +135,19 @@ async function handleExportCommand(presentation: Presentation) {
   }
 }
 
+async function handleEditCommand(presentation: Presentation) {
+  isCommandPaletteOpen.value = false;
+  const result = await openInEditor(presentation.id);
+  if (!result.success && result.error) {
+    toast.add({
+      title: 'Editor Error',
+      description: result.error,
+      color: 'error',
+      icon: 'i-lucide-alert-circle',
+    });
+  }
+}
+
 function handleCreateCommand() {
   isCommandPaletteOpen.value = false;
   isDialogOpen.value = true;
@@ -224,9 +238,33 @@ function handleExecuteCommand(command: string) {
     return;
   }
 
+  if (action === 'edit') {
+    if (!arg) {
+      toast.add({
+        title: 'Missing argument',
+        description: 'Usage: edit <presentation-name>',
+        color: 'warning',
+        icon: 'i-lucide-alert-triangle',
+      });
+      return;
+    }
+    const presentation = findPresentationByName(arg);
+    if (!presentation) {
+      toast.add({
+        title: 'Presentation not found',
+        description: `No presentation found with name "${arg}"`,
+        color: 'warning',
+        icon: 'i-lucide-alert-triangle',
+      });
+      return;
+    }
+    handleEditCommand(presentation);
+    return;
+  }
+
   toast.add({
     title: 'Unknown command',
-    description: `"${action}" is not a recognized command. Try: new, import, present, export`,
+    description: `"${action}" is not a recognized command. Try: new, import, present, export, edit`,
     color: 'warning',
     icon: 'i-lucide-alert-triangle',
   });
@@ -287,6 +325,18 @@ const commandPaletteGroups = computed<CommandPaletteGroup[]>(() => [
       }),
     ),
   },
+  {
+    id: 'edit',
+    label: 'Edit',
+    items: presentations.value.map(
+      (p): CommandPaletteItem => ({
+        label: `Edit > ${p.title}`,
+        suffix: 'Open in VS Code',
+        icon: 'i-lucide-pencil',
+        onSelect: () => handleEditCommand(p),
+      }),
+    ),
+  },
 ]);
 
 const filteredPresentations = computed(() => {
@@ -327,6 +377,11 @@ const commandOptions = computed(() => {
       label: `Export > ${p.title}`,
       description: 'Export to PDF',
       onSelect: () => handleExportCommand(p),
+    });
+    options.push({
+      label: `Edit > ${p.title}`,
+      description: 'Open in VS Code',
+      onSelect: () => handleEditCommand(p),
     });
   });
 

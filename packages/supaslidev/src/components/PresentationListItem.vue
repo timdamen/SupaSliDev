@@ -7,15 +7,18 @@ const props = defineProps<{
   presentation: Presentation;
 }>();
 
-const { isRunning, getPort, startServer, stopServer, exportPresentation } = useServers();
+const { isRunning, getPort, startServer, stopServer, exportPresentation, openInEditor } =
+  useServers();
 
 const emit = defineEmits<{
   exportError: [message: string];
+  editorError: [message: string];
 }>();
 
 const loading = ref({
   dev: false,
   export: false,
+  edit: false,
 });
 
 const running = computed(() => isRunning(props.presentation.id));
@@ -62,6 +65,25 @@ async function handleExport(event: Event) {
     emit('exportError', 'Failed to export presentation');
   } finally {
     loading.value.export = false;
+  }
+}
+
+async function handleEdit(event: Event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (loading.value.edit) return;
+
+  loading.value.edit = true;
+  try {
+    const result = await openInEditor(props.presentation.id);
+    if (!result.success) {
+      emit('editorError', result.error || 'Failed to open editor');
+    }
+  } catch {
+    emit('editorError', 'Failed to open editor');
+  } finally {
+    loading.value.edit = false;
   }
 }
 
@@ -163,6 +185,18 @@ function handleOpen(event: Event) {
         class="action-btn"
         title="Export to PDF"
         @click="handleExport"
+      />
+
+      <UButton
+        color="neutral"
+        variant="ghost"
+        size="xs"
+        icon="i-lucide-pencil"
+        :loading="loading.edit"
+        :disabled="loading.edit"
+        class="action-btn"
+        title="Edit in VS Code"
+        @click="handleEdit"
       />
     </div>
   </div>

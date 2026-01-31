@@ -77,6 +77,15 @@ async function exportPresentation(
   }
 }
 
+async function openInEditor(presentationId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`/api/open-editor/${presentationId}`, { method: 'POST' });
+    return await response.json();
+  } catch {
+    return { success: false, error: 'Failed to open editor' };
+  }
+}
+
 function getPort(presentationId: string): number | undefined {
   return servers.value[presentationId]?.port;
 }
@@ -108,5 +117,6 @@ export function useServers() {
     startPolling,
     stopPolling,
     exportPresentation,
+    openInEditor,
   };
 }

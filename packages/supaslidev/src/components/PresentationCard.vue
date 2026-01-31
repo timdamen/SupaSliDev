@@ -7,15 +7,18 @@ const props = defineProps<{
   presentation: Presentation;
 }>();
 
-const { isRunning, getPort, startServer, stopServer, exportPresentation } = useServers();
+const { isRunning, getPort, startServer, stopServer, exportPresentation, openInEditor } =
+  useServers();
 
 const emit = defineEmits<{
   exportError: [message: string];
+  editorError: [message: string];
 }>();
 
 const loading = ref({
   dev: false,
   export: false,
+  edit: false,
 });
 
 const running = computed(() => isRunning(props.presentation.id));
@@ -62,6 +65,25 @@ async function handleExport(event: Event) {
     emit('exportError', 'Failed to export presentation');
   } finally {
     loading.value.export = false;
+  }
+}
+
+async function handleEdit(event: Event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (loading.value.edit) return;
+
+  loading.value.edit = true;
+  try {
+    const result = await openInEditor(props.presentation.id);
+    if (!result.success) {
+      emit('editorError', result.error || 'Failed to open editor');
+    }
+  } catch {
+    emit('editorError', 'Failed to open editor');
+  } finally {
+    loading.value.edit = false;
   }
 }
 
@@ -165,9 +187,6 @@ function handleCardClick(event: Event) {
             <span class="terminal-prompt-symbol">$</span>
           </template>
           {{ running ? 'stop' : 'dev' }}
-          <template #trailing>
-            <UKbd size="xs" class="terminal-kbd">D</UKbd>
-          </template>
         </UButton>
 
         <UButton
@@ -183,9 +202,21 @@ function handleCardClick(event: Event) {
             <span class="terminal-prompt-symbol">$</span>
           </template>
           export
-          <template #trailing>
-            <UKbd size="xs" class="terminal-kbd">E</UKbd>
+        </UButton>
+
+        <UButton
+          color="neutral"
+          variant="soft"
+          size="sm"
+          class="flex-1 terminal-btn font-mono"
+          :loading="loading.edit"
+          :disabled="loading.edit"
+          @click="handleEdit"
+        >
+          <template #leading>
+            <span class="terminal-prompt-symbol">$</span>
           </template>
+          edit
         </UButton>
 
         <!-- TODO: Re-enable when deploy functionality is implemented

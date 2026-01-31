@@ -26,9 +26,6 @@ export default defineAppConfig({
       alt: 'Supaslidev Logo',
     },
   },
-  socials: {
-    github: 'https://github.com/timdamen/supaSliDev',
-  },
   github: {
     url: 'https://github.com/timdamen/supaSliDev',
     branch: 'main',

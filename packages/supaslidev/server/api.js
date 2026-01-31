@@ -906,6 +906,25 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  if (path.startsWith('/api/open-editor/') && req.method === 'POST') {
+    const presentationId = path.split('/api/open-editor/')[1];
+    if (!isValidPresentationId(presentationId)) {
+      res.writeHead(400);
+      res.end(JSON.stringify({ success: false, error: 'Invalid presentation id' }));
+      return;
+    }
+    const slidesPath = join(projectRoot, 'presentations', presentationId, 'slides.md');
+    if (!existsSync(slidesPath)) {
+      res.writeHead(404);
+      res.end(JSON.stringify({ success: false, error: 'Presentation not found' }));
+      return;
+    }
+    spawn('code', [slidesPath], { detached: true, stdio: 'ignore' }).unref();
+    res.writeHead(200);
+    res.end(JSON.stringify({ success: true }));
+    return;
+  }
+
   res.writeHead(404);
   res.end(JSON.stringify({ error: 'Not found' }));
 });
