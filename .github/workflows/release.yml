@@ -37,8 +37,16 @@ jobs:
       - name: Build packages
         run: pnpm build:all
 
-      - name: Release
+      - name: Release CLI package
+        working-directory: packages/cli
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: pnpm semantic-release
+        run: npx semantic-release
+
+      - name: Release supaslidev package
+        working-directory: packages/supaslidev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
