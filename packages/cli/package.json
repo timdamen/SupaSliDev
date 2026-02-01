@@ -2,6 +2,21 @@
   "name": "create-supaslidev",
   "version": "0.1.0",
   "description": "CLI tool for scaffolding Supaslidev presentations",
+  "keywords": [
+    "slidev",
+    "supaslidev"
+  ],
+  "homepage": "https://github.com/timdamen/supaslidev#readme",
+  "bugs": {
+    "url": "https://github.com/timdamen/supaslidev/issues"
+  },
+  "license": "MIT",
+  "author": "Tim Damen <hello@timdamen.io>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/timdamen/supaslidev.git",
+    "directory": "packages/cli"
+  },
   "bin": {
     "create-supaslidev": "./dist/cli.js"
   },
