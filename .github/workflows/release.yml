@@ -34,8 +34,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build packages
-        run: pnpm build:all
+      - name: Build CLI package
+        run: pnpm --filter create-supaslidev build
+
+      - name: Build supaslidev package
+        run: pnpm --filter supaslidev build
 
       - name: Release CLI package
         working-directory: packages/cli
