@@ -5,6 +5,18 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+:root {
+  --supaslidev-border: #d1d5db;
+  --supaslidev-header-bg: rgba(0, 0, 0, 0.02);
+  --supaslidev-text-muted: #6b7280;
+}
+
+.dark {
+  --supaslidev-border: #4b5563;
+  --supaslidev-header-bg: rgba(255, 255, 255, 0.03);
+  --supaslidev-text-muted: #9ca3af;
+}
+
 *,
 *::before,
 *::after {

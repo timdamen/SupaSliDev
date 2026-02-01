@@ -216,7 +216,7 @@ function handleOpen(event: Event) {
 .list-item-v {
   --terminal-glow-color: rgba(39, 201, 63, 0.2);
   background: var(--ui-bg);
-  border: 1px solid var(--ui-border);
+  border: 1px solid var(--supaslidev-border);
 }
 
 .list-item-v:hover {
@@ -234,7 +234,7 @@ function handleOpen(event: Event) {
 }
 
 .action-btn {
-  opacity: 0.6;
+  opacity: 0.75;
   transition: opacity 0.2s ease;
 }
 

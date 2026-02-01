@@ -69,7 +69,7 @@ const isSubmitting = ref(false);
 const nameError = ref('');
 const touched = ref({ path: false, name: false });
 const folderInputRef = ref<HTMLInputElement | null>(null);
-const isDraggingOver = ref(false);
+const dragCounter = ref(0);
 const validationResults = ref<ValidationResult[]>([]);
 const isValidating = ref(false);
 const importProgress = ref<ImportProgress | null>(null);
@@ -215,6 +215,8 @@ function validateUploadedFiles(files: UploadedFile[]): { isValid: boolean; error
 function toSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
 }
+
+const isDraggingOver = computed(() => dragCounter.value > 0);
 
 const validProjects = computed(() => {
   return validationResults.value.filter((r) => r.isValid);
@@ -413,24 +415,25 @@ async function handleFolderSelect(event: Event) {
   input.value = '';
 }
 
-function handleDragOver(event: DragEvent) {
+function handleDragEnter(event: DragEvent) {
   event.preventDefault();
   if (event.dataTransfer?.types.includes('Files')) {
-    isDraggingOver.value = true;
+    dragCounter.value++;
   }
 }
 
+function handleDragOver(event: DragEvent) {
+  event.preventDefault();
+}
+
 function handleDragLeave(event: DragEvent) {
-  const relatedTarget = event.relatedTarget as Node | null;
-  const currentTarget = event.currentTarget as HTMLElement;
-  if (!relatedTarget || !currentTarget.contains(relatedTarget)) {
-    isDraggingOver.value = false;
-  }
+  event.preventDefault();
+  dragCounter.value--;
 }
 
 async function handleDrop(event: DragEvent) {
   event.preventDefault();
-  isDraggingOver.value = false;
+  dragCounter.value = 0;
 
   const items = event.dataTransfer?.items;
   if (!items) return;
@@ -485,6 +488,7 @@ function resetForm() {
   importSummary.value = null;
   uploadedProjects.value = new Map();
   isReadingFiles.value = false;
+  dragCounter.value = 0;
   if (validationDebounceTimer) {
     clearTimeout(validationDebounceTimer);
     validationDebounceTimer = null;
@@ -618,13 +622,14 @@ async function handleSubmit() {
       <form
         class="flex flex-col gap-6 relative"
         @submit.prevent="handleSubmit"
+        @dragenter="handleDragEnter"
         @dragover="handleDragOver"
         @dragleave="handleDragLeave"
         @drop="handleDrop"
       >
         <div
-          v-if="isDraggingOver"
-          class="absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed border-primary bg-primary/10"
+          v-show="isDraggingOver"
+          class="absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed border-primary bg-(--ui-bg)/95 backdrop-blur-sm pointer-events-none"
         >
           <div class="flex flex-col items-center gap-2 text-primary">
             <UIcon name="i-lucide-folder-down" class="w-8 h-8" />

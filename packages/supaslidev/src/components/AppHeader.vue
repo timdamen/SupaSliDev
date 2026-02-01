@@ -127,7 +127,7 @@ defineExpose({ focusInput, inputRef });
             <img src="/ssl-logo.png" alt="Supaslidev" class="logo-image" />
             <h1 class="logo-title">Supaslidev</h1>
             <span class="logo-version">{{ version }}</span>
-            <span class="logo-symbol">%</span>
+            <span class="logo-symbol">$</span>
             <span v-if="!isFocused && !inputValue" class="logo-cursor" />
           </div>
 
@@ -193,7 +193,7 @@ defineExpose({ focusInput, inputRef });
 
 .header-terminal {
   background: var(--ui-bg);
-  border: 1px solid var(--ui-border);
+  border: 1px solid var(--supaslidev-border);
   border-radius: 0.75rem;
   overflow: hidden;
 }
@@ -202,8 +202,8 @@ defineExpose({ focusInput, inputRef });
   display: flex;
   gap: 0.375rem;
   padding: 0.75rem 1rem;
-  background: var(--ui-bg-elevated);
-  border-bottom: 1px solid var(--ui-border);
+  background: var(--supaslidev-header-bg);
+  border-bottom: 1px solid var(--supaslidev-border);
 }
 
 .terminal-dot {
@@ -349,7 +349,7 @@ defineExpose({ focusInput, inputRef });
 
 .ghost-suffix {
   color: white;
-  opacity: 0.3;
+  opacity: 0.5;
   margin-left: 1px;
 }
 
@@ -376,7 +376,7 @@ defineExpose({ focusInput, inputRef });
 }
 
 .command-kbd {
-  opacity: 0.7;
+  opacity: 0.85;
 }
 
 .theme-toggle {
@@ -388,7 +388,7 @@ defineExpose({ focusInput, inputRef });
 }
 
 .dropdown {
-  border-top: 1px solid var(--ui-border);
+  border-top: 1px solid var(--supaslidev-border);
   max-height: 240px;
   overflow-y: auto;
 }

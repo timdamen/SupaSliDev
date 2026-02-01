@@ -19,7 +19,7 @@ defineProps<{
 
 <style scoped>
 .empty-state {
-  border: 1px dashed var(--ui-border);
+  border: 1px dashed var(--supaslidev-border);
   border-radius: 0.75rem;
   background: var(--ui-bg);
 }
@@ -31,7 +31,7 @@ defineProps<{
   width: 4rem;
   height: 4rem;
   border-radius: 50%;
-  background: var(--ui-bg-elevated);
-  border: 1px solid var(--ui-border);
+  background: var(--supaslidev-header-bg);
+  border: 1px solid var(--supaslidev-border);
 }
 </style>

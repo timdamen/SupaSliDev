@@ -114,15 +114,17 @@ function handleCardClick(event: Event) {
     :class="{ 'terminal-card--running': running, 'cursor-default': !running }"
     :ui="{
       root: 'overflow-hidden',
-      header: 'p-0 sm:px-0 bg-[var(--ui-bg-elevated)]',
+      header: 'p-0 sm:px-0 bg-[var(--supaslidev-header-bg)]',
       body: 'p-0 sm:p-0',
     }"
     @click="handleCardClick"
   >
     <template #header>
-      <div class="terminal-header flex items-center px-4 py-3 gap-1.5 border-b border-default">
+      <div
+        class="terminal-header flex items-center px-4 py-3 gap-1.5 border-b border-[var(--supaslidev-border)]"
+      >
         <UIcon name="i-lucide-folder" class="chevron-icon" />
-        <span class="font-mono text-xs opacity-70">~/{{ presentation.id }}</span>
+        <span class="font-mono text-xs opacity-80">~/{{ presentation.id }}</span>
         <div class="flex-1" />
         <UBadge
           v-if="running"
@@ -267,7 +269,7 @@ function handleCardClick(event: Event) {
 .terminal-card {
   --terminal-glow-color: rgba(39, 201, 63, 0.2);
   --terminal-glow-strong: rgba(39, 201, 63, 0.4);
-  border: 1px solid var(--ui-border);
+  border: 1px solid var(--supaslidev-border);
   background: var(--ui-bg);
 }
 
@@ -306,7 +308,6 @@ function handleCardClick(event: Event) {
 .terminal-prompt-symbol {
   color: var(--ui-text-muted);
   margin-right: 2px;
-  opacity: 0.7;
 }
 
 .terminal-btn {
@@ -323,7 +324,7 @@ function handleCardClick(event: Event) {
 }
 
 .terminal-kbd {
-  opacity: 0.5;
+  opacity: 0.7;
   transition: opacity 0.2s ease;
   font-size: 9px;
 }

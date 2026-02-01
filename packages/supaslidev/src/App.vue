@@ -573,4 +573,13 @@ const commandOptions = computed(() => {
   opacity: 0.8;
   text-decoration: underline;
 }
+
+.filter-input :deep(input) {
+  border: 1px solid var(--supaslidev-border);
+  border-radius: 0.5rem;
+}
+
+.filter-input :deep(input:focus) {
+  border-color: var(--ui-border-accented);
+}
 </style>
