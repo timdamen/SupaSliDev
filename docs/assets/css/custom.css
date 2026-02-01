@@ -21,7 +21,9 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
 }
 
-code, pre, .font-mono {
+code,
+pre,
+.font-mono {
   font-family: 'JetBrains Mono', ui-monospace, monospace !important;
 }
 
