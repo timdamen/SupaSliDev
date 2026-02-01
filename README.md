@@ -10,9 +10,11 @@
 
 ## Why Supaslidev?
 
-If you've ever juggled multiple [Slidev](https://sli.dev/) presentations, you know the pain: version drift between decks, repetitive setup for each new talk, and the hassle of navigating folder-to-folder just to export a few PDFs before a conference.
+[Slidev](https://sli.dev/) is awesome for creating developer-friendly presentations—write in Markdown, use Vue components, version control your slides like code.
 
-Supaslidev brings all your presentations into a single pnpm workspace with shared dependencies and an interactive dashboard. Update Slidev once, and every deck stays in sync.
+But managing multiple presentations? Not so developer-friendly. Scattered folders, version drift between decks, and no unified way to run, export, or update them.
+
+Supaslidev fixes that. One workspace, shared dependencies, and an interactive dashboard to manage all your presentations in one place.
 
 ## Features
 
@@ -40,7 +42,7 @@ pnpm new my-talk
 
 ## Documentation
 
-For detailed guides, configuration options, and CLI reference, visit the [documentation](docs/).
+For detailed guides, configuration options, and CLI reference, visit the [documentation](https://www.supasli.dev/).
 
 ## Contributing
 
