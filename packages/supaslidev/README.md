@@ -12,13 +12,14 @@
 
 [Slidev](https://sli.dev/) is awesome for creating developer-friendly presentations—write in Markdown, use Vue components, version control your slides like code.
 
-But managing multiple presentations? Not so developer-friendly. Scattered folders, version drift between decks, and no unified way to run, export, or update them.
+But managing multiple presentations? Not so developer-friendly. Scattered folders, no built-in way to share components between presentations, version drift between decks, and no unified way to run, export, or update them.
 
-Supaslidev fixes that. One workspace, shared dependencies, and an interactive dashboard to manage all your presentations in one place.
+Supaslidev fixes that. One workspace, reusable components across all decks, shared dependencies, and an interactive dashboard to manage everything in one place.
 
 ## Features
 
 - **One Workspace, Many Presentations** — Keep all your decks organized under one roof with shared configuration
+- **Shared Components & Layouts** — Create reusable Vue components, layouts, and styles available across all presentations
 - **Interactive Dashboard** — Browse, run, and manage presentations from a visual UI
 - **Centralized Dependencies** — pnpm catalog ensures every presentation uses the same Slidev version
 - **One-Command Exports** — Generate PDFs or build for deployment without switching directories

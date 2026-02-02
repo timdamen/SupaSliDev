@@ -61,7 +61,8 @@ onMounted(async () => {
 
 <style>
 .mermaid-diagram svg {
-  max-width: 100%;
+  width: auto;
+  min-width: 800px;
   height: auto;
 }
 </style>

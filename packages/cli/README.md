@@ -42,7 +42,11 @@ pnpm create supaslidev --name my-slides --presentation intro-deck
 | `--git` / `--no-git`         | Initialize git repository | `true`                |
 | `--install` / `--no-install` | Run pnpm install          | `true`                |
 
-The wizard creates a pnpm workspace with a `presentations/` directory for your decks, shared dependency management via catalog, and scripts for common tasks.
+The wizard creates a pnpm workspace with:
+- A `presentations/` directory for your decks
+- A `packages/shared/` directory with reusable components, layouts, and styles (configured as a Slidev addon)
+- Shared dependency management via pnpm catalog
+- Scripts for common tasks
 
 ### status
 

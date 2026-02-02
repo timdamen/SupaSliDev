@@ -303,9 +303,16 @@ const validatedProjects = [
   background: var(--ui-bg);
   box-shadow:
     0 0 0 1px rgba(43, 164, 169, 0.1),
+    0 25px 50px -12px rgba(0, 0, 0, 0.15),
+    0 0 100px rgba(43, 164, 169, 0.05);
+  position: relative;
+}
+
+.dark .browser-window {
+  box-shadow:
+    0 0 0 1px rgba(43, 164, 169, 0.1),
     0 25px 50px -12px rgba(0, 0, 0, 0.4),
     0 0 100px rgba(43, 164, 169, 0.1);
-  position: relative;
 }
 
 .browser-chrome {
@@ -619,8 +626,12 @@ const validatedProjects = [
 .palette-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(4px);
+}
+
+.dark .palette-overlay {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .palette-modal {
@@ -631,6 +642,10 @@ const validatedProjects = [
   border: 1px solid var(--ui-border);
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.dark .palette-modal {
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
 }
 
@@ -699,8 +714,12 @@ const validatedProjects = [
 .import-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(4px);
+}
+
+.dark .import-overlay {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .import-modal {
@@ -711,6 +730,10 @@ const validatedProjects = [
   border: 1px solid var(--ui-border);
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.dark .import-modal {
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
 }
 

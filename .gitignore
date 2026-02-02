@@ -11,6 +11,7 @@ tasks
 coverage
 .vitest
 .tmp
+.claude
 
 # Auto-generated
 packages/supaslidev/src/data/*

@@ -58,3 +58,9 @@ header img.h-6 {
     0 0 30px rgba(43, 164, 169, 0.4),
     0 0 60px rgba(43, 164, 169, 0.2);
 }
+
+.marker-success ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
