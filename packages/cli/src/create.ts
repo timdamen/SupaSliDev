@@ -273,6 +273,19 @@ main();
   writeFileSync(join(scriptsDir, 'dev-presentation.mjs'), devScript, 'utf-8');
 }
 
+function createSharedPackage(targetDir: string): void {
+  const sharedDir = join(targetDir, 'packages', 'shared');
+  mkdirSync(sharedDir, { recursive: true });
+  trackPath(sharedDir);
+
+  const subdirs = ['components', 'layouts', 'styles'];
+  for (const subdir of subdirs) {
+    const fullPath = join(sharedDir, subdir);
+    mkdirSync(fullPath, { recursive: true });
+    trackPath(fullPath);
+  }
+}
+
 export async function create(options: CreateOptions = {}): Promise<void> {
   const spinner = p.spinner();
 
@@ -409,6 +422,9 @@ export async function create(options: CreateOptions = {}): Promise<void> {
 
     spinner.message('Creating scripts...');
     createScripts(targetDir);
+
+    spinner.message('Creating shared package...');
+    createSharedPackage(targetDir);
 
     spinner.stop('Workspace structure created');
 
