@@ -284,6 +284,22 @@ function createSharedPackage(targetDir: string): void {
     mkdirSync(fullPath, { recursive: true });
     trackPath(fullPath);
   }
+
+  const packageJson = {
+    name: '@supaslidev/shared',
+    private: true,
+    type: 'module',
+    keywords: ['slidev-addon', 'slidev'],
+    dependencies: {
+      vue: 'catalog:',
+    },
+  };
+
+  writeFileSync(
+    join(sharedDir, 'package.json'),
+    JSON.stringify(packageJson, null, 2) + '\n',
+    'utf-8',
+  );
 }
 
 export async function create(options: CreateOptions = {}): Promise<void> {

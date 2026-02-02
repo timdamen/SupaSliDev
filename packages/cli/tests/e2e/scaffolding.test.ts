@@ -201,4 +201,30 @@ describe('Scaffolding E2E', () => {
 
     expect(packageJson.scripts.dev).toBe('supaslidev');
   });
+
+  it('creates shared package.json with Slidev addon keywords', async () => {
+    await create({
+      name: 'test-project',
+      presentation: 'test-deck',
+      git: false,
+      install: false,
+    });
+
+    const sharedPackageJsonPath = join(
+      TEST_DIR,
+      'test-project',
+      'packages',
+      'shared',
+      'package.json',
+    );
+    expect(existsSync(sharedPackageJsonPath)).toBe(true);
+
+    const sharedPackageJson = JSON.parse(readFileSync(sharedPackageJsonPath, 'utf-8'));
+
+    expect(sharedPackageJson.name).toBe('@supaslidev/shared');
+    expect(sharedPackageJson.private).toBe(true);
+    expect(sharedPackageJson.type).toBe('module');
+    expect(sharedPackageJson.keywords).toEqual(['slidev-addon', 'slidev']);
+    expect(sharedPackageJson.dependencies.vue).toBe('catalog:');
+  });
 });
