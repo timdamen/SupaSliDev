@@ -346,15 +346,21 @@ describe('Import E2E', () => {
       await pathInput.fill(commaSeparatedPaths);
       await pathInput.blur();
 
-      // Step 2: Wait for validation
+      // Step 2: Wait for validation to complete - wait for success icons or count to stabilize
+      const dialog = page.locator('[role="dialog"]');
       const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
-      if (await validatingIndicator.isVisible()) {
-        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
-      }
-      await page.waitForTimeout(500);
+
+      // First wait for validating indicator to appear (may be brief due to debounce)
+      await page.waitForTimeout(400);
+
+      // Then wait for it to disappear
+      await validatingIndicator.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+
+      // Wait for both success icons to appear (one for each valid path)
+      const successIcons = page.locator('.text-success');
+      await successIcons.nth(1).waitFor({ state: 'visible', timeout: 10000 });
 
       // Step 3: Verify both projects validated
-      const dialog = page.locator('[role="dialog"]');
       const dialogContent = await dialog.textContent();
       expect(dialogContent).toContain('external-deck-one');
       expect(dialogContent).toContain('external-deck-two');
@@ -419,11 +425,19 @@ describe('Import E2E', () => {
       await pathInput.fill(mixedPaths);
       await pathInput.blur();
 
+      // Wait for validation to complete - wait for debounce and API call
+      await page.waitForTimeout(400);
+
       const validatingIndicator = page.locator('span.text-muted:has-text("Validating...")');
-      if (await validatingIndicator.isVisible()) {
-        await validatingIndicator.waitFor({ state: 'hidden', timeout: 5000 });
-      }
-      await page.waitForTimeout(500);
+      await validatingIndicator.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+
+      // Wait for both success and error icons to appear (one valid, one invalid path)
+      const successIcon = page.locator('.text-success').first();
+      const errorIcon = page.locator('.text-error').first();
+      await Promise.all([
+        successIcon.waitFor({ state: 'visible', timeout: 10000 }),
+        errorIcon.waitFor({ state: 'visible', timeout: 10000 }),
+      ]);
 
       // Verify mixed results shown
       const dialog = page.locator('[role="dialog"]');
@@ -431,8 +445,8 @@ describe('Import E2E', () => {
       expect(dialogContent).toContain('1 of 2 valid');
 
       // Both success and error icons visible
-      expect(await page.locator('.text-success').first().isVisible()).toBe(true);
-      expect(await page.locator('.text-error').first().isVisible()).toBe(true);
+      expect(await successIcon.isVisible()).toBe(true);
+      expect(await errorIcon.isVisible()).toBe(true);
     });
   });
 });

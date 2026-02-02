@@ -9,7 +9,7 @@ const TEST_DIR = join(tmpdir(), 'supaslidev-e2e-shared-integration');
 
 function cleanTestDir(): void {
   if (existsSync(TEST_DIR)) {
-    rmSync(TEST_DIR, { recursive: true, force: true });
+    rmSync(TEST_DIR, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
   }
 }
 
@@ -225,11 +225,15 @@ describe('Shared Package Integration E2E (with install)', { timeout: 180000 }, (
     if (!result.success) {
       throw new Error('pnpm install failed during setup: ' + result.output);
     }
-  });
+  }, 180000);
 
   afterAll(() => {
     process.chdir(originalCwd);
-    cleanTestDir();
+    try {
+      cleanTestDir();
+    } catch {
+      // Ignore cleanup errors - temp dir will be cleaned by OS
+    }
   });
 
   it('pnpm install completes successfully', () => {
@@ -267,11 +271,15 @@ describe('Slidev Integration E2E', { timeout: 180000 }, () => {
     if (!installResult.success) {
       throw new Error('pnpm install failed: ' + installResult.output);
     }
-  });
+  }, 180000);
 
   afterAll(() => {
     process.chdir(originalCwd);
-    cleanTestDir();
+    try {
+      cleanTestDir();
+    } catch {
+      // Ignore cleanup errors - temp dir will be cleaned by OS
+    }
   });
 
   it('SharedBadge component is available after pnpm install', async () => {

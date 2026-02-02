@@ -574,25 +574,29 @@ function copyDirectorySelective(source, destination) {
 }
 
 function validateSourceDirectory(sourcePath) {
-  if (!existsSync(sourcePath)) {
-    return { isValid: false, error: 'Source directory does not exist' };
-  }
+  try {
+    if (!existsSync(sourcePath)) {
+      return { isValid: false, error: 'Source directory does not exist' };
+    }
 
-  if (!statSync(sourcePath).isDirectory()) {
-    return { isValid: false, error: 'Source path is not a directory' };
-  }
+    if (!statSync(sourcePath).isDirectory()) {
+      return { isValid: false, error: 'Source path is not a directory' };
+    }
 
-  const slidesPath = join(sourcePath, 'slides.md');
-  if (!existsSync(slidesPath)) {
-    return { isValid: false, error: 'No slides.md found in source directory' };
-  }
+    const slidesPath = join(sourcePath, 'slides.md');
+    if (!existsSync(slidesPath)) {
+      return { isValid: false, error: 'No slides.md found in source directory' };
+    }
 
-  const packageJsonPath = join(sourcePath, 'package.json');
-  if (!existsSync(packageJsonPath)) {
-    return { isValid: false, error: 'No package.json found in source directory' };
-  }
+    const packageJsonPath = join(sourcePath, 'package.json');
+    if (!existsSync(packageJsonPath)) {
+      return { isValid: false, error: 'No package.json found in source directory' };
+    }
 
-  return { isValid: true };
+    return { isValid: true };
+  } catch (err) {
+    return { isValid: false, error: `Validation error: ${err.message}` };
+  }
 }
 
 function validatePath(path) {
@@ -989,19 +993,29 @@ const server = createServer(async (req, res) => {
       body += chunk;
     });
     req.on('end', () => {
+      let data;
       try {
-        const data = JSON.parse(body);
-        if (!Array.isArray(data.paths)) {
-          res.writeHead(400);
-          res.end(JSON.stringify({ message: 'paths must be an array' }));
-          return;
-        }
-        const results = validatePaths(data.paths);
-        res.writeHead(200);
-        res.end(JSON.stringify(results));
+        data = JSON.parse(body);
       } catch {
         res.writeHead(400);
         res.end(JSON.stringify({ message: 'Invalid JSON' }));
+        return;
+      }
+
+      if (!Array.isArray(data.paths)) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ message: 'paths must be an array' }));
+        return;
+      }
+
+      try {
+        const results = validatePaths(data.paths);
+        res.writeHead(200);
+        res.end(JSON.stringify(results));
+      } catch (err) {
+        console.error('[validate] Error validating paths:', err);
+        res.writeHead(500);
+        res.end(JSON.stringify({ message: `Validation failed: ${err.message}` }));
       }
     });
     return;

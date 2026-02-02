@@ -8,6 +8,31 @@ import pc from 'picocolors';
 
 const CLI_VERSION = '0.1.0';
 
+interface SafeSpinner {
+  start: (msg?: string) => void;
+  stop: (msg?: string) => void;
+  message: (msg?: string) => void;
+}
+
+function createSafeSpinner(): SafeSpinner {
+  const isTTY = process.stdout.isTTY && process.stdin.isTTY;
+
+  if (isTTY) {
+    const spinner = p.spinner();
+    return {
+      start: (msg?: string) => spinner.start(msg),
+      stop: (msg?: string) => spinner.stop(msg),
+      message: (msg?: string) => spinner.message(msg),
+    };
+  }
+
+  return {
+    start: () => {},
+    stop: () => {},
+    message: () => {},
+  };
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const templatesDir = join(__dirname, '..', 'templates');
 
@@ -362,7 +387,7 @@ This package is configured as a Slidev addon. Components in the \`components\` d
 }
 
 export async function create(options: CreateOptions = {}): Promise<void> {
-  const spinner = p.spinner();
+  const spinner = createSafeSpinner();
 
   try {
     let projectName: string;
