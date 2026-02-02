@@ -439,11 +439,11 @@ export async function create(options: CreateOptions = {}): Promise<void> {
     spinner.message('Creating presentation...');
     await createPresentation(targetDir, presentationName);
 
-    spinner.message('Creating scripts...');
-    createScripts(targetDir);
-
     spinner.message('Creating shared package...');
     createSharedPackage(targetDir);
+
+    spinner.message('Creating scripts...');
+    createScripts(targetDir);
 
     spinner.stop('Workspace structure created');
 
