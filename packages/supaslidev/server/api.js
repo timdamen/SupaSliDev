@@ -49,6 +49,31 @@ const CATALOG_DEPENDENCIES = [
   'vue',
 ];
 
+function hasSharedPackage() {
+  const sharedPackagePath = join(projectRoot, 'packages', 'shared', 'package.json');
+  return existsSync(sharedPackagePath);
+}
+
+function addSharedAddonToSlides(slidesPath) {
+  const content = readFileSync(slidesPath, 'utf-8');
+  const frontmatterMatch = content.match(/^(---\n)([\s\S]*?)\n(---)/);
+  if (!frontmatterMatch) return;
+
+  const [fullMatch, openDelim, frontmatter, closeDelim] = frontmatterMatch;
+  const restOfFile = content.slice(fullMatch.length);
+
+  if (frontmatter.includes('addons:')) return;
+
+  const themeMatch = frontmatter.match(/^(theme:\s*.+)$/m);
+  if (themeMatch) {
+    const updatedFrontmatter = frontmatter.replace(
+      themeMatch[1],
+      `${themeMatch[1]}\naddons:\n  - '@supaslidev/shared'`,
+    );
+    writeFileSync(slidesPath, `${openDelim}${updatedFrontmatter}\n${closeDelim}${restOfFile}`);
+  }
+}
+
 function convertToCatalogDependencies(dependencies) {
   if (!dependencies || typeof dependencies !== 'object') {
     return {};
@@ -414,7 +439,12 @@ function createPresentation({ name, title, description, template = 'default' }) 
 
       writeFileSync(slidesPath, slidesContent);
 
-      const frontmatter = parseFrontmatter(slidesContent);
+      const sharedExists = hasSharedPackage();
+      if (sharedExists) {
+        addSharedAddonToSlides(slidesPath);
+      }
+
+      const frontmatter = parseFrontmatter(readFileSync(slidesPath, 'utf-8'));
 
       const packageJsonPath = join(presentationPath, 'package.json');
       const catalogPackageJson = {
@@ -435,6 +465,10 @@ function createPresentation({ name, title, description, template = 'default' }) 
         },
         devDependencies: {},
       };
+
+      if (sharedExists) {
+        catalogPackageJson.dependencies['@supaslidev/shared'] = 'workspace:*';
+      }
 
       writeFileSync(packageJsonPath, JSON.stringify(catalogPackageJson, null, 2) + '\n');
 
