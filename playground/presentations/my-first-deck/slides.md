@@ -22,6 +22,9 @@ transition: slide-left
 mdc: true
 # duration of the presentation
 duration: 35min
+# use shared components from workspace
+addons:
+  - '@supaslidev/shared'
 ---
 
 # Welcome to Slidev
@@ -276,6 +279,8 @@ We have provided a few built-in components like `<Tweet/>` and `<Youtube/>` that
 
 <!-- ./components/Counter.vue -->
 <Counter :count="10" m="t-4" />
+
+<SharedBadge text="From Shared" /> <SharedBadge />
 
 Check out [the guides](https://sli.dev/builtin/components.html) for more.
 
