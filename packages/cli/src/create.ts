@@ -276,7 +276,7 @@ main();
   writeFileSync(join(scriptsDir, 'dev-presentation.mjs'), devScript, 'utf-8');
 }
 
-function createSharedPackage(targetDir: string): void {
+export function createSharedPackage(targetDir: string): void {
   const sharedDir = join(targetDir, 'packages', 'shared');
   mkdirSync(sharedDir, { recursive: true });
   trackPath(sharedDir);
@@ -301,6 +301,62 @@ function createSharedPackage(targetDir: string): void {
   writeFileSync(
     join(sharedDir, 'package.json'),
     JSON.stringify(packageJson, null, 2) + '\n',
+    'utf-8',
+  );
+
+  const sharedBadgeContent = `<template>
+  <span class="shared-badge">
+    <slot />
+  </span>
+</template>
+
+<style scoped>
+.shared-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--slidev-theme-primary, #3b82f6);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+</style>
+`;
+
+  writeFileSync(join(sharedDir, 'components', 'SharedBadge.vue'), sharedBadgeContent, 'utf-8');
+
+  const readmeContent = `# @supaslidev/shared
+
+Shared components, layouts, and styles for your Slidev presentations.
+
+## Usage
+
+This package is configured as a Slidev addon. Components in the \`components\` directory are automatically available in all presentations that include this addon.
+
+## Structure
+
+- \`components/\` - Shared Vue components
+- \`layouts/\` - Custom slide layouts
+- \`styles/\` - Global styles
+`;
+
+  writeFileSync(join(sharedDir, 'README.md'), readmeContent, 'utf-8');
+
+  const tsconfig = {
+    compilerOptions: {
+      target: 'ESNext',
+      module: 'ESNext',
+      moduleResolution: 'bundler',
+      strict: true,
+      jsx: 'preserve',
+      skipLibCheck: true,
+    },
+    include: ['**/*.ts', '**/*.vue'],
+  };
+
+  writeFileSync(
+    join(sharedDir, 'tsconfig.json'),
+    JSON.stringify(tsconfig, null, 2) + '\n',
     'utf-8',
   );
 }
