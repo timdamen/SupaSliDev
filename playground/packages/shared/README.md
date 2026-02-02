@@ -17,7 +17,7 @@ Add the addon to your presentation's frontmatter:
 ```yaml
 ---
 addons:
-  - "@supaslidev/shared"
+  - '@supaslidev/shared'
 ---
 ```
 
@@ -28,7 +28,7 @@ The `SharedBadge` component is available globally once the addon is configured:
 ```md
 ---
 addons:
-  - "@supaslidev/shared"
+  - '@supaslidev/shared'
 ---
 
 # My Slide
