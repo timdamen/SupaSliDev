@@ -157,6 +157,8 @@ async function createPresentation(targetDir: string, presentationName: string): 
   const slidesContent = `---
 theme: default
 title: ${presentationName}
+addons:
+  - '@supaslidev/shared'
 info: |
   A new Slidev presentation
 class: text-center
