@@ -35,6 +35,70 @@ export const IGNORE_PATTERNS = [
   '.DS_Store',
 ];
 
+function hasSharedPackage(projectRoot: string): boolean {
+  const sharedPackagePath = join(projectRoot, 'packages', 'shared', 'package.json');
+  return existsSync(sharedPackagePath);
+}
+
+function addSharedAddonToSlides(slidesPath: string): void {
+  const content = readFileSync(slidesPath, 'utf-8');
+  const frontmatterMatch = content.match(/^(---\n)([\s\S]*?)\n(---)/);
+  if (!frontmatterMatch) return;
+
+  const [fullMatch, openDelim, frontmatter, closeDelim] = frontmatterMatch;
+  const restOfFile = content.slice(fullMatch.length);
+  const sharedAddon = '@supaslidev/shared';
+
+  if (frontmatter.includes(sharedAddon)) return;
+
+  let updatedFrontmatter = frontmatter;
+
+  const addonsMatch = frontmatter.match(/^(addons:\s*)(\[.*?\])?$/m);
+  if (addonsMatch) {
+    if (addonsMatch[2]) {
+      const arrayContent = addonsMatch[2].slice(1, -1).trim();
+      if (arrayContent === '') {
+        updatedFrontmatter = frontmatter.replace(addonsMatch[0], `addons: ['${sharedAddon}']`);
+      } else {
+        updatedFrontmatter = frontmatter.replace(
+          addonsMatch[0],
+          `addons: [${arrayContent}, '${sharedAddon}']`,
+        );
+      }
+    } else {
+      const addonsBlockMatch = frontmatter.match(/^addons:\s*\n((?:  - .+\n?)*)/m);
+      if (addonsBlockMatch) {
+        const existingBlock = addonsBlockMatch[0].trimEnd();
+        updatedFrontmatter = frontmatter.replace(
+          existingBlock,
+          `${existingBlock}\n  - '${sharedAddon}'`,
+        );
+      }
+    }
+  } else {
+    const themeMatch = frontmatter.match(/^(theme:\s*.+)$/m);
+    if (themeMatch) {
+      updatedFrontmatter = frontmatter.replace(
+        themeMatch[1],
+        `${themeMatch[1]}\naddons:\n  - '${sharedAddon}'`,
+      );
+    }
+  }
+
+  if (updatedFrontmatter !== frontmatter) {
+    writeFileSync(slidesPath, `${openDelim}${updatedFrontmatter}\n${closeDelim}${restOfFile}`);
+  }
+}
+
+function addSharedDependencyToPackageJson(packageJson: PackageJson): void {
+  if (!packageJson.dependencies) {
+    packageJson.dependencies = {};
+  }
+  if (!packageJson.dependencies['@supaslidev/shared']) {
+    packageJson.dependencies['@supaslidev/shared'] = 'workspace:*';
+  }
+}
+
 interface PackageJson {
   name?: string;
   private?: boolean;
@@ -99,7 +163,11 @@ export function copyDirectorySelective(source: string, destination: string): voi
   }
 }
 
-export function transformPackageJson(sourcePath: string, name: string): string {
+export function transformPackageJson(
+  sourcePath: string,
+  name: string,
+  projectRoot: string,
+): string {
   const packageJsonPath = join(sourcePath, 'package.json');
   const content = readFileSync(packageJsonPath, 'utf-8');
   const packageJson = JSON.parse(content) as PackageJson;
@@ -112,6 +180,10 @@ export function transformPackageJson(sourcePath: string, name: string): string {
     build: 'slidev build',
     export: 'slidev export',
   };
+
+  if (hasSharedPackage(projectRoot)) {
+    addSharedDependencyToPackageJson(packageJson);
+  }
 
   return JSON.stringify(packageJson, null, 2) + '\n';
 }
@@ -199,8 +271,15 @@ export async function importPresentation(
 
   copyDirectorySelective(sourcePath, destinationPath);
 
-  const transformedPackageJson = transformPackageJson(sourcePath, presentationName);
+  const transformedPackageJson = transformPackageJson(sourcePath, presentationName, projectRoot);
   writeFileSync(join(destinationPath, 'package.json'), transformedPackageJson);
+
+  if (hasSharedPackage(projectRoot)) {
+    const slidesPath = join(destinationPath, 'slides.md');
+    if (existsSync(slidesPath)) {
+      addSharedAddonToSlides(slidesPath);
+    }
+  }
 
   console.log('\nFiles copied successfully!');
   console.log('Ignored: ' + IGNORE_PATTERNS.join(', '));

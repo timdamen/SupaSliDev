@@ -61,16 +61,55 @@ function addSharedAddonToSlides(slidesPath) {
 
   const [fullMatch, openDelim, frontmatter, closeDelim] = frontmatterMatch;
   const restOfFile = content.slice(fullMatch.length);
+  const sharedAddon = '@supaslidev/shared';
 
-  if (frontmatter.includes('addons:')) return;
+  if (frontmatter.includes(sharedAddon)) return;
 
-  const themeMatch = frontmatter.match(/^(theme:\s*.+)$/m);
-  if (themeMatch) {
-    const updatedFrontmatter = frontmatter.replace(
-      themeMatch[1],
-      `${themeMatch[1]}\naddons:\n  - '@supaslidev/shared'`,
-    );
+  let updatedFrontmatter = frontmatter;
+
+  const addonsMatch = frontmatter.match(/^(addons:\s*)(\[.*?\])?$/m);
+  if (addonsMatch) {
+    if (addonsMatch[2]) {
+      const arrayContent = addonsMatch[2].slice(1, -1).trim();
+      if (arrayContent === '') {
+        updatedFrontmatter = frontmatter.replace(addonsMatch[0], `addons: ['${sharedAddon}']`);
+      } else {
+        updatedFrontmatter = frontmatter.replace(
+          addonsMatch[0],
+          `addons: [${arrayContent}, '${sharedAddon}']`,
+        );
+      }
+    } else {
+      const addonsBlockMatch = frontmatter.match(/^addons:\s*\n((?:  - .+\n?)*)/m);
+      if (addonsBlockMatch) {
+        const existingBlock = addonsBlockMatch[0].trimEnd();
+        updatedFrontmatter = frontmatter.replace(
+          existingBlock,
+          `${existingBlock}\n  - '${sharedAddon}'`,
+        );
+      }
+    }
+  } else {
+    const themeMatch = frontmatter.match(/^(theme:\s*.+)$/m);
+    if (themeMatch) {
+      updatedFrontmatter = frontmatter.replace(
+        themeMatch[1],
+        `${themeMatch[1]}\naddons:\n  - '${sharedAddon}'`,
+      );
+    }
+  }
+
+  if (updatedFrontmatter !== frontmatter) {
     writeFileSync(slidesPath, `${openDelim}${updatedFrontmatter}\n${closeDelim}${restOfFile}`);
+  }
+}
+
+function addSharedDependencyToPackageJson(packageJson) {
+  if (!packageJson.dependencies) {
+    packageJson.dependencies = {};
+  }
+  if (!packageJson.dependencies['@supaslidev/shared']) {
+    packageJson.dependencies['@supaslidev/shared'] = 'workspace:*';
   }
 }
 
@@ -649,10 +688,22 @@ function importPresentation({ source, name }) {
       packageJson.devDependencies = convertToCatalogDependencies(packageJson.devDependencies);
     }
 
+    const sharedExists = hasSharedPackage();
+    if (sharedExists) {
+      addSharedDependencyToPackageJson(packageJson);
+    }
+
     writeFileSync(
       join(destinationPath, 'package.json'),
       JSON.stringify(packageJson, null, 2) + '\n',
     );
+
+    if (sharedExists) {
+      const slidesPath = join(destinationPath, 'slides.md');
+      if (existsSync(slidesPath)) {
+        addSharedAddonToSlides(slidesPath);
+      }
+    }
 
     console.log('[import] Files copied successfully');
     console.log('[import] Running pnpm install...');
@@ -798,7 +849,19 @@ function uploadPresentation({ files, name, folderName }) {
       packageJson.devDependencies = convertToCatalogDependencies(packageJson.devDependencies);
     }
 
+    const sharedExists = hasSharedPackage();
+    if (sharedExists) {
+      addSharedDependencyToPackageJson(packageJson);
+    }
+
     writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
+
+    if (sharedExists) {
+      const slidesPath = join(destinationPath, 'slides.md');
+      if (existsSync(slidesPath)) {
+        addSharedAddonToSlides(slidesPath);
+      }
+    }
 
     console.log('[upload] Files written successfully');
     console.log('[upload] Running pnpm install...');
