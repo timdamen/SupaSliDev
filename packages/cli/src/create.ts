@@ -8,6 +8,31 @@ import pc from 'picocolors';
 
 const CLI_VERSION = '0.1.0';
 
+interface SafeSpinner {
+  start: (msg?: string) => void;
+  stop: (msg?: string) => void;
+  message: (msg?: string) => void;
+}
+
+function createSafeSpinner(): SafeSpinner {
+  const isTTY = process.stdout.isTTY && process.stdin.isTTY;
+
+  if (isTTY) {
+    const spinner = p.spinner();
+    return {
+      start: (msg?: string) => spinner.start(msg),
+      stop: (msg?: string) => spinner.stop(msg),
+      message: (msg?: string) => spinner.message(msg),
+    };
+  }
+
+  return {
+    start: () => {},
+    stop: () => {},
+    message: () => {},
+  };
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const templatesDir = join(__dirname, '..', 'templates');
 
@@ -142,6 +167,7 @@ async function createPresentation(targetDir: string, presentationName: string): 
       '@slidev/theme-default': 'catalog:',
       '@slidev/theme-seriph': 'catalog:',
       '@slidev/theme-apple-basic': 'catalog:',
+      '@supaslidev/shared': 'workspace:*',
       vue: 'catalog:',
     },
     devDependencies: {},
@@ -156,6 +182,8 @@ async function createPresentation(targetDir: string, presentationName: string): 
   const slidesContent = `---
 theme: default
 title: ${presentationName}
+addons:
+  - '@supaslidev/shared'
 info: |
   A new Slidev presentation
 class: text-center
@@ -273,8 +301,93 @@ main();
   writeFileSync(join(scriptsDir, 'dev-presentation.mjs'), devScript, 'utf-8');
 }
 
+export function createSharedPackage(targetDir: string): void {
+  const sharedDir = join(targetDir, 'packages', 'shared');
+  mkdirSync(sharedDir, { recursive: true });
+  trackPath(sharedDir);
+
+  const subdirs = ['components', 'layouts', 'styles'];
+  for (const subdir of subdirs) {
+    const fullPath = join(sharedDir, subdir);
+    mkdirSync(fullPath, { recursive: true });
+    trackPath(fullPath);
+  }
+
+  const packageJson = {
+    name: '@supaslidev/shared',
+    private: true,
+    type: 'module',
+    keywords: ['slidev-addon', 'slidev'],
+    dependencies: {
+      vue: 'catalog:',
+    },
+  };
+
+  writeFileSync(
+    join(sharedDir, 'package.json'),
+    JSON.stringify(packageJson, null, 2) + '\n',
+    'utf-8',
+  );
+
+  const sharedBadgeContent = `<template>
+  <span class="shared-badge">
+    <slot />
+  </span>
+</template>
+
+<style scoped>
+.shared-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--slidev-theme-primary, #3b82f6);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+</style>
+`;
+
+  writeFileSync(join(sharedDir, 'components', 'SharedBadge.vue'), sharedBadgeContent, 'utf-8');
+
+  const readmeContent = `# @supaslidev/shared
+
+Shared components, layouts, and styles for your Slidev presentations.
+
+## Usage
+
+This package is configured as a Slidev addon. Components in the \`components\` directory are automatically available in all presentations that include this addon.
+
+## Structure
+
+- \`components/\` - Shared Vue components
+- \`layouts/\` - Custom slide layouts
+- \`styles/\` - Global styles
+`;
+
+  writeFileSync(join(sharedDir, 'README.md'), readmeContent, 'utf-8');
+
+  const tsconfig = {
+    compilerOptions: {
+      target: 'ESNext',
+      module: 'ESNext',
+      moduleResolution: 'bundler',
+      strict: true,
+      jsx: 'preserve',
+      skipLibCheck: true,
+    },
+    include: ['**/*.ts', '**/*.vue'],
+  };
+
+  writeFileSync(
+    join(sharedDir, 'tsconfig.json'),
+    JSON.stringify(tsconfig, null, 2) + '\n',
+    'utf-8',
+  );
+}
+
 export async function create(options: CreateOptions = {}): Promise<void> {
-  const spinner = p.spinner();
+  const spinner = createSafeSpinner();
 
   try {
     let projectName: string;
@@ -406,6 +519,9 @@ export async function create(options: CreateOptions = {}): Promise<void> {
 
     spinner.message('Creating presentation...');
     await createPresentation(targetDir, presentationName);
+
+    spinner.message('Creating shared package...');
+    createSharedPackage(targetDir);
 
     spinner.message('Creating scripts...');
     createScripts(targetDir);

@@ -1,0 +1,12 @@
+{
+  "name": "@supaslidev/shared",
+  "private": true,
+  "keywords": [
+    "slidev",
+    "slidev-addon"
+  ],
+  "type": "module",
+  "dependencies": {
+    "vue": "catalog:"
+  }
+}

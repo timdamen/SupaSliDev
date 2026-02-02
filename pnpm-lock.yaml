@@ -204,6 +204,12 @@ importers:
         specifier: workspace:*
         version: link:../packages/supaslidev
 
+  playground/packages/shared:
+    dependencies:
+      vue:
+        specifier: 'catalog:'
+        version: 3.5.27(typescript@5.9.3)
+
   playground/presentations/my-first-deck:
     dependencies:
       '@slidev/cli':
@@ -215,6 +221,9 @@ importers:
       '@slidev/theme-seriph':
         specifier: 'catalog:'
         version: 0.25.0
+      '@supaslidev/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       vue:
         specifier: 'catalog:'
         version: 3.5.27(typescript@5.9.3)

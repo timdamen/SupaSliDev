@@ -49,6 +49,70 @@ const CATALOG_DEPENDENCIES = [
   'vue',
 ];
 
+function hasSharedPackage() {
+  const sharedPackagePath = join(projectRoot, 'packages', 'shared', 'package.json');
+  return existsSync(sharedPackagePath);
+}
+
+function addSharedAddonToSlides(slidesPath) {
+  const content = readFileSync(slidesPath, 'utf-8');
+  const frontmatterMatch = content.match(/^(---\n)([\s\S]*?)\n(---)/);
+  if (!frontmatterMatch) return;
+
+  const [fullMatch, openDelim, frontmatter, closeDelim] = frontmatterMatch;
+  const restOfFile = content.slice(fullMatch.length);
+  const sharedAddon = '@supaslidev/shared';
+
+  if (frontmatter.includes(sharedAddon)) return;
+
+  let updatedFrontmatter = frontmatter;
+
+  const addonsMatch = frontmatter.match(/^(addons:\s*)(\[.*?\])?$/m);
+  if (addonsMatch) {
+    if (addonsMatch[2]) {
+      const arrayContent = addonsMatch[2].slice(1, -1).trim();
+      if (arrayContent === '') {
+        updatedFrontmatter = frontmatter.replace(addonsMatch[0], `addons: ['${sharedAddon}']`);
+      } else {
+        updatedFrontmatter = frontmatter.replace(
+          addonsMatch[0],
+          `addons: [${arrayContent}, '${sharedAddon}']`,
+        );
+      }
+    } else {
+      const addonsBlockMatch = frontmatter.match(/^addons:\s*\n((?:  - .+\n?)*)/m);
+      if (addonsBlockMatch) {
+        const existingBlock = addonsBlockMatch[0].trimEnd();
+        updatedFrontmatter = frontmatter.replace(
+          existingBlock,
+          `${existingBlock}\n  - '${sharedAddon}'`,
+        );
+      }
+    }
+  } else {
+    const themeMatch = frontmatter.match(/^(theme:\s*.+)$/m);
+    if (themeMatch) {
+      updatedFrontmatter = frontmatter.replace(
+        themeMatch[1],
+        `${themeMatch[1]}\naddons:\n  - '${sharedAddon}'`,
+      );
+    }
+  }
+
+  if (updatedFrontmatter !== frontmatter) {
+    writeFileSync(slidesPath, `${openDelim}${updatedFrontmatter}\n${closeDelim}${restOfFile}`);
+  }
+}
+
+function addSharedDependencyToPackageJson(packageJson) {
+  if (!packageJson.dependencies) {
+    packageJson.dependencies = {};
+  }
+  if (!packageJson.dependencies['@supaslidev/shared']) {
+    packageJson.dependencies['@supaslidev/shared'] = 'workspace:*';
+  }
+}
+
 function convertToCatalogDependencies(dependencies) {
   if (!dependencies || typeof dependencies !== 'object') {
     return {};
@@ -414,7 +478,12 @@ function createPresentation({ name, title, description, template = 'default' }) 
 
       writeFileSync(slidesPath, slidesContent);
 
-      const frontmatter = parseFrontmatter(slidesContent);
+      const sharedExists = hasSharedPackage();
+      if (sharedExists) {
+        addSharedAddonToSlides(slidesPath);
+      }
+
+      const frontmatter = parseFrontmatter(readFileSync(slidesPath, 'utf-8'));
 
       const packageJsonPath = join(presentationPath, 'package.json');
       const catalogPackageJson = {
@@ -435,6 +504,10 @@ function createPresentation({ name, title, description, template = 'default' }) 
         },
         devDependencies: {},
       };
+
+      if (sharedExists) {
+        catalogPackageJson.dependencies['@supaslidev/shared'] = 'workspace:*';
+      }
 
       writeFileSync(packageJsonPath, JSON.stringify(catalogPackageJson, null, 2) + '\n');
 
@@ -501,25 +574,29 @@ function copyDirectorySelective(source, destination) {
 }
 
 function validateSourceDirectory(sourcePath) {
-  if (!existsSync(sourcePath)) {
-    return { isValid: false, error: 'Source directory does not exist' };
-  }
+  try {
+    if (!existsSync(sourcePath)) {
+      return { isValid: false, error: 'Source directory does not exist' };
+    }
 
-  if (!statSync(sourcePath).isDirectory()) {
-    return { isValid: false, error: 'Source path is not a directory' };
-  }
+    if (!statSync(sourcePath).isDirectory()) {
+      return { isValid: false, error: 'Source path is not a directory' };
+    }
 
-  const slidesPath = join(sourcePath, 'slides.md');
-  if (!existsSync(slidesPath)) {
-    return { isValid: false, error: 'No slides.md found in source directory' };
-  }
+    const slidesPath = join(sourcePath, 'slides.md');
+    if (!existsSync(slidesPath)) {
+      return { isValid: false, error: 'No slides.md found in source directory' };
+    }
 
-  const packageJsonPath = join(sourcePath, 'package.json');
-  if (!existsSync(packageJsonPath)) {
-    return { isValid: false, error: 'No package.json found in source directory' };
-  }
+    const packageJsonPath = join(sourcePath, 'package.json');
+    if (!existsSync(packageJsonPath)) {
+      return { isValid: false, error: 'No package.json found in source directory' };
+    }
 
-  return { isValid: true };
+    return { isValid: true };
+  } catch (err) {
+    return { isValid: false, error: `Validation error: ${err.message}` };
+  }
 }
 
 function validatePath(path) {
@@ -615,10 +692,22 @@ function importPresentation({ source, name }) {
       packageJson.devDependencies = convertToCatalogDependencies(packageJson.devDependencies);
     }
 
+    const sharedExists = hasSharedPackage();
+    if (sharedExists) {
+      addSharedDependencyToPackageJson(packageJson);
+    }
+
     writeFileSync(
       join(destinationPath, 'package.json'),
       JSON.stringify(packageJson, null, 2) + '\n',
     );
+
+    if (sharedExists) {
+      const slidesPath = join(destinationPath, 'slides.md');
+      if (existsSync(slidesPath)) {
+        addSharedAddonToSlides(slidesPath);
+      }
+    }
 
     console.log('[import] Files copied successfully');
     console.log('[import] Running pnpm install...');
@@ -764,7 +853,19 @@ function uploadPresentation({ files, name, folderName }) {
       packageJson.devDependencies = convertToCatalogDependencies(packageJson.devDependencies);
     }
 
+    const sharedExists = hasSharedPackage();
+    if (sharedExists) {
+      addSharedDependencyToPackageJson(packageJson);
+    }
+
     writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
+
+    if (sharedExists) {
+      const slidesPath = join(destinationPath, 'slides.md');
+      if (existsSync(slidesPath)) {
+        addSharedAddonToSlides(slidesPath);
+      }
+    }
 
     console.log('[upload] Files written successfully');
     console.log('[upload] Running pnpm install...');
@@ -892,19 +993,29 @@ const server = createServer(async (req, res) => {
       body += chunk;
     });
     req.on('end', () => {
+      let data;
       try {
-        const data = JSON.parse(body);
-        if (!Array.isArray(data.paths)) {
-          res.writeHead(400);
-          res.end(JSON.stringify({ message: 'paths must be an array' }));
-          return;
-        }
-        const results = validatePaths(data.paths);
-        res.writeHead(200);
-        res.end(JSON.stringify(results));
+        data = JSON.parse(body);
       } catch {
         res.writeHead(400);
         res.end(JSON.stringify({ message: 'Invalid JSON' }));
+        return;
+      }
+
+      if (!Array.isArray(data.paths)) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ message: 'paths must be an array' }));
+        return;
+      }
+
+      try {
+        const results = validatePaths(data.paths);
+        res.writeHead(200);
+        res.end(JSON.stringify(results));
+      } catch (err) {
+        console.error('[validate] Error validating paths:', err);
+        res.writeHead(500);
+        res.end(JSON.stringify({ message: `Validation failed: ${err.message}` }));
       }
     });
     return;

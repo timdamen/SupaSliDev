@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'node:path';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { transformPackageJson } from '../../src/cli/commands/import.js';
 import {
   createTestProjectDir,
@@ -9,9 +10,12 @@ import {
 
 describe('transformPackageJson', () => {
   let testDir: string;
+  let workspaceRoot: string;
 
   beforeEach(() => {
     testDir = createTestProjectDir('transform-package-json');
+    workspaceRoot = join(testDir, 'workspace');
+    mkdirSync(workspaceRoot, { recursive: true });
   });
 
   afterEach(() => {
@@ -22,7 +26,7 @@ describe('transformPackageJson', () => {
     const projectDir = join(testDir, 'project');
     createMockSlidevProject(projectDir);
 
-    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation'));
+    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation', workspaceRoot));
 
     expect(result.name).toBe('@supaslidev/my-presentation');
   });
@@ -33,7 +37,7 @@ describe('transformPackageJson', () => {
       packageJson: { private: false },
     });
 
-    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation'));
+    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation', workspaceRoot));
 
     expect(result.private).toBe(true);
   });
@@ -50,7 +54,7 @@ describe('transformPackageJson', () => {
       },
     });
 
-    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation'));
+    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation', workspaceRoot));
 
     expect(result.scripts).toEqual({
       dev: 'slidev --open',
@@ -71,7 +75,7 @@ describe('transformPackageJson', () => {
       },
     });
 
-    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation'));
+    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation', workspaceRoot));
 
     expect(result.dependencies).toEqual({
       '@slidev/cli': '^0.50.0',
@@ -91,7 +95,7 @@ describe('transformPackageJson', () => {
       },
     });
 
-    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation'));
+    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation', workspaceRoot));
 
     expect(result.devDependencies).toEqual({
       typescript: '^5.0.0',
@@ -110,7 +114,7 @@ describe('transformPackageJson', () => {
       },
     });
 
-    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation'));
+    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation', workspaceRoot));
 
     expect(result.name).toBe('@supaslidev/my-presentation');
     expect(result.private).toBe(true);
@@ -121,5 +125,24 @@ describe('transformPackageJson', () => {
     });
     expect(result.dependencies).toBeUndefined();
     expect(result.devDependencies).toBeUndefined();
+  });
+
+  it('adds shared dependency when shared package exists', () => {
+    const projectDir = join(testDir, 'project');
+    createMockSlidevProject(projectDir, {
+      packageJson: {
+        dependencies: {
+          '@slidev/cli': '^0.50.0',
+        },
+      },
+    });
+
+    const sharedDir = join(workspaceRoot, 'packages', 'shared');
+    mkdirSync(sharedDir, { recursive: true });
+    writeFileSync(join(sharedDir, 'package.json'), JSON.stringify({ name: '@supaslidev/shared' }));
+
+    const result = JSON.parse(transformPackageJson(projectDir, 'my-presentation', workspaceRoot));
+
+    expect(result.dependencies['@supaslidev/shared']).toBe('workspace:*');
   });
 });
