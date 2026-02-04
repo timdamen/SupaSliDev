@@ -42,6 +42,7 @@ jobs:
 
       - name: Publish CLI package
         working-directory: packages/cli
+        continue-on-error: true
         env:
           NPM_CONFIG_PROVENANCE: true
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -49,6 +50,7 @@ jobs:
 
       - name: Publish supaslidev package
         working-directory: packages/supaslidev
+        continue-on-error: true
         env:
           NPM_CONFIG_PROVENANCE: true
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
