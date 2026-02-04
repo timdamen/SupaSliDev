@@ -1,6 +1,6 @@
 {
   "name": "supaslidev",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "CLI toolkit for managing Supaslidev presentations",
   "keywords": [
     "slidev",
@@ -22,8 +22,13 @@
   },
   "files": [
     "dist",
+    "index.html",
+    "public",
     "scripts",
-    "server"
+    "server",
+    "src",
+    "tsconfig.json",
+    "vite.config.ts"
   ],
   "type": "module",
   "main": "./dist/cli/index.js",
