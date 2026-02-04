@@ -43,11 +43,13 @@ jobs:
       - name: Publish CLI package
         working-directory: packages/cli
         env:
+          NPM_CONFIG_PROVENANCE: true
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
+        run: pnpm publish --access public --no-git-checks
 
       - name: Publish supaslidev package
         working-directory: packages/supaslidev
         env:
+          NPM_CONFIG_PROVENANCE: true
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
+        run: pnpm publish --access public --no-git-checks

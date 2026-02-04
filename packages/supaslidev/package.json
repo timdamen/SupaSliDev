@@ -1,6 +1,6 @@
 {
   "name": "supaslidev",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI toolkit for managing Supaslidev presentations",
   "keywords": [
     "slidev",
@@ -50,7 +50,7 @@
   "dependencies": {
     "@nuxt/ui": "^4.4.0",
     "commander": "^13.1.0",
-    "create-supaslidev": "workspace:*",
+    "create-supaslidev": "^0.1.0",
     "js-yaml": "^4.1.1",
     "tailwindcss": "^4.1.18",
     "vue": "^3.5.0",
