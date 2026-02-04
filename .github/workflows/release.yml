@@ -40,18 +40,14 @@ jobs:
       - name: Build supaslidev package
         run: pnpm --filter supaslidev build
 
-      - name: Release CLI package
+      - name: Publish CLI package
         working-directory: packages/cli
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+        run: npm publish --access public
 
-      - name: Release supaslidev package
+      - name: Publish supaslidev package
         working-directory: packages/supaslidev
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+        run: npm publish --access public
